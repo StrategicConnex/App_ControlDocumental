@@ -1,0 +1,180 @@
+
+<h2 class="sr-only">Wireframe del módulo de Gestión Documental de SC Platform</h2>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+.wrap{font-family:var(--font-sans);font-size:14px;background:var(--color-background-tertiary);min-height:520px;display:flex;gap:14px;padding:20px}
+.left{flex:1;min-width:0}
+.right{width:240px;flex-shrink:0}
+.topbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
+.topbar h1{font-size:17px;font-weight:500;color:var(--color-text-primary)}
+.btn{font-size:12px;padding:6px 14px;border-radius:var(--border-radius-md);border:0.5px solid var(--color-border-secondary);background:var(--color-background-primary);color:var(--color-text-primary);cursor:pointer}
+.btn.primary{background:#534AB7;color:#fff;border-color:#534AB7}
+.tabs{display:flex;gap:0;margin-bottom:14px;border-bottom:0.5px solid var(--color-border-tertiary)}
+.tab{font-size:12px;padding:7px 14px;color:var(--color-text-secondary);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-0.5px}
+.tab.active{color:#534AB7;border-bottom-color:#534AB7;font-weight:500}
+.card{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);overflow:hidden;margin-bottom:12px}
+table{width:100%;border-collapse:collapse;font-size:12px}
+thead tr{background:var(--color-background-secondary)}
+thead th{text-align:left;padding:8px 12px;font-size:11px;font-weight:500;color:var(--color-text-secondary);border-bottom:0.5px solid var(--color-border-tertiary)}
+tbody tr{border-bottom:0.5px solid var(--color-border-tertiary)}
+tbody tr:last-child{border-bottom:none}
+tbody tr.selected{background:var(--color-background-info)}
+tbody td{padding:9px 12px;color:var(--color-text-primary);vertical-align:middle}
+.pill{font-size:10px;padding:2px 8px;border-radius:99px;font-weight:500}
+.pill.ok{background:var(--color-background-success);color:var(--color-text-success)}
+.pill.warn{background:var(--color-background-warning);color:var(--color-text-warning)}
+.pill.danger{background:var(--color-background-danger);color:var(--color-text-danger)}
+.pill.gray{background:var(--color-background-secondary);color:var(--color-text-secondary)}
+.pill.info{background:var(--color-background-info);color:var(--color-text-info)}
+.panel-card{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:14px;margin-bottom:12px}
+.panel-title{font-size:12px;font-weight:500;color:var(--color-text-primary);margin-bottom:10px;padding-bottom:8px;border-bottom:0.5px solid var(--color-border-tertiary)}
+.meta-row{display:flex;justify-content:space-between;font-size:11px;padding:3px 0;color:var(--color-text-secondary)}
+.meta-row span:last-child{color:var(--color-text-primary)}
+.ver-row{display:flex;align-items:center;gap:6px;padding:5px 0;border-bottom:0.5px solid var(--color-border-tertiary);font-size:11px}
+.ver-row:last-child{border-bottom:none}
+.ver-num{width:28px;height:20px;border-radius:var(--border-radius-md);background:var(--color-background-secondary);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:500;color:var(--color-text-secondary);flex-shrink:0}
+.ver-num.current{background:#EEEDFE;color:#534AB7}
+.ver-info{flex:1}
+.ver-user{color:var(--color-text-secondary)}
+.restore-btn{font-size:9px;padding:2px 7px;border-radius:var(--border-radius-md);border:0.5px solid var(--color-border-secondary);background:transparent;color:var(--color-text-secondary);cursor:pointer}
+.flow{display:flex;align-items:center;gap:4px;flex-wrap:wrap;margin-top:4px}
+.step{font-size:10px;padding:3px 8px;border-radius:99px;background:var(--color-background-secondary);color:var(--color-text-secondary)}
+.step.done{background:#E1F5EE;color:#0F6E56}
+.step.active{background:#EEEDFE;color:#534AB7;font-weight:500}
+.arrow{font-size:9px;color:var(--color-text-tertiary)}
+</style>
+
+<div class="wrap">
+  <div class="left">
+    <div class="topbar">
+      <h1>Gestión documental</h1>
+      <div style="display:flex;gap:8px">
+        <button class="btn">Filtros</button>
+        <button class="btn primary">+ Nuevo documento</button>
+      </div>
+    </div>
+
+    <div class="tabs">
+      <span class="tab active">Todos</span>
+      <span class="tab">ISO / Ingeniería</span>
+      <span class="tab">Legajos</span>
+      <span class="tab">Presupuestos</span>
+      <span class="tab">Personal</span>
+      <span class="tab">Vehículos</span>
+    </div>
+
+    <div class="card">
+      <table>
+        <thead>
+          <tr>
+            <th>Nombre</th>
+            <th>Categoría</th>
+            <th>Versión</th>
+            <th>Estado</th>
+            <th>Vencimiento</th>
+            <th>Responsable</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr class="selected">
+            <td><strong>Memoria técnica Proyecto Norte</strong></td>
+            <td style="color:var(--color-text-secondary)">ISO / Ing.</td>
+            <td>v3</td>
+            <td><span class="pill ok">Aprobado</span></td>
+            <td style="color:var(--color-text-secondary)">12/2026</td>
+            <td style="color:var(--color-text-secondary)">García, L.</td>
+          </tr>
+          <tr>
+            <td>Especificación técnica válvulas</td>
+            <td style="color:var(--color-text-secondary)">Ingeniería</td>
+            <td>v1</td>
+            <td><span class="pill warn">En revisión</span></td>
+            <td style="color:var(--color-text-secondary)">06/2026</td>
+            <td style="color:var(--color-text-secondary)">Pérez, R.</td>
+          </tr>
+          <tr>
+            <td>Ficha YPF — Proyecto Sur</td>
+            <td style="color:var(--color-text-secondary)">Legajo</td>
+            <td>v2</td>
+            <td><span class="pill ok">Aprobado</span></td>
+            <td style="color:var(--color-text-secondary)">03/2027</td>
+            <td style="color:var(--color-text-secondary)">López, M.</td>
+          </tr>
+          <tr>
+            <td>ART — Rodríguez, Juan</td>
+            <td style="color:var(--color-text-secondary)">Personal</td>
+            <td>v1</td>
+            <td><span class="pill danger">Vencido</span></td>
+            <td style="color:var(--color-text-danger)">01/04/2026</td>
+            <td style="color:var(--color-text-secondary)">RRHH</td>
+          </tr>
+          <tr>
+            <td>Presupuesto PAE — Q2 2026</td>
+            <td style="color:var(--color-text-secondary)">Presupuesto</td>
+            <td>v1</td>
+            <td><span class="pill gray">Borrador</span></td>
+            <td style="color:var(--color-text-secondary)">—</td>
+            <td style="color:var(--color-text-secondary)">Torres, C.</td>
+          </tr>
+          <tr>
+            <td>VTV camioneta AB-123</td>
+            <td style="color:var(--color-text-secondary)">Vehículo</td>
+            <td>v1</td>
+            <td><span class="pill warn">Por vencer</span></td>
+            <td style="color:var(--color-text-warning)">09/05/2026</td>
+            <td style="color:var(--color-text-secondary)">Flota</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="right">
+    <div class="panel-card">
+      <div class="panel-title">Detalle del documento</div>
+      <div class="meta-row"><span>Nombre</span><span>Mem. técnica P.Norte</span></div>
+      <div class="meta-row"><span>Categoría</span><span>ISO / Ingeniería</span></div>
+      <div class="meta-row"><span>Estado</span><span><span class="pill ok">Aprobado</span></span></div>
+      <div class="meta-row"><span>Versión actual</span><span>v3</span></div>
+      <div class="meta-row"><span>Vencimiento</span><span>12/2026</span></div>
+      <div class="meta-row"><span>Responsable</span><span>García, L.</span></div>
+      <div style="margin-top:10px">
+        <div style="font-size:10px;color:var(--color-text-secondary);margin-bottom:5px">Flujo de aprobación</div>
+        <div class="flow">
+          <span class="step done">Borrador</span>
+          <span class="arrow">›</span>
+          <span class="step done">Revisión</span>
+          <span class="arrow">›</span>
+          <span class="step active">Aprobado</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel-card">
+      <div class="panel-title">Historial de versiones</div>
+      <div class="ver-row">
+        <div class="ver-num current">v3</div>
+        <div class="ver-info">
+          <div>Versión actual</div>
+          <div class="ver-user">García · 20/04/2026</div>
+        </div>
+      </div>
+      <div class="ver-row">
+        <div class="ver-num">v2</div>
+        <div class="ver-info">
+          <div>Corrección datos</div>
+          <div class="ver-user">Pérez · 10/04/2026</div>
+        </div>
+        <button class="restore-btn">Restaurar</button>
+      </div>
+      <div class="ver-row">
+        <div class="ver-num">v1</div>
+        <div class="ver-info">
+          <div>Versión inicial</div>
+          <div class="ver-user">García · 01/04/2026</div>
+        </div>
+        <button class="restore-btn">Restaurar</button>
+      </div>
+    </div>
+  </div>
+</div>

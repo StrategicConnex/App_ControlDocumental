@@ -1,0 +1,208 @@
+
+<h2 class="sr-only">Wireframe del Dashboard Operativo de SC Platform</h2>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font-sans)}
+.layout{display:flex;min-height:600px;font-size:14px}
+.sidebar{width:180px;flex-shrink:0;border-right:0.5px solid var(--color-border-tertiary);padding:16px 0;display:flex;flex-direction:column;gap:2px;background:var(--color-background-secondary)}
+.logo{padding:0 16px 16px;font-size:15px;font-weight:500;color:var(--color-text-primary);border-bottom:0.5px solid var(--color-border-tertiary);margin-bottom:8px}
+.logo span{font-size:11px;font-weight:400;color:var(--color-text-secondary);display:block}
+.nav-item{display:flex;align-items:center;gap:8px;padding:7px 16px;color:var(--color-text-secondary);font-size:13px;cursor:pointer;border-radius:0}
+.nav-item.active{background:var(--color-background-primary);color:var(--color-text-primary);font-weight:500;border-left:2px solid #534AB7}
+.nav-dot{width:7px;height:7px;border-radius:50%;background:currentColor;opacity:0.5;flex-shrink:0}
+.nav-item.active .nav-dot{background:#534AB7;opacity:1}
+.main{flex:1;padding:20px;overflow:auto;background:var(--color-background-tertiary)}
+.topbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}
+.topbar h1{font-size:17px;font-weight:500;color:var(--color-text-primary)}
+.topbar small{font-size:12px;color:var(--color-text-secondary)}
+.badge{font-size:11px;padding:3px 10px;border-radius:var(--border-radius-md);background:var(--color-background-success);color:var(--color-text-success);font-weight:500}
+.kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:20px}
+.kpi{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:14px}
+.kpi-label{font-size:11px;color:var(--color-text-secondary);margin-bottom:6px;text-transform:none}
+.kpi-val{font-size:22px;font-weight:500;color:var(--color-text-primary);line-height:1}
+.kpi-sub{font-size:11px;margin-top:4px}
+.kpi-sub.up{color:var(--color-text-success)}
+.kpi-sub.warn{color:var(--color-text-warning)}
+.kpi-sub.danger{color:var(--color-text-danger)}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
+.row3{display:grid;grid-template-columns:2fr 1fr;gap:14px}
+.card{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:14px}
+.card-title{font-size:13px;font-weight:500;color:var(--color-text-primary);margin-bottom:12px;padding-bottom:8px;border-bottom:0.5px solid var(--color-border-tertiary)}
+.doc-row{display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:0.5px solid var(--color-border-tertiary);font-size:12px;color:var(--color-text-primary)}
+.doc-row:last-child{border-bottom:none}
+.doc-name{flex:1;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.doc-cat{font-size:11px;color:var(--color-text-secondary);min-width:60px}
+.pill{font-size:10px;padding:2px 8px;border-radius:99px;font-weight:500;flex-shrink:0}
+.pill.ok{background:var(--color-background-success);color:var(--color-text-success)}
+.pill.warn{background:var(--color-background-warning);color:var(--color-text-warning)}
+.pill.danger{background:var(--color-background-danger);color:var(--color-text-danger)}
+.pill.gray{background:var(--color-background-secondary);color:var(--color-text-secondary)}
+.alert-row{display:flex;gap:10px;align-items:flex-start;padding:7px 0;border-bottom:0.5px solid var(--color-border-tertiary);font-size:12px}
+.alert-row:last-child{border-bottom:none}
+.alert-icon{width:18px;height:18px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;flex-shrink:0;margin-top:1px}
+.alert-icon.warn{background:var(--color-background-warning);color:var(--color-text-warning)}
+.alert-icon.ok{background:var(--color-background-success);color:var(--color-text-success)}
+.alert-icon.info{background:var(--color-background-info);color:var(--color-text-info)}
+.alert-text{color:var(--color-text-primary);line-height:1.4}
+.alert-time{font-size:10px;color:var(--color-text-tertiary);white-space:nowrap;margin-left:auto}
+.bar-wrap{margin-bottom:10px}
+.bar-label{display:flex;justify-content:space-between;font-size:11px;color:var(--color-text-secondary);margin-bottom:3px}
+.bar-track{height:7px;background:var(--color-background-secondary);border-radius:99px;overflow:hidden}
+.bar-fill{height:100%;border-radius:99px}
+.stat-mini-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.stat-mini{background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:10px;text-align:center}
+.stat-mini-val{font-size:18px;font-weight:500;color:var(--color-text-primary)}
+.stat-mini-label{font-size:10px;color:var(--color-text-secondary);margin-top:2px}
+</style>
+
+<div class="layout">
+  <div class="sidebar">
+    <div class="logo">SC Platform<span>v2.0</span></div>
+    <div class="nav-item active"><span class="nav-dot"></span>Dashboard</div>
+    <div class="nav-item"><span class="nav-dot"></span>Documentos</div>
+    <div class="nav-item"><span class="nav-dot"></span>Legajos</div>
+    <div class="nav-item"><span class="nav-dot"></span>Personal</div>
+    <div class="nav-item"><span class="nav-dot"></span>Vehículos</div>
+    <div class="nav-item"><span class="nav-dot"></span>Presupuestos</div>
+    <div class="nav-item"><span class="nav-dot"></span>Alertas</div>
+    <div class="nav-item"><span class="nav-dot"></span>Reportes</div>
+    <div class="nav-item" style="margin-top:auto"><span class="nav-dot"></span>Configuración</div>
+  </div>
+
+  <div class="main">
+    <div class="topbar">
+      <div>
+        <h1>Dashboard operativo</h1>
+        <small>Vista general · Q2 2026</small>
+      </div>
+      <span class="badge">Sistema activo</span>
+    </div>
+
+    <div class="kpi-grid">
+      <div class="kpi">
+        <div class="kpi-label">Documentos vigentes</div>
+        <div class="kpi-val">142</div>
+        <div class="kpi-sub up">+12 este mes</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-label">Por vencer (30 días)</div>
+        <div class="kpi-val">17</div>
+        <div class="kpi-sub warn">8 críticos (&lt;7 días)</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-label">Personal acreditado</div>
+        <div class="kpi-val">84</div>
+        <div class="kpi-sub danger">3 con doc. vencido</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-label">Flota habilitada</div>
+        <div class="kpi-val">29/34</div>
+        <div class="kpi-sub warn">5 en observación</div>
+      </div>
+    </div>
+
+    <div class="row2">
+      <div class="card">
+        <div class="card-title">Documentos recientes</div>
+        <div class="doc-row">
+          <div class="doc-name">Memoria técnica Proyecto Norte</div>
+          <div class="doc-cat">ISO / Ing.</div>
+          <span class="pill ok">Aprobado</span>
+        </div>
+        <div class="doc-row">
+          <div class="doc-name">Ficha YPF — Licitación 2026</div>
+          <div class="doc-cat">Legajo</div>
+          <span class="pill warn">En revisión</span>
+        </div>
+        <div class="doc-row">
+          <div class="doc-name">Seguro flota camionetas</div>
+          <div class="doc-cat">Vehículos</div>
+          <span class="pill danger">Vencido</span>
+        </div>
+        <div class="doc-row">
+          <div class="doc-name">Presupuesto PAE Q2</div>
+          <div class="doc-cat">Presupuesto</div>
+          <span class="pill gray">Borrador</span>
+        </div>
+        <div class="doc-row">
+          <div class="doc-name">ART — González, Martín</div>
+          <div class="doc-cat">Personal</div>
+          <span class="pill warn">Vence en 9 días</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Alertas activas</div>
+        <div class="alert-row">
+          <div class="alert-icon warn">!</div>
+          <div class="alert-text">Seguro flota · vencido sin renovar</div>
+          <div class="alert-time">Hoy</div>
+        </div>
+        <div class="alert-row">
+          <div class="alert-icon warn">!</div>
+          <div class="alert-text">ART González · vence en 9 días</div>
+          <div class="alert-time">Hoy</div>
+        </div>
+        <div class="alert-row">
+          <div class="alert-icon ok">✓</div>
+          <div class="alert-text">Ficha Proyecto Norte aprobada</div>
+          <div class="alert-time">Ayer</div>
+        </div>
+        <div class="alert-row">
+          <div class="alert-icon info">i</div>
+          <div class="alert-text">Nuevo reporte de auditoría disponible</div>
+          <div class="alert-time">Ayer</div>
+        </div>
+        <div class="alert-row">
+          <div class="alert-icon warn">!</div>
+          <div class="alert-text">VTV camioneta patente AB 123 · 15 días</div>
+          <div class="alert-time">Hace 2d</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="row3">
+      <div class="card">
+        <div class="card-title">Estado de legajos por operadora</div>
+        <div class="bar-wrap">
+          <div class="bar-label"><span>YPF</span><span>8 / 10 aprobados</span></div>
+          <div class="bar-track"><div class="bar-fill" style="width:80%;background:#1D9E75"></div></div>
+        </div>
+        <div class="bar-wrap">
+          <div class="bar-label"><span>PAE</span><span>5 / 8 aprobados</span></div>
+          <div class="bar-track"><div class="bar-fill" style="width:62%;background:#EF9F27"></div></div>
+        </div>
+        <div class="bar-wrap">
+          <div class="bar-label"><span>Vista</span><span>3 / 5 aprobados</span></div>
+          <div class="bar-track"><div class="bar-fill" style="width:60%;background:#EF9F27"></div></div>
+        </div>
+        <div class="bar-wrap">
+          <div class="bar-label"><span>Chevron</span><span>6 / 6 aprobados</span></div>
+          <div class="bar-track"><div class="bar-fill" style="width:100%;background:#1D9E75"></div></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Resumen de acreditación</div>
+        <div class="stat-mini-grid">
+          <div class="stat-mini">
+            <div class="stat-mini-val" style="color:var(--color-text-success)">81</div>
+            <div class="stat-mini-label">Personal vigente</div>
+          </div>
+          <div class="stat-mini">
+            <div class="stat-mini-val" style="color:var(--color-text-danger)">3</div>
+            <div class="stat-mini-label">Con doc. vencido</div>
+          </div>
+          <div class="stat-mini">
+            <div class="stat-mini-val" style="color:var(--color-text-success)">29</div>
+            <div class="stat-mini-label">Vehículos ok</div>
+          </div>
+          <div class="stat-mini">
+            <div class="stat-mini-val" style="color:var(--color-text-warning)">5</div>
+            <div class="stat-mini-label">En observación</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

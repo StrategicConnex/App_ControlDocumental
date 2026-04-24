@@ -1,0 +1,1 @@
+necesito que desarrolles la aplicación especificada en el documento srs_gestion_documental.md utilizando como diseño de partida la imagen Diseño_UX_1.png, Diseño_UX_2.png, Diseño_UX_3.png

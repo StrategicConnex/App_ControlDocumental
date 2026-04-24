@@ -1,0 +1,182 @@
+
+<h2 class="sr-only">Wireframe del módulo de Gestión de Legajos de SC Platform</h2>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+.wrap{font-family:var(--font-sans);font-size:14px;padding:20px;background:var(--color-background-tertiary);min-height:500px}
+.topbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px}
+.topbar h1{font-size:17px;font-weight:500;color:var(--color-text-primary)}
+.btn{font-size:12px;padding:6px 14px;border-radius:var(--border-radius-md);border:0.5px solid var(--color-border-secondary);background:var(--color-background-primary);color:var(--color-text-primary);cursor:pointer}
+.btn.primary{background:#534AB7;color:#fff;border-color:#534AB7}
+.filters{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap}
+.filter-pill{font-size:12px;padding:4px 12px;border-radius:99px;border:0.5px solid var(--color-border-secondary);background:var(--color-background-primary);color:var(--color-text-secondary);cursor:pointer}
+.filter-pill.active{background:#EEEDFE;color:#534AB7;border-color:#AFA9EC}
+.search{flex:1;max-width:220px;font-size:12px;padding:5px 10px;border-radius:var(--border-radius-md);border:0.5px solid var(--color-border-secondary);background:var(--color-background-primary);color:var(--color-text-primary)}
+.card{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);overflow:hidden;margin-bottom:14px}
+table{width:100%;border-collapse:collapse;font-size:12px}
+thead tr{background:var(--color-background-secondary)}
+thead th{text-align:left;padding:9px 12px;font-size:11px;font-weight:500;color:var(--color-text-secondary);border-bottom:0.5px solid var(--color-border-tertiary)}
+tbody tr{border-bottom:0.5px solid var(--color-border-tertiary)}
+tbody tr:last-child{border-bottom:none}
+tbody td{padding:10px 12px;color:var(--color-text-primary);vertical-align:middle}
+.op-badge{font-size:10px;padding:2px 8px;border-radius:var(--border-radius-md);font-weight:500}
+.op-ypf{background:#E6F1FB;color:#185FA5}
+.op-pae{background:#EAF3DE;color:#3B6D11}
+.op-vis{background:#FAEEDA;color:#854F0B}
+.op-chv{background:#FBEAF0;color:#993556}
+.pill{font-size:10px;padding:2px 8px;border-radius:99px;font-weight:500}
+.pill.ok{background:var(--color-background-success);color:var(--color-text-success)}
+.pill.warn{background:var(--color-background-warning);color:var(--color-text-warning)}
+.pill.danger{background:var(--color-background-danger);color:var(--color-text-danger)}
+.pill.gray{background:var(--color-background-secondary);color:var(--color-text-secondary)}
+.pill.info{background:var(--color-background-info);color:var(--color-text-info)}
+.progress-wrap{display:flex;align-items:center;gap:6px}
+.progress-track{flex:1;height:5px;background:var(--color-background-secondary);border-radius:99px;overflow:hidden}
+.progress-fill{height:100%;border-radius:99px}
+.progress-pct{font-size:10px;color:var(--color-text-secondary);min-width:28px;text-align:right}
+.actions{display:flex;gap:6px}
+.action-btn{font-size:10px;padding:3px 9px;border-radius:var(--border-radius-md);border:0.5px solid var(--color-border-secondary);background:transparent;color:var(--color-text-secondary);cursor:pointer}
+.detail-panel{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:16px}
+.detail-title{font-size:13px;font-weight:500;color:var(--color-text-primary);margin-bottom:12px;padding-bottom:8px;border-bottom:0.5px solid var(--color-border-tertiary);display:flex;justify-content:space-between;align-items:center}
+.doc-check{display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:0.5px solid var(--color-border-tertiary);font-size:12px;color:var(--color-text-primary)}
+.doc-check:last-child{border-bottom:none}
+.check-icon{width:16px;height:16px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;flex-shrink:0}
+.check-icon.ok{background:var(--color-background-success);color:var(--color-text-success)}
+.check-icon.warn{background:var(--color-background-warning);color:var(--color-text-warning)}
+.check-icon.miss{background:var(--color-background-danger);color:var(--color-text-danger)}
+.doc-exp{margin-left:auto;font-size:10px;color:var(--color-text-secondary)}
+</style>
+
+<div class="wrap">
+  <div class="topbar">
+    <h1>Gestión de legajos</h1>
+    <div style="display:flex;gap:8px">
+      <button class="btn">Exportar</button>
+      <button class="btn primary">+ Nuevo legajo</button>
+    </div>
+  </div>
+
+  <div class="filters">
+    <input class="search" type="text" placeholder="Buscar proyecto o empresa..." />
+    <span class="filter-pill active">Todos</span>
+    <span class="filter-pill">YPF</span>
+    <span class="filter-pill">PAE</span>
+    <span class="filter-pill">Vista</span>
+    <span class="filter-pill">Chevron</span>
+    <span class="filter-pill">Aprobados</span>
+    <span class="filter-pill">En proceso</span>
+  </div>
+
+  <div class="card">
+    <table>
+      <thead>
+        <tr>
+          <th>Proyecto</th>
+          <th>Operadora</th>
+          <th>Estado</th>
+          <th>Completitud</th>
+          <th>Actualización</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Proyecto Norte — Licitación 2026</strong></td>
+          <td><span class="op-badge op-ypf">YPF</span></td>
+          <td><span class="pill ok">Aprobado</span></td>
+          <td>
+            <div class="progress-wrap">
+              <div class="progress-track"><div class="progress-fill" style="width:100%;background:#1D9E75"></div></div>
+              <span class="progress-pct">100%</span>
+            </div>
+          </td>
+          <td style="color:var(--color-text-secondary)">Hoy</td>
+          <td><div class="actions"><button class="action-btn">Ver</button><button class="action-btn">Historial</button></div></td>
+        </tr>
+        <tr>
+          <td><strong>Mantenimiento Sur — Zona Neuquén</strong></td>
+          <td><span class="op-badge op-pae">PAE</span></td>
+          <td><span class="pill warn">En revisión</span></td>
+          <td>
+            <div class="progress-wrap">
+              <div class="progress-track"><div class="progress-fill" style="width:75%;background:#EF9F27"></div></div>
+              <span class="progress-pct">75%</span>
+            </div>
+          </td>
+          <td style="color:var(--color-text-secondary)">Ayer</td>
+          <td><div class="actions"><button class="action-btn">Ver</button><button class="action-btn">Completar</button></div></td>
+        </tr>
+        <tr>
+          <td><strong>Operación Fluvial — Lote 26</strong></td>
+          <td><span class="op-badge op-vis">Vista</span></td>
+          <td><span class="pill info">En proceso</span></td>
+          <td>
+            <div class="progress-wrap">
+              <div class="progress-track"><div class="progress-fill" style="width:50%;background:#378ADD"></div></div>
+              <span class="progress-pct">50%</span>
+            </div>
+          </td>
+          <td style="color:var(--color-text-secondary)">Hace 3d</td>
+          <td><div class="actions"><button class="action-btn">Ver</button><button class="action-btn">Completar</button></div></td>
+        </tr>
+        <tr>
+          <td><strong>Logística Vaca Muerta — Q2</strong></td>
+          <td><span class="op-badge op-chv">Chevron</span></td>
+          <td><span class="pill ok">Aprobado</span></td>
+          <td>
+            <div class="progress-wrap">
+              <div class="progress-track"><div class="progress-fill" style="width:100%;background:#1D9E75"></div></div>
+              <span class="progress-pct">100%</span>
+            </div>
+          </td>
+          <td style="color:var(--color-text-secondary)">Hace 5d</td>
+          <td><div class="actions"><button class="action-btn">Ver</button><button class="action-btn">Historial</button></div></td>
+        </tr>
+        <tr>
+          <td><strong>Servicio Técnico Integral — Añelo</strong></td>
+          <td><span class="op-badge op-ypf">YPF</span></td>
+          <td><span class="pill danger">Observado</span></td>
+          <td>
+            <div class="progress-wrap">
+              <div class="progress-track"><div class="progress-fill" style="width:88%;background:#E24B4A"></div></div>
+              <span class="progress-pct">88%</span>
+            </div>
+          </td>
+          <td style="color:var(--color-text-secondary)">Hace 7d</td>
+          <td><div class="actions"><button class="action-btn">Ver</button><button class="action-btn">Corregir</button></div></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="detail-panel">
+    <div class="detail-title">
+      <span>Mantenimiento Sur — checklist de documentos requeridos (PAE)</span>
+      <span class="pill warn">En revisión</span>
+    </div>
+    <div class="doc-check">
+      <div class="check-icon ok">✓</div>
+      <span>Habilitación municipal vigente</span>
+      <span class="doc-exp">Vence: 12/2026</span>
+    </div>
+    <div class="doc-check">
+      <div class="check-icon ok">✓</div>
+      <span>Póliza de seguro de responsabilidad civil</span>
+      <span class="doc-exp">Vence: 08/2026</span>
+    </div>
+    <div class="doc-check">
+      <div class="check-icon ok">✓</div>
+      <span>Nómina de personal acreditado</span>
+      <span class="doc-exp">Actualizado</span>
+    </div>
+    <div class="doc-check">
+      <div class="check-icon warn">!</div>
+      <span>Certificado ISO 45001 — vence pronto</span>
+      <span class="doc-exp" style="color:var(--color-text-warning)">Vence: 18/05/2026</span>
+    </div>
+    <div class="doc-check">
+      <div class="check-icon miss">✗</div>
+      <span style="color:var(--color-text-danger)">Plan de contingencia ambiental — faltante</span>
+      <span class="doc-exp" style="color:var(--color-text-danger)">Requerido</span>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,177 @@
+
+<h2 class="sr-only">Wireframe del módulo de Acreditación de Personal de SC Platform</h2>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+.wrap{font-family:var(--font-sans);font-size:14px;background:var(--color-background-tertiary);min-height:520px;padding:20px}
+.topbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
+.topbar h1{font-size:17px;font-weight:500;color:var(--color-text-primary)}
+.btn{font-size:12px;padding:6px 14px;border-radius:var(--border-radius-md);border:0.5px solid var(--color-border-secondary);background:var(--color-background-primary);color:var(--color-text-primary);cursor:pointer}
+.btn.primary{background:#534AB7;color:#fff;border-color:#534AB7}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
+.row3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px}
+.kpi{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:14px;text-align:center}
+.kpi-val{font-size:24px;font-weight:500;color:var(--color-text-primary)}
+.kpi-label{font-size:11px;color:var(--color-text-secondary);margin-top:2px}
+.card{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);overflow:hidden}
+.card-head{padding:10px 14px;font-size:13px;font-weight:500;color:var(--color-text-primary);border-bottom:0.5px solid var(--color-border-tertiary);display:flex;justify-content:space-between;align-items:center}
+.person-row{display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:0.5px solid var(--color-border-tertiary)}
+.person-row:last-child{border-bottom:none}
+.avatar{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:500;flex-shrink:0}
+.avatar.ok{background:#E1F5EE;color:#0F6E56}
+.avatar.warn{background:#FAEEDA;color:#854F0B}
+.avatar.danger{background:#FCEBEB;color:#A32D2D}
+.person-info{flex:1;min-width:0}
+.person-name{font-size:13px;font-weight:500;color:var(--color-text-primary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.person-role{font-size:11px;color:var(--color-text-secondary)}
+.person-docs{display:flex;gap:4px;flex-wrap:wrap}
+.doc-tag{font-size:10px;padding:2px 7px;border-radius:99px}
+.doc-tag.ok{background:var(--color-background-success);color:var(--color-text-success)}
+.doc-tag.warn{background:var(--color-background-warning);color:var(--color-text-warning)}
+.doc-tag.miss{background:var(--color-background-danger);color:var(--color-text-danger)}
+.person-status{flex-shrink:0}
+.pill{font-size:10px;padding:2px 8px;border-radius:99px;font-weight:500}
+.pill.ok{background:var(--color-background-success);color:var(--color-text-success)}
+.pill.warn{background:var(--color-background-warning);color:var(--color-text-warning)}
+.pill.danger{background:var(--color-background-danger);color:var(--color-text-danger)}
+.vehicle-row{display:flex;align-items:center;gap:10px;padding:9px 14px;border-bottom:0.5px solid var(--color-border-tertiary);font-size:12px}
+.vehicle-row:last-child{border-bottom:none}
+.plate{font-size:11px;font-weight:500;padding:3px 8px;border-radius:var(--border-radius-md);border:0.5px solid var(--color-border-secondary);background:var(--color-background-secondary);color:var(--color-text-primary);font-family:var(--font-mono)}
+.veh-info{flex:1;color:var(--color-text-secondary)}
+</style>
+
+<div class="wrap">
+  <div class="topbar">
+    <h1>Acreditación de personal y vehículos</h1>
+    <div style="display:flex;gap:8px">
+      <button class="btn">Exportar nómina</button>
+      <button class="btn primary">+ Agregar persona</button>
+    </div>
+  </div>
+
+  <div class="row3">
+    <div class="kpi">
+      <div class="kpi-val" style="color:var(--color-text-success)">81</div>
+      <div class="kpi-label">Personal vigente</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-val" style="color:var(--color-text-warning)">6</div>
+      <div class="kpi-label">Con doc. por vencer</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-val" style="color:var(--color-text-danger)">3</div>
+      <div class="kpi-label">Con doc. vencido</div>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="card">
+      <div class="card-head">
+        Personal
+        <span style="font-size:11px;font-weight:400;color:var(--color-text-secondary)">90 personas</span>
+      </div>
+      <div class="person-row">
+        <div class="avatar ok">LG</div>
+        <div class="person-info">
+          <div class="person-name">García, Laura</div>
+          <div class="person-role">Técnica — YPF / PAE</div>
+          <div class="person-docs" style="margin-top:4px">
+            <span class="doc-tag ok">ART</span>
+            <span class="doc-tag ok">Inducción</span>
+            <span class="doc-tag ok">Seguro</span>
+          </div>
+        </div>
+        <div class="person-status"><span class="pill ok">Vigente</span></div>
+      </div>
+      <div class="person-row">
+        <div class="avatar warn">JR</div>
+        <div class="person-info">
+          <div class="person-name">Rodríguez, Juan</div>
+          <div class="person-role">Operador — YPF</div>
+          <div class="person-docs" style="margin-top:4px">
+            <span class="doc-tag ok">ART</span>
+            <span class="doc-tag warn">Inducción · 9d</span>
+            <span class="doc-tag ok">Seguro</span>
+          </div>
+        </div>
+        <div class="person-status"><span class="pill warn">Por vencer</span></div>
+      </div>
+      <div class="person-row">
+        <div class="avatar danger">MP</div>
+        <div class="person-info">
+          <div class="person-name">Pérez, Marcos</div>
+          <div class="person-role">Conductor — Vista</div>
+          <div class="person-docs" style="margin-top:4px">
+            <span class="doc-tag miss">ART vencido</span>
+            <span class="doc-tag ok">Inducción</span>
+            <span class="doc-tag ok">Seguro</span>
+          </div>
+        </div>
+        <div class="person-status"><span class="pill danger">Bloqueado</span></div>
+      </div>
+      <div class="person-row">
+        <div class="avatar ok">CT</div>
+        <div class="person-info">
+          <div class="person-name">Torres, Cecilia</div>
+          <div class="person-role">Supervisora — Chevron</div>
+          <div class="person-docs" style="margin-top:4px">
+            <span class="doc-tag ok">ART</span>
+            <span class="doc-tag ok">Inducción</span>
+            <span class="doc-tag ok">Libreta</span>
+          </div>
+        </div>
+        <div class="person-status"><span class="pill ok">Vigente</span></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head">
+        Flota / Vehículos
+        <span style="font-size:11px;font-weight:400;color:var(--color-text-secondary)">34 vehículos</span>
+      </div>
+      <div class="vehicle-row">
+        <span class="plate">AB 123 XY</span>
+        <div class="veh-info">Toyota Hilux · Camioneta</div>
+        <div style="display:flex;gap:4px">
+          <span class="doc-tag ok" style="font-size:10px;padding:2px 7px;border-radius:99px">Seguro</span>
+          <span class="doc-tag warn" style="font-size:10px;padding:2px 7px;border-radius:99px">VTV 15d</span>
+        </div>
+        <span class="pill warn">Observado</span>
+      </div>
+      <div class="vehicle-row">
+        <span class="plate">CD 456 ZW</span>
+        <div class="veh-info">Ford Ranger · Camioneta</div>
+        <div style="display:flex;gap:4px">
+          <span class="doc-tag ok" style="font-size:10px;padding:2px 7px;border-radius:99px">Seguro</span>
+          <span class="doc-tag ok" style="font-size:10px;padding:2px 7px;border-radius:99px">VTV</span>
+        </div>
+        <span class="pill ok">Habilitado</span>
+      </div>
+      <div class="vehicle-row">
+        <span class="plate">EF 789 UV</span>
+        <div class="veh-info">Mercedes Sprinter · Utilitario</div>
+        <div style="display:flex;gap:4px">
+          <span class="doc-tag miss" style="font-size:10px;padding:2px 7px;border-radius:99px">Seguro vencido</span>
+        </div>
+        <span class="pill danger">Bloqueado</span>
+      </div>
+      <div class="vehicle-row">
+        <span class="plate">GH 012 ST</span>
+        <div class="veh-info">Caterpillar 330 · Grúa</div>
+        <div style="display:flex;gap:4px">
+          <span class="doc-tag ok" style="font-size:10px;padding:2px 7px;border-radius:99px">Seguro</span>
+          <span class="doc-tag ok" style="font-size:10px;padding:2px 7px;border-radius:99px">Habilitación</span>
+        </div>
+        <span class="pill ok">Habilitado</span>
+      </div>
+      <div class="vehicle-row">
+        <span class="plate">IJ 345 QR</span>
+        <div class="veh-info">Volvo FH · Camión</div>
+        <div style="display:flex;gap:4px">
+          <span class="doc-tag ok" style="font-size:10px;padding:2px 7px;border-radius:99px">Seguro</span>
+          <span class="doc-tag warn" style="font-size:10px;padding:2px 7px;border-radius:99px">VTV 22d</span>
+        </div>
+        <span class="pill warn">Observado</span>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,9 +1,10 @@
 'use client'
 
 import { useState } from 'react'
+import Image from 'next/image'
 import { createClient } from '@/utils/supabase/client'
 import { useRouter } from 'next/navigation'
-import { Shield, Lock, Mail, AlertCircle } from 'lucide-react'
+import { Lock, Mail, AlertCircle } from 'lucide-react'
 
 export default function LoginPage() {
   const [email, setEmail] = useState('')
@@ -28,8 +29,9 @@ export default function LoginPage() {
 
       router.push('/')
       router.refresh()
-    } catch (err: any) {
-      setError(err.message || 'Error al iniciar sesión')
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Error al iniciar sesión'
+      setError(message)
       setLoading(false)
     }
   }
@@ -50,10 +52,13 @@ export default function LoginPage() {
           
           <div className="text-center mb-10">
             <div className="inline-flex items-center justify-center mb-6">
-              <img 
+              <Image 
                 src="/Image/Logosc.png" 
                 alt="Strategic Connex Logo" 
+                width={80}
+                height={80}
                 className="h-20 w-auto object-contain drop-shadow-[0_0_15px_rgba(168,85,247,0.3)]"
+                priority
               />
             </div>
             <h1 className="text-3xl font-bold tracking-tight text-white mb-2">Strategic Connex</h1>

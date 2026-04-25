@@ -11,7 +11,20 @@ import { cn } from "@/lib/utils";
 export default function BudgetDetailPage({ params }: { params: { id: string } }) {
   const router = useRouter();
   const supabase = createClient();
-  const [budget, setBudget] = useState<any>(null);
+  const [budget, setBudget] = useState<{
+    id: string;
+    title: string;
+    status: string;
+    created_at: string;
+    total_amount: number;
+    budget_items: {
+      id: string;
+      description: string;
+      quantity: number;
+      unit_price: number;
+      total: number;
+    }[];
+  } | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -96,7 +109,7 @@ export default function BudgetDetailPage({ params }: { params: { id: string } })
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-50">
-                  {budget.budget_items?.map((item: any) => (
+                  {budget.budget_items?.map((item) => (
                     <tr key={item.id}>
                       <td className="py-4 text-sm text-gray-900">{item.description}</td>
                       <td className="py-4 text-sm text-gray-600 text-center">{item.quantity}</td>

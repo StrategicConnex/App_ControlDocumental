@@ -1,5 +1,5 @@
 import { cn } from "@/lib/utils";
-import { Search, Filter, MoreVertical, FileText, ChevronDown } from "lucide-react";
+import { Search, Filter, MoreVertical, FileText } from "lucide-react";
 import Link from "next/link";
 
 type DocumentStatus = 'borrador' | 'revision' | 'aprobado' | 'vencido' | 'por_vencer';

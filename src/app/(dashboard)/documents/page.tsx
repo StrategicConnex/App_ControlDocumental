@@ -6,13 +6,9 @@ export const metadata = {
   title: "Documentos | BordUp",
 };
 
-export default async function DocumentsPage({
-  searchParams,
-}: {
-  searchParams: Promise<{ [key: string]: string | string[] | undefined }>
-}) {
+export default async function DocumentsPage() {
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  await supabase.auth.getUser();
   
   // En un caso real, obtendríamos el orgId desde el perfil del usuario
   // const { data: profile } = await supabase.from('profiles').select('org_id').eq('id', user?.id).single();
@@ -27,7 +23,17 @@ export default async function DocumentsPage({
   }
 
   // Transformar los datos de Supabase a la estructura que espera el componente
-  const formattedDocs = documents.map((doc: any) => ({
+  const formattedDocs = documents.map((doc: {
+    id: string;
+    title: string;
+    code: string;
+    category: string;
+    status: 'borrador' | 'revision' | 'aprobado' | 'vencido' | 'por_vencer';
+    current_version: number;
+    expiry_date: string | null;
+    profiles: { first_name: string; last_name: string } | null;
+    created_at: string;
+  }) => ({
     id: doc.id,
     title: doc.title,
     code: doc.code,

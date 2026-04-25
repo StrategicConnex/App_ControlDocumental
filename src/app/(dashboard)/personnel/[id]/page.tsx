@@ -11,7 +11,23 @@ export const metadata = {
 export default async function PersonnelDetailPage({ params }: { params: { id: string } }) {
   const supabase = await createClient();
   
-  let person: any = null;
+  let person: {
+    first_name: string;
+    last_name: string;
+    status: string;
+    job_title: string;
+    cuil: string;
+    personnel_docs: {
+      id: string;
+      status: string;
+      document_id: string;
+      expiry_date: string;
+      documents?: {
+        title: string;
+        status: string;
+      };
+    }[];
+  } | null = null;
   try {
     person = await getPersonnelById(supabase, params.id);
   } catch (e) {
@@ -93,7 +109,7 @@ export default async function PersonnelDetailPage({ params }: { params: { id: st
             
             <div className="space-y-4">
               {person.personnel_docs?.length > 0 ? (
-                person.personnel_docs.map((pdoc: any) => (
+                person.personnel_docs.map((pdoc) => (
                   <div key={pdoc.id} className="flex items-center justify-between p-4 rounded-xl border border-gray-100 hover:bg-gray-50 transition-colors">
                     <div className="flex items-center gap-3">
                       {getStatusIcon(pdoc.status || pdoc.documents?.status)}

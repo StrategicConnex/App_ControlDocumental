@@ -44,7 +44,7 @@ export default async function Dashboard() {
   const conversionRate = budgetsData.length > 0 ? Math.round((acceptedBudgets.length / budgetsData.length) * 100) : 0;
 
   // Unified Alerts Feed
-  const alerts: any[] = [];
+  const alerts: { id: string; type: 'document' | 'personnel' | 'vehicle'; title: string; status: string; link: string }[] = [];
   docsData.forEach(d => { if (d.status === 'por_vencer' || d.status === 'vencido') alerts.push({ id: `doc-${d.id}`, type: 'document', title: d.title, status: d.status, link: `/documents/${d.id}` }); });
   personnelData.forEach(p => { if (p.status === 'por_vencer' || p.status === 'vencido' || p.status === 'bloqueado') alerts.push({ id: `per-${p.id}`, type: 'personnel', title: `${p.first_name} ${p.last_name}`, status: p.status, link: `/personnel/${p.id}` }); });
   vehiclesData.forEach(v => { if (v.status === 'por_vencer' || v.status === 'vencido' || v.status === 'bloqueado') alerts.push({ id: `veh-${v.id}`, type: 'vehicle', title: `${v.license_plate} - ${v.brand}`, status: v.status, link: `/vehicles/${v.id}` }); });

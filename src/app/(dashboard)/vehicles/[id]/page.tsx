@@ -11,7 +11,24 @@ export const metadata = {
 export default async function VehicleDetailPage({ params }: { params: { id: string } }) {
   const supabase = await createClient();
   
-  let vehicle: any = null;
+  let vehicle: {
+    license_plate: string;
+    brand: string;
+    model: string;
+    type: string;
+    status: string;
+    year?: number;
+    vehicle_docs: {
+      id: string;
+      status: string;
+      document_id: string;
+      expiry_date: string;
+      documents?: {
+        title: string;
+        status: string;
+      };
+    }[];
+  } | null = null;
   try {
     vehicle = await getVehicleById(supabase, params.id);
   } catch (e) {
@@ -93,7 +110,7 @@ export default async function VehicleDetailPage({ params }: { params: { id: stri
             
             <div className="space-y-4">
               {vehicle.vehicle_docs?.length > 0 ? (
-                vehicle.vehicle_docs.map((vdoc: any) => (
+                vehicle.vehicle_docs.map((vdoc) => (
                   <div key={vdoc.id} className="flex items-center justify-between p-4 rounded-xl border border-gray-100 hover:bg-gray-50 transition-colors">
                     <div className="flex items-center gap-3">
                       {getStatusIcon(vdoc.status || vdoc.documents?.status)}

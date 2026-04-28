@@ -33,6 +33,7 @@ export default async function DocumentsPage() {
     expiry_date: string | null;
     profiles: { first_name: string; last_name: string } | null;
     created_at: string;
+    approvals?: { count: number }[];
   }) => ({
     id: doc.id,
     title: doc.title,

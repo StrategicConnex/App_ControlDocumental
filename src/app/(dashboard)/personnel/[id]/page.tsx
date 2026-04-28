@@ -112,7 +112,7 @@ export default async function PersonnelDetailPage({ params }: { params: { id: st
                 person.personnel_docs.map((pdoc) => (
                   <div key={pdoc.id} className="flex items-center justify-between p-4 rounded-xl border border-gray-100 hover:bg-gray-50 transition-colors">
                     <div className="flex items-center gap-3">
-                      {getStatusIcon(pdoc.status || pdoc.documents?.status)}
+                      {getStatusIcon(pdoc.status || pdoc.documents?.status || 'borrador')}
                       <div>
                         <p className="text-sm font-semibold text-gray-900">
                           {pdoc.documents?.title || 'Documento Referenciado'}

@@ -14,6 +14,7 @@ interface DocumentProps {
   expiryDate: string | null;
   uploadedBy: { first_name: string; last_name: string } | null;
   createdAt: string;
+  approvalCount?: number;
 }
 
 const statusConfig: Record<DocumentStatus, { color: string; bg: string; label: string }> = {
@@ -92,8 +93,28 @@ export default function DocumentTable({ documents }: { documents: DocumentProps[
                       <span className="text-sm text-gray-600">{doc.category}</span>
                     </td>
                     <td className="py-3 px-4">
-                      <div className={cn("inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold", config.bg, config.color)}>
-                        {config.label}
+                      <div className="flex flex-col gap-1">
+                        <div className={cn("inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold w-fit", config.bg, config.color)}>
+                          {config.label}
+                        </div>
+                        {doc.status === 'revision' && (
+                          <div className="flex items-center gap-1.5 ml-1 mt-1">
+                            <div className="flex gap-0.5">
+                              {[1, 2].map((step) => (
+                                <div 
+                                  key={step}
+                                  className={cn(
+                                    "w-1.5 h-1.5 rounded-full",
+                                    (doc.approvalCount || 0) >= step ? "bg-blue-500" : "bg-blue-100"
+                                  )}
+                                />
+                              ))}
+                            </div>
+                            <span className="text-[10px] font-bold text-blue-500">
+                              {doc.approvalCount || 0}/2
+                            </span>
+                          </div>
+                        )}
                       </div>
                     </td>
                     <td className="py-3 px-4">

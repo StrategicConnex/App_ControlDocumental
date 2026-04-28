@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
+import QueryProvider from "@/components/providers/QueryProvider";
+import OfflineProvider from "@/components/providers/OfflineProvider";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -16,8 +18,15 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="es">
+      <head>
+        <link rel="manifest" href="/manifest.json" />
+        <meta name="theme-color" content="#7c3aed" />
+      </head>
       <body className={inter.className}>
-        {children}
+        <QueryProvider>
+          <OfflineProvider />
+          {children}
+        </QueryProvider>
       </body>
     </html>
   );

@@ -42,6 +42,7 @@ export default function BudgetDetailPage({ params }: { params: { id: string } })
   }, [params.id, supabase]);
 
   const handleStatusChange = async (newStatus: string) => {
+    if (!budget) return;
     try {
       await updateBudgetStatus(supabase, params.id, newStatus);
       setBudget({ ...budget, status: newStatus });

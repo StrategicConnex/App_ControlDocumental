@@ -113,7 +113,7 @@ export default async function VehicleDetailPage({ params }: { params: { id: stri
                 vehicle.vehicle_docs.map((vdoc) => (
                   <div key={vdoc.id} className="flex items-center justify-between p-4 rounded-xl border border-gray-100 hover:bg-gray-50 transition-colors">
                     <div className="flex items-center gap-3">
-                      {getStatusIcon(vdoc.status || vdoc.documents?.status)}
+                      {getStatusIcon(vdoc.status || vdoc.documents?.status || 'borrador')}
                       <div>
                         <p className="text-sm font-semibold text-gray-900">
                           {vdoc.documents?.title || 'Documento Referenciado'}

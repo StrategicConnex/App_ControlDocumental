@@ -1,36 +1,33 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# SC Platform — Control Documental Operativo
 
-## Getting Started
+Plataforma enterprise de gestión documental estratégica diseñada para el sector Oil & Gas.
 
-First, run the development server:
+## 🚀 Estado de Implementación (vs SRS v3.1)
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+- [x] **Core Documental**: Carga y estados (Borrador/Revisión/Aprobado).
+- [x] **Control de Versiones**: Soporte para Major/Minor y Rollback (RF-02).
+- [x] **Quórum de Aprobación**: Mínimo 2 aprobadores requeridos para estado final (RF-03).
+- [x] **Firma Digital**: Hashing SHA-256 e integridad de firma (RNF-30).
+- [x] **Multi-tenancy**: RLS y aislamiento por organización (RNF-13).
+- [x] **Legajos Operadoras**: Validación específica para YPF, PAE, Vista, Chevron (RF-10).
+- [x] **Dashboard Inteligente**: KPIs consolidados y alertas (RF-21).
+- [wip] **Offline Mode**: Base lógica para sincronización (RNF-29).
+- [wip] **Reporting**: Esquema de reportes programados (RNF-31).
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 🛠️ Stack Tecnológico
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+- **Frontend**: Next.js 16 + React 19 + Tailwind CSS 4
+- **Backend**: Supabase (PostgreSQL + Auth + Storage)
+- **Estado**: React Query
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## 📋 Requerimientos
 
-## Learn More
+Para ejecutar el proyecto localmente:
 
-To learn more about Next.js, take a look at the following resources:
+1. Clonar el repositorio
+2. Instalar dependencias: `npm install`
+3. Configurar variables de entorno en `.env.local`
+4. Ejecutar: `npm run dev`
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+---
+*Este proyecto sigue los lineamientos de la Especificación de Requerimientos de Software (SRS) v3.1.*

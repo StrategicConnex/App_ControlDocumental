@@ -3,7 +3,7 @@ import { getDocuments } from "@/lib/services/documents";
 import DocumentTable from "@/components/documents/DocumentTable";
 
 export const metadata = {
-  title: "Documentos | BordUp",
+  title: "Documentos | Strategic Connex",
 };
 
 export default async function DocumentsPage() {
@@ -43,6 +43,7 @@ export default async function DocumentsPage() {
     expiryDate: doc.expiry_date,
     uploadedBy: doc.profiles,
     createdAt: doc.created_at,
+    approvalCount: doc.approvals?.[0]?.count || 0,
   }));
 
   return (

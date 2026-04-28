@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { cn } from "@/lib/utils";
+import ComplianceDashboard from "@/components/ui/ComplianceDashboard";
 
 export const metadata = {
   title: "Dashboard | Strategic Connex",
@@ -23,6 +24,11 @@ export const metadata = {
 export default async function Dashboard() {
   const supabase = await createClient();
   
+  // Get User Profile for org_id
+  const { data: { user } } = await supabase.auth.getUser();
+  const { data: profile } = user ? await supabase.from('profiles').select('org_id').eq('id', user.id).single() : { data: null };
+  const orgId = profile?.org_id;
+
   // Fetch all data in parallel
   const [docsData, personnelData, vehiclesData, budgetsData] = await Promise.all([
     getDocuments(supabase).catch(() => []),
@@ -30,6 +36,7 @@ export default async function Dashboard() {
     getVehicles(supabase).catch(() => []),
     getBudgets(supabase).catch(() => [])
   ]);
+
 
   // Aggregate Metrics
   const approvedDocs = docsData.filter(d => d.status === 'aprobado' || d.status === 'vigente').length;
@@ -134,16 +141,17 @@ export default async function Dashboard() {
           </section>
         </div>
         <div className="lg:col-span-1 space-y-6">
+          <ComplianceDashboard orgId={orgId} />
           <section className="bg-white p-6 rounded-[2rem] card-shadow border border-gray-100">
             <h3 className="font-bold text-gray-900 mb-6">Accesos Rápidos</h3>
             <div className="space-y-3">
               {[
-                { href: "/documents", color: "indigo", icon: FileText, title: "Documentos", sub: "Gestionar repositorio" },
-                { href: "/personnel", color: "purple", icon: Users, title: "Acreditación", sub: "Personal y Flota" },
-                { href: "/budgets", color: "emerald", icon: TrendingUp, title: "Presupuestos", sub: "Métricas comerciales" }
+                { href: "/documents", colorBg: "bg-indigo-50", colorText: "text-indigo-600", icon: FileText, title: "Documentos", sub: "Gestionar repositorio" },
+                { href: "/personnel", colorBg: "bg-purple-50", colorText: "text-purple-600", icon: Users, title: "Acreditación", sub: "Personal y Flota" },
+                { href: "/budgets", colorBg: "bg-emerald-50", colorText: "text-emerald-600", icon: TrendingUp, title: "Presupuestos", sub: "Métricas comerciales" }
               ].map(link => (
                 <Link key={link.href} href={link.href} className="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-50 border border-transparent hover:border-gray-100 transition-colors">
-                  <div className={`w-10 h-10 bg-${link.color}-50 rounded-lg flex items-center justify-center text-${link.color}-600`}>
+                  <div className={`w-10 h-10 ${link.colorBg} rounded-lg flex items-center justify-center ${link.colorText}`}>
                     <link.icon size={18} />
                   </div>
                   <div><p className="text-sm font-semibold text-gray-900">{link.title}</p><p className="text-xs text-gray-500">{link.sub}</p></div>

@@ -4,7 +4,7 @@ export async function getBudgets(supabase: SupabaseClient, orgId?: string) {
   let query = supabase
     .from('budgets')
     .select(`*`)
-    .order('created_at', { ascending: false });
+    .order('id', { ascending: false });
 
   if (orgId) {
     query = query.eq('org_id', orgId);

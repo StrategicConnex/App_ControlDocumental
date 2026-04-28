@@ -5,7 +5,8 @@ export async function getDocuments(supabase: SupabaseClient, orgId?: string, cat
     .from('documents')
     .select(`
       *,
-      profiles:uploaded_by (first_name, last_name)
+      profiles:uploaded_by (first_name, last_name),
+      approvals(count)
     `)
     .is('deleted_at', null)
     .order('created_at', { ascending: false });

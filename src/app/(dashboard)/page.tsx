@@ -68,12 +68,6 @@ export default async function Dashboard() {
           <h1 className="text-2xl font-bold text-gray-900">Panel de Inteligencia</h1>
           <p className="text-sm text-gray-500">Métricas consolidadas de Strategic Connex.</p>
         </div>
-        <div className="flex items-center gap-3">
-          <button className="relative w-10 h-10 bg-white border border-gray-100 rounded-xl flex items-center justify-center text-gray-500">
-            <Bell size={20} />
-            {alerts.length > 0 && <span className="absolute -top-1 -right-1 w-3 h-3 bg-rose-500 rounded-full border-2 border-white"></span>}
-          </button>
-        </div>
       </header>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">

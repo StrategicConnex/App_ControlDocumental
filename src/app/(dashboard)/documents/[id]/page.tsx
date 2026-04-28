@@ -57,8 +57,9 @@ export default async function DocumentDetailPage({ params }: { params: { id: str
     ? `${doc.profiles.first_name} ${doc.profiles.last_name}`
     : 'Sistema';
 
+  const now = new Date();
   const isExpiringSoon = doc.expiry_date
-    && new Date(doc.expiry_date) < new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+    && new Date(doc.expiry_date) < new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
   const isExpired = doc.status === 'vencido';
 
   return (

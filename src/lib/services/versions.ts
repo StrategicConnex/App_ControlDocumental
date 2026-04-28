@@ -123,6 +123,18 @@ export async function createDocumentVersion(
     .update({ current_version: major })
     .eq('id', payload.document_id);
 
+  // 4. Trigger AI Pipeline (Asynchronous)
+  // We don't await this to avoid blocking the main UI flow
+  const { data: profile } = await supabase.from('profiles').select('org_id').eq('id', payload.created_by).single();
+  
+  if (profile?.org_id) {
+    fetch(`${process.env.NEXT_PUBLIC_APP_URL || ''}/api/ai/pipeline/trigger`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ versionId: data.id, orgId: profile.org_id })
+    }).catch(err => console.error('Error triggering AI Pipeline:', err));
+  }
+
   return data;
 }
 /**

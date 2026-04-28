@@ -49,8 +49,16 @@ export default function GlobalSearch() {
   }, []);
 
   useEffect(() => {
-    if (open) setTimeout(() => inputRef.current?.focus(), 50);
-    else { setQuery(''); setResults([]); setSelected(0); }
+    if (open) {
+      setTimeout(() => inputRef.current?.focus(), 50);
+    } else {
+      // Clear state when closing (async to avoid cascading renders)
+      setTimeout(() => {
+        setQuery('');
+        setResults([]);
+        setSelected(0);
+      }, 0);
+    }
   }, [open]);
 
   // ── Debounced search ─────────────────────────────────────────────────────────

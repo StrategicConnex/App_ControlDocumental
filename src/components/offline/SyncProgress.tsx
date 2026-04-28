@@ -9,7 +9,7 @@ export default function SyncProgress() {
   const [status, setStatus] = useState<SyncStatus>('idle');
   const [pending, setPending] = useState(0);
   const [total, setTotal] = useState(0);
-  const [isOnline, setIsOnline] = useState(true);
+  const [isOnline, setIsOnline] = useState(() => typeof navigator !== 'undefined' ? navigator.onLine : true);
 
   useEffect(() => {
     // Sync subscription
@@ -20,7 +20,6 @@ export default function SyncProgress() {
     });
 
     // Online status
-    setIsOnline(navigator.onLine);
     const handleOnline = () => setIsOnline(true);
     const handleOffline = () => setIsOnline(false);
 

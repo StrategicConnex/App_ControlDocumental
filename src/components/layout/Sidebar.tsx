@@ -30,6 +30,11 @@ const menuItems = [
   { icon: TrendingUp, label: 'Presupuestos', href: '/budgets' },
 ]
 
+const aiItems = [
+  { icon: FileText, label: 'Contratos', href: '/contracts' },
+  { icon: Zap, label: 'Facturas IA', href: '/invoices' },
+]
+
 const secondaryItems = [
   { icon: Bell, label: 'Alertas', href: '/alerts' },
   { icon: Settings, label: 'Configuración', href: '/settings' },
@@ -86,6 +91,32 @@ export default function Sidebar() {
                   <item.icon size={18} className={cn(isActive ? 'text-indigo-600' : 'text-gray-400')} />
                   <span className="text-sm">{item.label}</span>
                   {isActive && <ChevronRight size={14} className="ml-auto text-indigo-400" />}
+                </Link>
+              )
+            })}
+          </nav>
+        </div>
+
+        <div>
+          <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-3 px-2">
+            IA & Auditoría
+          </p>
+          <nav className="space-y-0.5">
+            {aiItems.map((item) => {
+              const isActive = pathname === item.href
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={cn(
+                    'flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-150',
+                    isActive
+                      ? 'bg-purple-50 text-purple-600 font-semibold'
+                      : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900'
+                  )}
+                >
+                  <item.icon size={18} className={cn(isActive ? 'text-purple-600' : 'text-gray-400')} />
+                  <span className="text-sm">{item.label}</span>
                 </Link>
               )
             })}

@@ -114,7 +114,7 @@ export default async function BudgetsPage() {
                   </td>
                   <td className="py-4 px-4">
                     <span className="text-sm text-gray-500">
-                      {new Date(budget.created_at).toLocaleDateString()}
+                      {budget.created_at ? new Date(budget.created_at).toLocaleDateString() : 'N/A'}
                     </span>
                   </td>
                   <td className="py-4 px-4">

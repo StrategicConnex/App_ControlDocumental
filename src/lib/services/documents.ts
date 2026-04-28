@@ -5,17 +5,17 @@ export async function getDocuments(supabase: SupabaseClient, orgId?: string, cat
     .from('documents')
     .select(`
       *,
-      profiles:uploaded_by (first_name, last_name),
+      profiles:created_by (full_name),
       approvals(count)
     `)
-    .is('deleted_at', null)
     .order('created_at', { ascending: false });
 
   if (orgId) {
     query = query.eq('org_id', orgId);
   }
   if (category && category !== 'Todos') {
-    query = query.eq('category', category);
+    // Si no hay columna category, podemos filtrar por metadata si se guarda ahí
+    query = query.filter('metadata->>category', 'eq', category);
   }
 
   const { data, error } = await query;
@@ -28,7 +28,7 @@ export async function getDocumentById(supabase: SupabaseClient, id: string) {
     .from('documents')
     .select(`
       *,
-      profiles:uploaded_by (first_name, last_name)
+      profiles:created_by (full_name)
     `)
     .eq('id', id)
     .single();

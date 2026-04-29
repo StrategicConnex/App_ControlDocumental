@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { FileText, Users, Truck, CheckCircle2 } from 'lucide-react'
+import { FileText, Users, Truck, CheckCircle2, LucideIcon } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 type AlertType = 'document' | 'personnel' | 'vehicle'
@@ -12,7 +12,7 @@ export interface AlertItem {
   link: string
 }
 
-const typeIcons: Record<AlertType, React.ElementType> = {
+const typeIcons: Record<AlertType, LucideIcon> = {
   document: FileText,
   personnel: Users,
   vehicle: Truck,

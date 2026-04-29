@@ -8,8 +8,9 @@ export const metadata = {
   title: "Ficha de Vehículo | BordUp",
 };
 
-export default async function VehicleDetailPage({ params }: { params: { id: string } }) {
+export default async function VehicleDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const supabase = await createClient();
+  const { id } = await params;
   
   let vehicle: {
     license_plate: string;
@@ -30,7 +31,7 @@ export default async function VehicleDetailPage({ params }: { params: { id: stri
     }[];
   } | null = null;
   try {
-    vehicle = await getVehicleById(supabase, params.id);
+    vehicle = await getVehicleById(supabase, id);
   } catch (e) {
     console.error("Error fetching vehicle details", e);
   }

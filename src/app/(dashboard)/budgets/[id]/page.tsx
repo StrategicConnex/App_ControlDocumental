@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, use } from "react";
 import { ArrowLeft, Download, CheckCircle, XCircle, Clock, FileText } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -8,7 +8,8 @@ import { createClient } from "@/utils/supabase/client";
 import { getBudgetById, updateBudgetStatus } from "@/lib/services/budgets";
 import { cn } from "@/lib/utils";
 
-export default function BudgetDetailPage({ params }: { params: { id: string } }) {
+export default function BudgetDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const resolvedParams = use(params);
   const router = useRouter();
   const supabase = createClient();
   const [budget, setBudget] = useState<{
@@ -30,7 +31,7 @@ export default function BudgetDetailPage({ params }: { params: { id: string } })
   useEffect(() => {
     async function load() {
       try {
-        const data = await getBudgetById(supabase, params.id);
+        const data = await getBudgetById(supabase, resolvedParams.id);
         setBudget(data);
       } catch (e) {
         console.error(e);
@@ -39,12 +40,12 @@ export default function BudgetDetailPage({ params }: { params: { id: string } })
       }
     }
     load();
-  }, [params.id, supabase]);
+  }, [resolvedParams.id, supabase]);
 
   const handleStatusChange = async (newStatus: string) => {
     if (!budget) return;
     try {
-      await updateBudgetStatus(supabase, params.id, newStatus);
+      await updateBudgetStatus(supabase, resolvedParams.id, newStatus);
       setBudget({ ...budget, status: newStatus });
       router.refresh();
     } catch (e) {

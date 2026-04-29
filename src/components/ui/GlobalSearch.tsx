@@ -5,14 +5,14 @@ import { createClient } from '@/utils/supabase/client';
 import { globalSearch, SearchResult } from '@/lib/services/search';
 import {
   Search, FileText, Users, Truck, TrendingUp, FolderOpen,
-  X, Loader2, Command
+  X, Loader2, Command, LucideIcon
 } from 'lucide-react';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
 
 // ─── Icon map by module ───────────────────────────────────────────────────────
 const MODULE_CONFIG: Record<SearchResult['module'], {
-  icon: React.ElementType;
+  icon: LucideIcon;
   label: string;
   color: string;
   bg: string;

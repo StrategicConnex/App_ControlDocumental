@@ -60,8 +60,8 @@ export default async function SettingsPage() {
         {/* Organisation */}
         <section className="bg-white p-6 rounded-[2rem] card-shadow border border-gray-100">
           <div className="flex items-center gap-3 mb-6">
-            <div className="w-9 h-9 bg-purple-50 rounded-xl flex items-center justify-center">
-              <Building2 size={18} className="text-purple-600" />
+            <div className="w-9 h-9 bg-blue-50 rounded-xl flex items-center justify-center">
+              <Building2 size={18} className="text-blue-600" />
             </div>
             <h3 className="font-bold text-gray-900">Organización</h3>
           </div>

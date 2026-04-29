@@ -95,7 +95,7 @@ export default function NewBudgetPage() {
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 placeholder="Ej. Provisión de Servicios HSE Q3"
-                className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 transition-all"
+                className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
                 required
               />
             </div>
@@ -127,7 +127,7 @@ export default function NewBudgetPage() {
                           value={item.description}
                           onChange={(e) => updateItem(item.id, 'description', e.target.value)}
                           placeholder="Descripción del servicio..."
-                          className="w-full px-3 py-2 border-0 bg-transparent focus:ring-2 focus:ring-purple-500/20 rounded-lg"
+                          className="w-full px-3 py-2 border-0 bg-transparent focus:ring-2 focus:ring-indigo-500/20 rounded-lg"
                         />
                       </td>
                       <td className="p-4">
@@ -136,7 +136,7 @@ export default function NewBudgetPage() {
                           min="1"
                           value={item.quantity}
                           onChange={(e) => updateItem(item.id, 'quantity', parseInt(e.target.value) || 0)}
-                          className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500/20"
+                          className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500/20"
                         />
                       </td>
                       <td className="p-4">
@@ -147,7 +147,7 @@ export default function NewBudgetPage() {
                             min="0"
                             value={item.unit_price}
                             onChange={(e) => updateItem(item.id, 'unit_price', parseFloat(e.target.value) || 0)}
-                            className="w-full pl-8 pr-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500/20"
+                            className="w-full pl-8 pr-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500/20"
                           />
                         </div>
                       </td>
@@ -173,7 +173,7 @@ export default function NewBudgetPage() {
             <button
               type="button"
               onClick={addItem}
-              className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-purple-600 hover:bg-purple-50 rounded-xl transition-colors"
+              className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-indigo-600 hover:bg-indigo-50 rounded-xl transition-colors"
             >
               <Plus size={16} /> Agregar Ítem
             </button>
@@ -194,7 +194,7 @@ export default function NewBudgetPage() {
                 type="button"
                 onClick={(e) => handleSubmit(e, 'enviado')}
                 disabled={isSubmitting}
-                className="flex-1 md:flex-none flex items-center justify-center gap-2 px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-xl font-semibold transition-colors shadow-md disabled:opacity-50"
+                className="flex-1 md:flex-none flex items-center justify-center gap-2 px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-semibold transition-colors shadow-md disabled:opacity-50"
               >
                 <Send size={18} /> Emitir Propuesta
               </button>

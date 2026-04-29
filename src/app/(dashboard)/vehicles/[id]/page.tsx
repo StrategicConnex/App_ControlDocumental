@@ -80,7 +80,7 @@ export default async function VehicleDetailPage({ params }: { params: { id: stri
         <div className="lg:col-span-1 space-y-6">
           <section className="bg-white p-6 rounded-[2rem] card-shadow border border-gray-100">
             <h3 className="font-bold text-gray-900 mb-4 flex items-center gap-2">
-              <Truck size={18} className="text-purple-600" /> Información del Vehículo
+              <Truck size={18} className="text-indigo-600" /> Información del Vehículo
             </h3>
             <div className="space-y-4">
               <div>
@@ -105,7 +105,7 @@ export default async function VehicleDetailPage({ params }: { params: { id: stri
         <div className="lg:col-span-2">
           <section className="bg-white p-6 rounded-[2rem] card-shadow border border-gray-100">
             <h3 className="font-bold text-gray-900 mb-6 flex items-center gap-2">
-              <FileText size={18} className="text-purple-600" /> Documentación Requerida
+              <FileText size={18} className="text-indigo-600" /> Documentación Requerida
             </h3>
             
             <div className="space-y-4">

@@ -108,7 +108,7 @@ export function NotificationBell() {
     <div className="relative">
       <button 
         onClick={() => setIsOpen(!isOpen)}
-        className="relative p-2 text-gray-400 hover:text-purple-600 hover:bg-purple-50 rounded-xl transition-all"
+        className="relative p-2 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-xl transition-all"
       >
         <Bell size={22} />
         {unreadCount > 0 && (
@@ -155,7 +155,7 @@ export function NotificationBell() {
                       key={n.id}
                       className={cn(
                         "p-4 hover:bg-gray-50/50 transition-colors cursor-pointer group relative",
-                        !n.is_read && "bg-purple-50/30"
+                        !n.is_read && "bg-indigo-50/30"
                       )}
                       onClick={() => markAsRead(n.id)}
                     >

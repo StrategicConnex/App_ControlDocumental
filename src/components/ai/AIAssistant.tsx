@@ -24,8 +24,13 @@ export function AIAssistant({ orgId }: { orgId: string }) {
   ]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const [providerStatus, setProviderStatus] = useState<'openrouter' | 'deepseek' | 'unknown'>('unknown');
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const checkAIHealth = useCallback(async () => {
     try {
@@ -101,13 +106,15 @@ export function AIAssistant({ orgId }: { orgId: string }) {
     }
   };
 
+  if (!mounted) return null;
+
   return (
     <>
       {/* Floating Action Button */}
       {!isOpen && (
         <button
           onClick={() => setIsOpen(true)}
-          className="fixed bottom-8 right-8 w-14 h-14 bg-purple-600 text-white rounded-full shadow-2xl flex items-center justify-center hover:bg-purple-700 hover:scale-110 transition-all z-50 group"
+          className="fixed bottom-8 right-8 w-14 h-14 bg-indigo-600 text-white rounded-full shadow-2xl flex items-center justify-center hover:bg-indigo-700 hover:scale-110 transition-all z-50 group"
         >
           <Bot size={28} className="group-hover:rotate-12 transition-transform" />
           <div className="absolute -top-2 -right-2 bg-rose-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full animate-bounce">
@@ -120,7 +127,7 @@ export function AIAssistant({ orgId }: { orgId: string }) {
       {isOpen && (
         <div className="fixed bottom-8 right-8 w-[400px] h-[550px] bg-white rounded-3xl shadow-2xl flex flex-col z-50 border border-gray-100 overflow-hidden animate-in slide-in-from-bottom-4 duration-300">
           {/* Header */}
-          <div className="bg-gradient-to-r from-purple-600 to-indigo-700 p-4 text-white flex items-center justify-between shadow-lg">
+          <div className="bg-gradient-to-r from-indigo-600 to-blue-700 p-4 text-white flex items-center justify-between shadow-lg">
             <div className="flex items-center gap-3">
               <div className="flex items-center gap-2">
                 <h3 className="text-white font-semibold flex items-center gap-2">
@@ -156,7 +163,7 @@ export function AIAssistant({ orgId }: { orgId: string }) {
               >
                 <div className={cn(
                   "w-8 h-8 rounded-lg flex items-center justify-center shrink-0 shadow-sm",
-                  msg.type === 'user' ? "bg-purple-100 text-purple-600" : "bg-white text-gray-500 border border-gray-100"
+                  msg.type === 'user' ? "bg-indigo-100 text-indigo-600" : "bg-white text-gray-500 border border-gray-100"
                 )}>
                   {msg.type === 'user' ? <User size={16} /> : <Bot size={16} />}
                 </div>
@@ -164,7 +171,7 @@ export function AIAssistant({ orgId }: { orgId: string }) {
                 <div className={cn(
                   "max-w-[85%] p-3 rounded-2xl text-sm shadow-sm",
                   msg.type === 'user' 
-                    ? "bg-purple-600 text-white rounded-tr-none" 
+                    ? "bg-indigo-600 text-white rounded-tr-none" 
                     : "bg-white text-gray-800 border border-gray-100 rounded-tl-none"
                 )}>
                   <p className="leading-relaxed">{msg.content}</p>
@@ -176,7 +183,7 @@ export function AIAssistant({ orgId }: { orgId: string }) {
                         <a 
                           key={source.id} 
                           href={`/documents/${source.id}`}
-                          className="flex items-center gap-2 text-xs text-purple-600 hover:text-purple-700 font-medium group"
+                          className="flex items-center gap-2 text-xs text-indigo-600 hover:text-indigo-700 font-medium group"
                         >
                           <FileText size={12} className="shrink-0" />
                           <span className="truncate group-hover:underline">{source.title}</span>
@@ -189,7 +196,7 @@ export function AIAssistant({ orgId }: { orgId: string }) {
                     "text-[10px] mt-1 opacity-50",
                     msg.type === 'user' ? "text-right" : "text-left"
                   )}>
-                    {msg.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                    {mounted && msg.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                   </p>
                 </div>
               </div>
@@ -201,7 +208,7 @@ export function AIAssistant({ orgId }: { orgId: string }) {
                   <Bot size={16} />
                 </div>
                 <div className="bg-white border border-gray-100 p-3 rounded-2xl rounded-tl-none shadow-sm flex items-center gap-2">
-                  <Loader2 size={14} className="animate-spin text-purple-600" />
+                  <Loader2 size={14} className="animate-spin text-indigo-600" />
                   <span className="text-xs text-gray-500 font-medium">Analizando documentos...</span>
                 </div>
               </div>
@@ -218,13 +225,13 @@ export function AIAssistant({ orgId }: { orgId: string }) {
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && sendMessage()}
                 placeholder="Pregunta sobre tus contratos o normativas..."
-                className="w-full pl-4 pr-12 py-3 bg-gray-50 border border-gray-100 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/20 transition-all"
+                className="w-full pl-4 pr-12 py-3 bg-gray-50 border border-gray-100 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 transition-all"
                 disabled={isLoading}
               />
               <button
                 onClick={sendMessage}
                 disabled={!input.trim() || isLoading}
-                className="absolute right-2 p-2 bg-purple-600 text-white rounded-xl hover:bg-purple-700 disabled:opacity-50 disabled:hover:bg-purple-600 transition-colors shadow-lg shadow-purple-600/20"
+                className="absolute right-2 p-2 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 disabled:opacity-50 disabled:hover:bg-indigo-600 transition-colors shadow-lg shadow-indigo-600/20"
               >
                 <Send size={18} />
               </button>

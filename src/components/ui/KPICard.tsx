@@ -6,7 +6,7 @@ interface KPICardProps {
   value: string | number
   subtitle?: string
   icon: LucideIcon
-  color?: 'indigo' | 'emerald' | 'amber' | 'rose' | 'purple'
+  color?: 'indigo' | 'emerald' | 'amber' | 'rose'
   className?: string
 }
 
@@ -29,11 +29,6 @@ const colorMap = {
   rose: {
     bg: 'bg-rose-50',
     icon: 'text-rose-600',
-    value: 'text-gray-900',
-  },
-  purple: {
-    bg: 'bg-purple-50',
-    icon: 'text-purple-600',
     value: 'text-gray-900',
   },
 }

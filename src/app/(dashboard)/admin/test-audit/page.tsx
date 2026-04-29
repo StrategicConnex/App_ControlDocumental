@@ -80,7 +80,7 @@ export default function AuditTestPage() {
             disabled={status === 'running'}
             className={cn(
               "w-full py-4 rounded-2xl font-bold text-white shadow-xl transition-all flex items-center justify-center gap-3",
-              status === 'running' ? "bg-gray-400" : "bg-purple-600 hover:bg-purple-700 shadow-purple-600/20"
+              status === 'running' ? "bg-gray-400" : "bg-indigo-600 hover:bg-indigo-700 shadow-indigo-600/20"
             )}
           >
             {status === 'running' ? <Loader2 className="animate-spin" /> : <Play size={20} />}

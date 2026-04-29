@@ -55,7 +55,7 @@ export default function InvoiceValidator() {
           <h1 className="text-2xl font-bold text-gray-900">Auditoría de Facturas IA</h1>
           <p className="text-sm text-gray-500 mt-1">Validación automática contra contratos y órdenes de compra (PO).</p>
         </div>
-        <div className="flex items-center gap-2 px-3 py-1.5 bg-purple-50 text-purple-600 rounded-lg border border-purple-100">
+        <div className="flex items-center gap-2 px-3 py-1.5 bg-indigo-50 text-indigo-600 rounded-lg border border-indigo-100">
           <Zap size={16} className="animate-pulse" />
           <span className="text-xs font-bold uppercase tracking-wider">Motor DeepSeek Active</span>
         </div>
@@ -75,12 +75,12 @@ export default function InvoiceValidator() {
                   key={inv.id} 
                   onClick={() => !isValidating && handleValidate(inv.id)}
                   className={cn(
-                    "p-4 cursor-pointer transition-all hover:bg-purple-50/30 group",
-                    selectedInvoice === inv.id && "bg-purple-50 ring-1 ring-inset ring-purple-100"
+                    "p-4 cursor-pointer transition-all hover:bg-indigo-50/30 group",
+                    selectedInvoice === inv.id && "bg-indigo-50 ring-1 ring-inset ring-indigo-100"
                   )}
                 >
-                  <div className="flex items-center justify-between mb-1">
-                    <span className="text-xs font-bold text-gray-400 group-hover:text-purple-400">{inv.number}</span>
+                  <div className="flex flex-col">
+                    <span className="text-xs font-bold text-gray-400 group-hover:text-indigo-400">{inv.number}</span>
                     <span className={cn(
                       "text-[10px] font-bold px-1.5 py-0.5 rounded uppercase",
                       inv.status === 'aprobada' ? "bg-emerald-100 text-emerald-600" :
@@ -102,7 +102,7 @@ export default function InvoiceValidator() {
             </div>
           </div>
 
-          <div className="bg-gradient-to-br from-indigo-600 to-purple-700 rounded-2xl p-5 text-white shadow-xl shadow-indigo-600/20">
+          <div className="bg-gradient-to-br from-indigo-600 to-blue-700 rounded-2xl p-5 text-white shadow-xl shadow-indigo-600/20">
             <div className="flex items-center gap-3 mb-4">
               <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center">
                 <ShieldCheck size={24} />
@@ -123,8 +123,8 @@ export default function InvoiceValidator() {
           {isValidating ? (
             <div className="bg-white rounded-3xl border border-gray-100 shadow-sm h-[500px] flex flex-col items-center justify-center p-12 text-center">
               <div className="relative">
-                <div className="w-20 h-20 border-4 border-purple-100 border-t-purple-600 rounded-full animate-spin" />
-                <Zap size={32} className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-purple-600 animate-pulse" />
+                <div className="w-20 h-20 border-4 border-indigo-100 border-t-indigo-600 rounded-full animate-spin" />
+                <Zap size={32} className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-indigo-600 animate-pulse" />
               </div>
               <h3 className="text-lg font-bold text-gray-900 mt-6">Validando con Inteligencia Artificial</h3>
               <p className="text-sm text-gray-500 mt-2 max-w-sm">
@@ -162,7 +162,7 @@ export default function InvoiceValidator() {
                 <div className="space-y-6">
                   <div>
                     <h3 className="text-sm font-bold text-gray-900 flex items-center gap-2 mb-4">
-                      <TrendingUp size={16} className="text-purple-600" />
+                      <TrendingUp size={16} className="text-indigo-600" />
                       Análisis de Riesgo IA
                     </h3>
                     <div className="space-y-3">
@@ -225,11 +225,11 @@ export default function InvoiceValidator() {
               </div>
             </div>
           ) : (
-            <div className="bg-white rounded-3xl border border-dashed border-gray-200 h-[500px] flex flex-col items-center justify-center p-12 text-center group hover:border-purple-300 transition-colors">
-              <div className="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                <FileCheck size={32} className="text-gray-300 group-hover:text-purple-400" />
+            <div className="bg-white rounded-3xl border border-dashed border-gray-200 h-[500px] flex flex-col items-center justify-center p-12 text-center group hover:border-indigo-300 transition-colors">
+              <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mb-4 transition-colors group-hover:bg-indigo-50">
+                <FileCheck size={32} className="text-gray-300 group-hover:text-indigo-400" />
               </div>
-              <h3 className="text-lg font-bold text-gray-400 group-hover:text-gray-600 transition-colors">
+              <h3 className="text-lg font-bold text-gray-400 group-ref:text-gray-600 transition-colors">
                 Selecciona una factura para auditar
               </h3>
               <p className="text-sm text-gray-400 mt-2 max-w-xs">

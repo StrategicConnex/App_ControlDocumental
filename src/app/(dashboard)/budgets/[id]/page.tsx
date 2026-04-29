@@ -136,7 +136,7 @@ export default function BudgetDetailPage({ params }: { params: { id: string } })
         <div className="lg:col-span-1 space-y-6">
           <section className="bg-white p-6 rounded-[2rem] card-shadow border border-gray-100">
             <h3 className="font-bold text-gray-900 mb-4 flex items-center gap-2">
-              <FileText size={18} className="text-purple-600" /> Gestión de Estado
+              <FileText size={18} className="text-indigo-600" /> Gestión de Estado
             </h3>
             <p className="text-sm text-gray-500 mb-6">Actualice el estado de la propuesta para reflejar su evolución con el cliente.</p>
             

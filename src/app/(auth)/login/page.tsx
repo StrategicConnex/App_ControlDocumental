@@ -37,18 +37,18 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#0a0a0c] p-4 font-sans selection:bg-purple-500/30 relative">
+    <div className="min-h-screen flex items-center justify-center bg-[#0a0a0c] p-4 font-sans selection:bg-indigo-500/30 relative">
       {/* Background patterns */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-purple-900/10 blur-[120px] rounded-full"></div>
-        <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-indigo-900/10 blur-[120px] rounded-full"></div>
+        <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-indigo-900/10 blur-[120px] rounded-full"></div>
+        <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-blue-900/10 blur-[120px] rounded-full"></div>
         <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 mix-blend-soft-light"></div>
       </div>
 
       <div className="w-full max-w-md relative z-10">
         <div className="bg-[#121216]/80 backdrop-blur-xl border border-white/5 rounded-[2rem] p-8 md:p-10 shadow-2xl shadow-black/50 overflow-hidden relative">
           {/* Top accent line */}
-          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-48 h-[2px] bg-gradient-to-r from-transparent via-purple-500 to-transparent"></div>
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-48 h-[2px] bg-gradient-to-r from-transparent via-indigo-500 to-transparent"></div>
           
           <div className="text-center mb-10">
             <div className="inline-flex items-center justify-center mb-6">
@@ -57,7 +57,7 @@ export default function LoginPage() {
                 alt="Strategic Connex Logo" 
                 width={80}
                 height={80}
-                className="h-20 w-auto object-contain drop-shadow-[0_0_15px_rgba(168,85,247,0.3)]"
+                className="h-20 w-auto object-contain drop-shadow-[0_0_15px_rgba(79,70,229,0.3)]"
                 priority
               />
             </div>
@@ -76,7 +76,7 @@ export default function LoginPage() {
             <div className="space-y-2">
               <label className="text-xs font-semibold text-gray-500 uppercase tracking-widest ml-1" htmlFor="email">Email Institucional</label>
               <div className="relative group">
-                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 group-focus-within:text-purple-500 transition-colors" size={18} />
+                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 group-focus-within:text-indigo-500 transition-colors" size={18} />
                 <input 
                   id="email"
                   name="email"
@@ -84,7 +84,7 @@ export default function LoginPage() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="admin@strategicconnex.com" 
-                  className="w-full bg-black/40 border border-white/5 rounded-2xl pl-12 pr-4 py-4 text-white placeholder:text-gray-600 focus:outline-none focus:border-purple-500/50 focus:ring-4 focus:ring-purple-500/10 transition-all"
+                  className="w-full bg-black/40 border border-white/5 rounded-2xl pl-12 pr-4 py-4 text-white placeholder:text-gray-600 focus:outline-none focus:border-indigo-500/50 focus:ring-4 focus:ring-indigo-500/10 transition-all"
                   required
                 />
               </div>
@@ -95,7 +95,7 @@ export default function LoginPage() {
                 <label className="text-xs font-semibold text-gray-500 uppercase tracking-widest" htmlFor="password">Contraseña</label>
               </div>
               <div className="relative group">
-                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 group-focus-within:text-purple-500 transition-colors" size={18} />
+                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 group-focus-within:text-indigo-500 transition-colors" size={18} />
                 <input 
                   id="password"
                   name="password"
@@ -103,7 +103,7 @@ export default function LoginPage() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••" 
-                  className="w-full bg-black/40 border border-white/5 rounded-2xl pl-12 pr-4 py-4 text-white placeholder:text-gray-600 focus:outline-none focus:border-purple-500/50 focus:ring-4 focus:ring-purple-500/10 transition-all"
+                  className="w-full bg-black/40 border border-white/5 rounded-2xl pl-12 pr-4 py-4 text-white placeholder:text-gray-600 focus:outline-none focus:border-indigo-500/50 focus:ring-4 focus:ring-indigo-500/10 transition-all"
                   required
                 />
               </div>
@@ -112,7 +112,7 @@ export default function LoginPage() {
             <button 
               type="submit" 
               disabled={loading}
-              className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-bold py-4 px-4 rounded-2xl transition-all shadow-xl shadow-purple-500/20 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed group"
+              className="w-full bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-500 hover:to-blue-500 text-white font-bold py-4 px-4 rounded-2xl transition-all shadow-xl shadow-indigo-500/20 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed group"
             >
               {loading ? (
                 <div className="flex items-center justify-center gap-2">
@@ -135,7 +135,7 @@ export default function LoginPage() {
         {/* Support link */}
         <div className="mt-6 text-center">
           <p className="text-gray-500 text-sm">
-            ¿Problemas de acceso? <a href="#" className="text-purple-400 hover:text-purple-300 transition-colors">Contactar Soporte IT</a>
+            ¿Problemas de acceso? <a href="#" className="text-indigo-400 hover:text-indigo-300 transition-colors">Contactar Soporte IT</a>
           </p>
         </div>
       </div>

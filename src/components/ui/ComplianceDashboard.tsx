@@ -105,7 +105,7 @@ export default async function ComplianceDashboard({ orgId }: { orgId?: string })
       <div className="pt-4 border-t border-gray-50 space-y-4">
         <div className="flex items-center justify-between">
           <h4 className="text-xs font-bold text-gray-900 uppercase tracking-wider flex items-center gap-1.5">
-            <Activity size={14} className="text-purple-600" /> Historial de Riesgo
+            <Activity size={14} className="text-indigo-600" /> Historial de Riesgo
           </h4>
           {history.length > 1 && (
             <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-md">

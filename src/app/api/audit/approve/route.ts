@@ -27,13 +27,20 @@ export async function POST(req: NextRequest) {
       // Por ejemplo, aprobar la factura a pesar de la discrepancia menor
       await supabase
         .from('invoices')
-        .update({ status: 'aprobado', audit_notes: 'Aprobado mediante acción rápida de notificación.' })
+        .update({ 
+          status: 'aprobada', 
+          metadata: { audit_notes: 'Aprobado mediante acción rápida de notificación.' } 
+        })
         .eq('id', resourceId);
     } else if (type === 'contract_risk') {
       // Por ejemplo, marcar el contrato como "aceptado con observaciones"
       await supabase
         .from('contracts')
-        .update({ status: 'aceptado', audit_score: 100 }) // "Fuerzo" la aceptación
+        .update({ 
+          status: 'active', // 'active' es el default en la base, 'aceptado' no existe en el schema actual
+          compliance_score: 100,
+          metadata: { audit_notes: 'Riesgo aceptado mediante acción rápida.' }
+        })
         .eq('id', resourceId);
     }
 

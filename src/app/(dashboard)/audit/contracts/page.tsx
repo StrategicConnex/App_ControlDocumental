@@ -80,7 +80,7 @@ export default function ContractsAuditPage() {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-full">
-        <Loader2 className="w-8 h-8 animate-spin text-purple-600" />
+        <Loader2 className="w-8 h-8 animate-spin text-indigo-600" />
       </div>
     );
   }
@@ -129,7 +129,7 @@ export default function ContractsAuditPage() {
                   </div>
                 </div>
 
-                <h3 className="text-lg font-bold text-gray-900 mb-1 group-hover:text-purple-600 transition-colors">
+                <h3 className="text-lg font-bold text-gray-900 mb-1 group-hover:text-indigo-600 transition-colors">
                   {doc.title}
                 </h3>
                 
@@ -178,7 +178,7 @@ export default function ContractsAuditPage() {
                   )}
                   {audit ? 'Re-auditar' : 'Iniciar Auditoría'}
                 </button>
-                <button className="p-2 bg-purple-600 text-white rounded-xl hover:bg-purple-700 transition-all">
+                <button className="p-2 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition-all">
                   <ExternalLink size={14} />
                 </button>
               </div>

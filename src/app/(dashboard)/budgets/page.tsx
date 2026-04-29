@@ -38,7 +38,7 @@ export default async function BudgetsPage() {
           <h1 className="text-2xl font-bold text-gray-900">Presupuestos Inteligentes</h1>
           <p className="text-sm text-gray-500">Gestión de propuestas económicas y métricas de cierre.</p>
         </div>
-        <Link href="/budgets/new" className="flex items-center gap-2 px-6 py-2.5 bg-purple-600 hover:bg-purple-700 text-white rounded-xl text-sm font-semibold transition-all shadow-md hover:shadow-lg">
+        <Link href="/budgets/new" className="flex items-center gap-2 px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-sm font-semibold transition-all shadow-md hover:shadow-lg">
           <Plus size={18} /> Nuevo Presupuesto
         </Link>
       </header>
@@ -55,7 +55,7 @@ export default async function BudgetsPage() {
           </div>
         </div>
         <div className="bg-white p-6 rounded-[2rem] card-shadow border border-gray-100 flex items-center gap-4">
-          <div className="w-14 h-14 bg-purple-50 rounded-2xl flex items-center justify-center text-purple-600">
+          <div className="w-14 h-14 bg-indigo-50 rounded-2xl flex items-center justify-center text-indigo-600">
             <TrendingUp size={28} />
           </div>
           <div>
@@ -84,7 +84,7 @@ export default async function BudgetsPage() {
               <input 
                 type="text" 
                 placeholder="Buscar presupuesto..." 
-                className="pl-9 pr-4 py-2 bg-gray-50 border border-gray-100 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/20 w-64"
+                className="pl-9 pr-4 py-2 bg-gray-50 border border-gray-100 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 w-64"
               />
             </div>
             <button className="flex items-center gap-2 px-4 py-2 border border-gray-100 rounded-xl text-sm font-medium hover:bg-gray-50 text-gray-700">
@@ -108,7 +108,7 @@ export default async function BudgetsPage() {
               {budgets.map((budget) => (
                 <tr key={budget.id} className="hover:bg-gray-50/50 transition-colors group">
                   <td className="py-4 px-4">
-                    <Link href={`/budgets/${budget.id}`} className="font-semibold text-gray-900 hover:text-purple-600 transition-colors">
+                    <Link href={`/budgets/${budget.id}`} className="font-semibold text-gray-900 hover:text-indigo-600 transition-colors">
                       {budget.title}
                     </Link>
                   </td>

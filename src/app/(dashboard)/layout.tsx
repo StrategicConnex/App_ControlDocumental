@@ -2,6 +2,11 @@ import Sidebar from "@/components/layout/Sidebar";
 import { AIAssistant } from "@/components/ai/AIAssistant";
 import { createClient } from "@/utils/supabase/server";
 import { NotificationBell } from "@/components/layout/NotificationBell";
+import { SidebarProvider } from "@/components/layout/SidebarProvider";
+import { SidebarTrigger } from "@/components/layout/SidebarTrigger";
+
+import { CommandMenu } from "@/components/layout/CommandMenu";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 
 export default async function DashboardLayout({
   children,
@@ -22,27 +27,37 @@ export default async function DashboardLayout({
   }
 
   return (
-    <div className="flex min-h-screen bg-[#FDFDFF]">
-      <Sidebar />
-      <div className="flex-1 ml-64 flex flex-col">
-        <header className="h-16 border-b border-gray-100 bg-white/80 backdrop-blur-md sticky top-0 z-30 px-8 flex items-center justify-between">
-          <div className="flex items-center gap-2 text-xs font-medium text-gray-400">
-            <span>Control Documental</span>
-            <span className="w-1 h-1 bg-gray-200 rounded-full" />
-            <span className="text-gray-900 font-bold tracking-tight">Industrial Command Console</span>
-          </div>
-          <div className="flex items-center gap-4">
-            <NotificationBell />
-            <div className="w-8 h-8 rounded-full bg-purple-100 border border-purple-200 flex items-center justify-center text-purple-600 font-bold text-xs">
-              {user?.email?.[0].toUpperCase()}
+    <SidebarProvider>
+      <div className="flex min-h-screen bg-background">
+        <Sidebar />
+        <div className="flex-1 lg:ml-64 flex flex-col min-w-0">
+          <header className="h-16 border-b border-border bg-card/80 backdrop-blur-md sticky top-0 z-30 px-4 lg:px-8 flex items-center justify-between shadow-sm">
+            <div className="flex items-center gap-4">
+              <SidebarTrigger />
+              <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground mr-4">
+                <span className="hidden xs:inline">Control Documental</span>
+                <span className="w-1 h-1 bg-border rounded-full hidden xs:inline" />
+                <span className="text-foreground font-bold tracking-tight">Command Console</span>
+              </div>
+              <div className="hidden md:block">
+                <CommandMenu />
+              </div>
             </div>
-          </div>
-        </header>
-        <main className="p-8">
-          {children}
-        </main>
+            <div className="flex items-center gap-4">
+              <NotificationBell />
+              <Avatar className="h-8 w-8 cursor-pointer">
+                <AvatarFallback className="bg-primary/10 text-primary border border-primary/20 text-xs font-bold">
+                  {user?.email?.[0].toUpperCase() || 'U'}
+                </AvatarFallback>
+              </Avatar>
+            </div>
+          </header>
+          <main className="p-4 lg:p-8">
+            {children}
+          </main>
+        </div>
+        <AIAssistant orgId={orgId} />
       </div>
-      <AIAssistant orgId={orgId} />
-    </div>
+    </SidebarProvider>
   );
 }

@@ -1,10 +1,20 @@
+"use client";
+
+import React, { useState } from "react";
 import { cn } from "@/lib/utils";
-import { Search, Filter, MoreVertical, FileText } from "lucide-react";
+import { Search, Filter, MoreVertical, FileText, Check, X, Archive, Loader2 } from "lucide-react";
 import Link from "next/link";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
+import { Checkbox } from "@/components/ui/checkbox";
+import { motion, AnimatePresence } from "framer-motion";
 
-type DocumentStatus = 'borrador' | 'revision' | 'aprobado' | 'vencido' | 'por_vencer';
+export type DocumentStatus = 'borrador' | 'revision' | 'aprobado' | 'vencido' | 'por_vencer';
 
-interface DocumentProps {
+export interface DocumentProps {
   id: string;
   title: string;
   code: string;
@@ -17,86 +27,156 @@ interface DocumentProps {
   approvalCount?: number;
 }
 
-const statusConfig: Record<DocumentStatus, { color: string; bg: string; label: string }> = {
-  borrador: { color: 'text-gray-600', bg: 'bg-gray-100', label: 'Borrador' },
-  revision: { color: 'text-blue-600', bg: 'bg-blue-50', label: 'En Revisión' },
-  aprobado: { color: 'text-emerald-600', bg: 'bg-emerald-50', label: 'Aprobado' },
-  por_vencer: { color: 'text-amber-600', bg: 'bg-amber-50', label: 'Por Vencer' },
-  vencido: { color: 'text-rose-600', bg: 'bg-rose-50', label: 'Vencido' },
+const statusConfig: Record<DocumentStatus, { variant: "default" | "secondary" | "destructive" | "outline", colorClass: string, label: string }> = {
+  borrador: { variant: "secondary", colorClass: "text-muted-foreground", label: 'Borrador' },
+  revision: { variant: "outline", colorClass: "text-blue-600 border-blue-200 bg-blue-50/50 dark:border-blue-900 dark:bg-blue-900/20 dark:text-blue-400", label: 'En Revisión' },
+  aprobado: { variant: "outline", colorClass: "text-emerald-600 border-emerald-200 bg-emerald-50/50 dark:border-emerald-900 dark:bg-emerald-900/20 dark:text-emerald-400", label: 'Aprobado' },
+  por_vencer: { variant: "outline", colorClass: "text-amber-600 border-amber-200 bg-amber-50/50 dark:border-amber-900 dark:bg-amber-900/20 dark:text-amber-400", label: 'Por Vencer' },
+  vencido: { variant: "destructive", colorClass: "", label: 'Vencido' },
 };
 
-export default function DocumentTable({ documents }: { documents: DocumentProps[] }) {
+export default function DocumentTable({ documents: initialDocuments }: { documents: DocumentProps[] }) {
+  const [documents, setDocuments] = useState<DocumentProps[]>(initialDocuments);
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [search, setSearch] = useState("");
+  const [processingId, setProcessingId] = useState<string | null>(null);
+
+  const handleSelect = (id: string) => {
+    const newSelected = new Set(selected);
+    if (newSelected.has(id)) newSelected.delete(id);
+    else newSelected.add(id);
+    setSelected(newSelected);
+  };
+
+  const selectAll = () => {
+    if (selected.size === filteredDocs.length) setSelected(new Set());
+    else setSelected(new Set(filteredDocs.map(d => d.id)));
+  };
+
+  // Optimistic UI Actions
+  const handleOptimisticAction = (id: string, newStatus: DocumentStatus) => {
+    setProcessingId(id);
+    
+    // Simulate API Delay
+    setTimeout(() => {
+      setDocuments(prev => prev.map(doc => 
+        doc.id === id ? { ...doc, status: newStatus } : doc
+      ));
+      setProcessingId(null);
+    }, 600);
+  };
+
+  const filteredDocs = documents.filter(doc => 
+    doc.title.toLowerCase().includes(search.toLowerCase()) || 
+    doc.code.toLowerCase().includes(search.toLowerCase())
+  );
+
   return (
-    <section className="bg-white p-6 rounded-[2rem] card-shadow border border-gray-100">
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h3 className="font-bold text-gray-900 text-lg">Documentos</h3>
-          <p className="text-sm text-gray-500">Gestión de archivos y versiones</p>
-        </div>
-        
-        <div className="flex items-center gap-4">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
-            <input 
-              type="text" 
-              placeholder="Buscar documento..." 
-              className="pl-9 pr-4 py-2 bg-gray-50 border border-gray-100 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/20 w-64 transition-all"
+    <div className="space-y-4">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div className="flex items-center gap-2">
+          <div className="relative w-64">
+            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+            <Input 
+              placeholder="Buscar documento o código..." 
+              className="pl-9 bg-background"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
             />
           </div>
-          <button className="flex items-center gap-2 px-4 py-2 border border-gray-100 rounded-xl text-sm font-medium hover:bg-gray-50 text-gray-700 transition-colors">
-            <Filter size={16} /> Filtros
-          </button>
-          <Link href="/documents/new" className="px-4 py-2 bg-purple-600 text-white rounded-xl text-sm font-medium hover:bg-purple-700 transition-colors shadow-lg shadow-purple-600/20">
-            Nuevo Documento
+          <Button variant="outline" className="gap-2">
+            <Filter size={16} /> <span className="hidden sm:inline">Filtros</span>
+          </Button>
+        </div>
+        
+        <div className="flex items-center gap-2">
+          <AnimatePresence>
+            {selected.size > 0 && (
+              <motion.div 
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                className="flex items-center gap-2 mr-2"
+              >
+                <span className="text-sm text-muted-foreground font-medium">
+                  {selected.size} seleccionados
+                </span>
+                <Button size="sm" variant="secondary">Acción masiva</Button>
+              </motion.div>
+            )}
+          </AnimatePresence>
+          <Link href="/documents/new">
+            <Button>Nuevo Documento</Button>
           </Link>
         </div>
       </div>
       
-      <div className="overflow-x-auto">
-        <table className="w-full text-left border-collapse">
-          <thead>
-            <tr className="border-b border-gray-100">
-              <th className="pb-3 pt-2 px-4 font-semibold text-xs text-gray-500 uppercase tracking-wider">Código & Título</th>
-              <th className="pb-3 pt-2 px-4 font-semibold text-xs text-gray-500 uppercase tracking-wider">Categoría</th>
-              <th className="pb-3 pt-2 px-4 font-semibold text-xs text-gray-500 uppercase tracking-wider">Estado</th>
-              <th className="pb-3 pt-2 px-4 font-semibold text-xs text-gray-500 uppercase tracking-wider">Versión</th>
-              <th className="pb-3 pt-2 px-4 font-semibold text-xs text-gray-500 uppercase tracking-wider">Responsable</th>
-              <th className="pb-3 pt-2 px-4 font-semibold text-xs text-gray-500 uppercase tracking-wider text-right">Acciones</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-50">
-            {documents.length === 0 ? (
-              <tr>
-                <td colSpan={6} className="py-8 text-center text-sm text-gray-500">
+      <div className="rounded-xl border bg-card">
+        <Table>
+          <TableHeader>
+            <TableRow className="hover:bg-transparent">
+              <TableHead className="w-12 text-center">
+                <Checkbox 
+                  checked={filteredDocs.length > 0 && selected.size === filteredDocs.length}
+                  onCheckedChange={selectAll}
+                />
+              </TableHead>
+              <TableHead>Código & Título</TableHead>
+              <TableHead>Categoría</TableHead>
+              <TableHead>Estado</TableHead>
+              <TableHead>Versión</TableHead>
+              <TableHead>Responsable</TableHead>
+              <TableHead className="text-right">Acciones</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {filteredDocs.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={7} className="h-32 text-center text-muted-foreground">
                   No se encontraron documentos.
-                </td>
-              </tr>
+                </TableCell>
+              </TableRow>
             ) : (
-              documents.map((doc) => {
+              filteredDocs.map((doc) => {
                 const config = statusConfig[doc.status];
+                const isProcessing = processingId === doc.id;
+                
                 return (
-                  <tr key={doc.id} className="hover:bg-gray-50/50 transition-colors group cursor-pointer">
-                    <td className="py-3 px-4">
+                  <TableRow 
+                    key={doc.id} 
+                    className={cn(
+                      "group cursor-pointer transition-colors",
+                      selected.has(doc.id) ? "bg-primary/5 hover:bg-primary/10" : "",
+                      isProcessing ? "opacity-50 pointer-events-none" : ""
+                    )}
+                  >
+                    <TableCell className="text-center">
+                      <Checkbox 
+                        checked={selected.has(doc.id)}
+                        onCheckedChange={() => handleSelect(doc.id)}
+                      />
+                    </TableCell>
+                    <TableCell>
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-xl bg-purple-50 flex items-center justify-center text-purple-600">
-                          <FileText size={18} />
+                        <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
+                          <FileText size={16} />
                         </div>
                         <div>
-                          <p className="text-sm font-bold text-gray-900 group-hover:text-purple-600 transition-colors">
+                          <p className="text-sm font-semibold text-foreground group-hover:text-primary transition-colors">
                             {doc.title}
                           </p>
-                          <p className="text-xs text-gray-500 font-mono">{doc.code}</p>
+                          <p className="text-xs text-muted-foreground font-mono">{doc.code}</p>
                         </div>
                       </div>
-                    </td>
-                    <td className="py-3 px-4">
-                      <span className="text-sm text-gray-600">{doc.category}</span>
-                    </td>
-                    <td className="py-3 px-4">
-                      <div className="flex flex-col gap-1">
-                        <div className={cn("inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold w-fit", config.bg, config.color)}>
+                    </TableCell>
+                    <TableCell>
+                      <span className="text-sm text-muted-foreground">{doc.category}</span>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex flex-col gap-1 items-start">
+                        <Badge variant={config.variant} className={cn("font-medium", config.colorClass)}>
                           {config.label}
-                        </div>
+                        </Badge>
                         {doc.status === 'revision' && (
                           <div className="flex items-center gap-1.5 ml-1 mt-1">
                             <div className="flex gap-0.5">
@@ -105,7 +185,7 @@ export default function DocumentTable({ documents }: { documents: DocumentProps[
                                   key={step}
                                   className={cn(
                                     "w-1.5 h-1.5 rounded-full",
-                                    (doc.approvalCount || 0) >= step ? "bg-blue-500" : "bg-blue-100"
+                                    (doc.approvalCount || 0) >= step ? "bg-blue-500" : "bg-blue-500/20"
                                   )}
                                 />
                               ))}
@@ -116,29 +196,55 @@ export default function DocumentTable({ documents }: { documents: DocumentProps[
                           </div>
                         )}
                       </div>
-                    </td>
-                    <td className="py-3 px-4">
-                      <div className="flex items-center gap-1.5">
-                        <span className="text-sm font-medium text-gray-900">v{doc.version}.0</span>
-                      </div>
-                    </td>
-                    <td className="py-3 px-4">
-                      <span className="text-sm text-gray-600">
+                    </TableCell>
+                    <TableCell>
+                      <span className="text-sm font-medium text-foreground">v{doc.version}.0</span>
+                    </TableCell>
+                    <TableCell>
+                      <span className="text-sm text-muted-foreground">
                         {doc.uploadedBy ? `${doc.uploadedBy.first_name} ${doc.uploadedBy.last_name}` : 'Sistema'}
                       </span>
-                    </td>
-                    <td className="py-3 px-4 text-right">
-                      <Link href={`/documents/${doc.id}`} className="inline-flex items-center justify-center w-8 h-8 rounded-lg text-gray-400 hover:text-gray-900 hover:bg-gray-100 transition-colors">
-                        <MoreVertical size={16} />
-                      </Link>
-                    </td>
-                  </tr>
+                    </TableCell>
+                    <TableCell className="text-right">
+                      {isProcessing ? (
+                        <Loader2 className="h-5 w-5 animate-spin text-muted-foreground ml-auto mr-2" />
+                      ) : (
+                        <DropdownMenu>
+                          <DropdownMenuTrigger className="h-8 w-8 flex items-center justify-center rounded-md hover:bg-muted transition-colors">
+                            <MoreVertical size={16} />
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end" className="w-40">
+                            {doc.status === 'revision' && (
+                              <>
+                                <DropdownMenuItem onClick={() => handleOptimisticAction(doc.id, 'aprobado')}>
+                                  <Check className="mr-2 h-4 w-4 text-emerald-500" /> Aprobar
+                                </DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => handleOptimisticAction(doc.id, 'borrador')}>
+                                  <X className="mr-2 h-4 w-4 text-destructive" /> Rechazar
+                                </DropdownMenuItem>
+                              </>
+                            )}
+                            {doc.status === 'aprobado' && (
+                              <DropdownMenuItem onClick={() => handleOptimisticAction(doc.id, 'borrador')}>
+                                <Archive className="mr-2 h-4 w-4" /> Mover a borrador
+                              </DropdownMenuItem>
+                            )}
+                            <Link href={`/documents/${doc.id}`}>
+                              <DropdownMenuItem>
+                                Ver detalles
+                              </DropdownMenuItem>
+                            </Link>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      )}
+                    </TableCell>
+                  </TableRow>
                 );
               })
             )}
-          </tbody>
-        </table>
+          </TableBody>
+        </Table>
       </div>
-    </section>
+    </div>
   );
 }

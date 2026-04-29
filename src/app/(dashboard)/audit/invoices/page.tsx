@@ -100,7 +100,7 @@ export default function InvoicesAuditPage() {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-full">
-        <Loader2 className="w-8 h-8 animate-spin text-purple-600" />
+        <Loader2 className="w-8 h-8 animate-spin text-indigo-600" />
       </div>
     );
   }
@@ -144,7 +144,7 @@ export default function InvoicesAuditPage() {
                 <tr key={doc.id} className="hover:bg-gray-50/30 transition-colors group">
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 bg-purple-50 rounded-xl flex items-center justify-center text-purple-600">
+                      <div className="w-10 h-10 bg-indigo-50 rounded-xl flex items-center justify-center text-indigo-600">
                         <Receipt size={20} />
                       </div>
                       <div>
@@ -155,7 +155,7 @@ export default function InvoicesAuditPage() {
                   </td>
                   <td className="px-6 py-4">
                     <select 
-                      className="text-xs bg-white border border-gray-200 rounded-lg p-1.5 focus:outline-none focus:ring-2 focus:ring-purple-500/20 max-w-[200px]"
+                      className="text-xs bg-white border border-gray-200 rounded-lg p-1.5 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 max-w-[200px]"
                       defaultValue={audit?.contract_id || ""}
                     >
                       <option value="">Seleccionar Contrato...</option>
@@ -191,7 +191,7 @@ export default function InvoicesAuditPage() {
                     <button 
                       onClick={() => validateInvoice(doc.id, audit?.contract_id, 'org_id')}
                       disabled={validatingId === doc.id}
-                      className="inline-flex items-center gap-2 px-4 py-2 bg-purple-600 text-white text-xs font-bold rounded-xl hover:bg-purple-700 transition-all disabled:opacity-50"
+                      className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white text-xs font-bold rounded-xl hover:bg-indigo-700 transition-all disabled:opacity-50"
                     >
                       {validatingId === doc.id ? (
                         <Loader2 size={14} className="animate-spin" />

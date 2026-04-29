@@ -18,7 +18,7 @@ const MODULE_CONFIG: Record<SearchResult['module'], {
   bg: string;
 }> = {
   document: { icon: FileText,    label: 'Documentos', color: 'text-indigo-600', bg: 'bg-indigo-50' },
-  legajo:   { icon: FolderOpen,  label: 'Legajos',    color: 'text-purple-600', bg: 'bg-purple-50' },
+  legajo:   { icon: FolderOpen,  label: 'Legajos',    color: 'text-indigo-600', bg: 'bg-indigo-50' },
   personnel:{ icon: Users,       label: 'Personal',   color: 'text-blue-600',   bg: 'bg-blue-50'   },
   vehicle:  { icon: Truck,       label: 'Flota',      color: 'text-amber-600',  bg: 'bg-amber-50'  },
   budget:   { icon: TrendingUp,  label: 'Presupuestos',color: 'text-emerald-600',bg: 'bg-emerald-50'},

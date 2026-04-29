@@ -9,9 +9,13 @@ export default function SyncProgress() {
   const [status, setStatus] = useState<SyncStatus>('idle');
   const [pending, setPending] = useState(0);
   const [total, setTotal] = useState(0);
-  const [isOnline, setIsOnline] = useState(() => typeof navigator !== 'undefined' ? navigator.onLine : true);
+  const [isOnline, setIsOnline] = useState(true);
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    setMounted(true);
+    setIsOnline(navigator.onLine);
+
     // Sync subscription
     const unsubscribe = subscribeToSync((s, p, t) => {
       setStatus(s);
@@ -33,7 +37,7 @@ export default function SyncProgress() {
     };
   }, []);
 
-  if (status === 'idle' && isOnline) return null;
+  if (!mounted || (status === 'idle' && isOnline)) return null;
 
   const progress = total > 0 ? ((total - pending) / total) * 100 : 0;
 

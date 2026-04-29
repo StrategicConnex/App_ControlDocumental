@@ -23,18 +23,7 @@ export default async function DocumentsPage() {
   }
 
   // Transformar los datos de Supabase a la estructura que espera el componente
-  const formattedDocs = documents.map((doc: {
-    id: string;
-    title: string;
-    code: string;
-    category: string;
-    status: 'borrador' | 'revision' | 'aprobado' | 'vencido' | 'por_vencer';
-    current_version: number;
-    expiry_date: string | null;
-    profiles: { first_name: string; last_name: string } | null;
-    created_at: string;
-    approvals?: { count: number }[];
-  }) => ({
+  const formattedDocs = documents.map((doc: any) => ({
     id: doc.id,
     title: doc.title,
     code: doc.code,
@@ -48,10 +37,14 @@ export default async function DocumentsPage() {
   }));
 
   return (
-    <div className="space-y-8 max-w-7xl mx-auto">
-      <header className="flex flex-col gap-1">
-        <h1 className="text-2xl font-bold text-gray-900">Gestión Documental</h1>
-        <p className="text-sm text-gray-500">Administra todos los documentos de la organización.</p>
+    <div className="space-y-6 max-w-[1600px] mx-auto pb-10">
+      <header className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight text-foreground">Repositorio Documental</h1>
+          <p className="text-sm text-muted-foreground mt-1">
+            Administración centralizada de archivos, versiones y aprobaciones.
+          </p>
+        </div>
       </header>
 
       <DocumentTable documents={formattedDocs} />

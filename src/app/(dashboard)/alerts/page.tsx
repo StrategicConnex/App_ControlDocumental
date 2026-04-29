@@ -91,7 +91,7 @@ export default async function AlertsPage() {
         <div className="space-y-6">
           {[
             { label: 'Documentos', icon: FileText, alerts: docAlerts, color: 'text-indigo-600', bg: 'bg-indigo-50' },
-            { label: 'Personal', icon: Users, alerts: personnelAlerts, color: 'text-purple-600', bg: 'bg-purple-50' },
+            { label: 'Personal', icon: Users, alerts: personnelAlerts, color: 'text-blue-600', bg: 'bg-blue-50' },
             { label: 'Flota', icon: Truck, alerts: vehicleAlerts, color: 'text-amber-600', bg: 'bg-amber-50' },
           ].map(({ label, icon: Icon, alerts, color, bg }) => (
             <section key={label} className="bg-white p-5 rounded-[2rem] card-shadow border border-gray-100">

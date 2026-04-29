@@ -19,7 +19,7 @@ import {
 import { cn } from '@/lib/utils'
 import { createClient } from '@/utils/supabase/client'
 import { useRouter } from 'next/navigation'
-import GlobalSearch from '@/components/ui/GlobalSearch'
+import { useSidebar } from './SidebarProvider'
 
 const menuItems = [
   { icon: LayoutDashboard, label: 'Dashboard', href: '/' },
@@ -44,6 +44,7 @@ export default function Sidebar() {
   const pathname = usePathname()
   const router = useRouter()
   const supabase = createClient()
+  const { isOpen, setIsOpen } = useSidebar()
 
   const handleLogout = async () => {
     await supabase.auth.signOut()
@@ -52,114 +53,123 @@ export default function Sidebar() {
   }
 
   return (
-    <aside className="w-64 h-screen bg-white border-r border-gray-100 flex flex-col sidebar-shadow fixed left-0 top-0 z-50">
-      {/* Logo */}
-      <div className="p-6 flex items-center gap-3">
-        <div className="w-10 h-10 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-600/20">
-          <Zap size={20} className="text-white" />
-        </div>
-        <div>
-          <span className="font-bold text-base tracking-tight text-gray-900 leading-none">Strategic</span>
-          <span className="block text-[10px] font-semibold text-gray-400 uppercase tracking-widest">Connex</span>
-        </div>
-      </div>
+    <>
+      {/* Mobile Overlay */}
+      {isOpen && (
+        <div 
+          className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40 lg:hidden"
+          onClick={() => setIsOpen(false)}
+        />
+      )}
 
-      {/* Main Menu */}
-      <div className="flex-1 overflow-y-auto px-4 space-y-6 pt-4">
-        
-        {/* Global Search Trigger */}
-        <GlobalSearch />
-
-        <div>
-          <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-3 px-2">
-            Módulos
-          </p>
-          <nav className="space-y-0.5">
-            {menuItems.map((item) => {
-              const isActive = pathname === item.href || (item.href !== '/' && pathname.startsWith(item.href))
-              return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  className={cn(
-                    'flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-150',
-                    isActive
-                      ? 'bg-indigo-50 text-indigo-600 font-semibold'
-                      : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900'
-                  )}
-                >
-                  <item.icon size={18} className={cn(isActive ? 'text-indigo-600' : 'text-gray-400')} />
-                  <span className="text-sm">{item.label}</span>
-                  {isActive && <ChevronRight size={14} className="ml-auto text-indigo-400" />}
-                </Link>
-              )
-            })}
-          </nav>
+      <aside className={cn(
+        "w-64 h-screen bg-sidebar border-r border-sidebar-border flex flex-col sidebar-shadow fixed left-0 top-0 z-50 transition-transform duration-300 ease-in-out lg:translate-x-0",
+        isOpen ? "translate-x-0" : "-translate-x-full"
+      )}>
+        {/* Logo */}
+        <div className="p-6 flex items-center gap-3">
+          <div className="w-10 h-10 bg-gradient-to-br from-primary to-primary/80 rounded-xl flex items-center justify-center shadow-sm">
+            <Zap size={20} className="text-primary-foreground" />
+          </div>
+          <div>
+            <span className="font-bold text-base tracking-tight text-sidebar-foreground leading-none">Strategic</span>
+            <span className="block text-[10px] font-semibold text-muted-foreground uppercase tracking-widest">Connex</span>
+          </div>
         </div>
 
-        <div>
-          <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-3 px-2">
-            IA & Auditoría
-          </p>
-          <nav className="space-y-0.5">
-            {aiItems.map((item) => {
-              const isActive = pathname === item.href
-              return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  className={cn(
-                    'flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-150',
-                    isActive
-                      ? 'bg-purple-50 text-purple-600 font-semibold'
-                      : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900'
-                  )}
-                >
-                  <item.icon size={18} className={cn(isActive ? 'text-purple-600' : 'text-gray-400')} />
-                  <span className="text-sm">{item.label}</span>
-                </Link>
-              )
-            })}
-          </nav>
+        {/* Main Menu */}
+        <div className="flex-1 overflow-y-auto px-4 space-y-6 pt-4">
+          <div>
+            <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-3 px-2">
+              Módulos
+            </p>
+            <nav className="space-y-0.5">
+              {menuItems.map((item) => {
+                const isActive = pathname === item.href || (item.href !== '/' && pathname.startsWith(item.href))
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    className={cn(
+                      'flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-150',
+                      isActive
+                        ? 'bg-sidebar-accent text-sidebar-accent-foreground font-semibold'
+                        : 'text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground'
+                    )}
+                  >
+                    <item.icon size={18} className={cn(isActive ? 'text-primary' : 'text-muted-foreground')} />
+                    <span className="text-sm">{item.label}</span>
+                    {isActive && <ChevronRight size={14} className="ml-auto text-primary" />}
+                  </Link>
+                )
+              })}
+            </nav>
+          </div>
+
+          <div>
+            <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-3 px-2">
+              IA & Auditoría
+            </p>
+            <nav className="space-y-0.5">
+              {aiItems.map((item) => {
+                const isActive = pathname === item.href
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    className={cn(
+                      'flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-150',
+                      isActive
+                        ? 'bg-sidebar-accent text-sidebar-accent-foreground font-semibold'
+                        : 'text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground'
+                    )}
+                  >
+                    <item.icon size={18} className={cn(isActive ? 'text-primary' : 'text-muted-foreground')} />
+                    <span className="text-sm">{item.label}</span>
+                  </Link>
+                )
+              })}
+            </nav>
+          </div>
+
+          <div>
+            <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-3 px-2">
+              Sistema
+            </p>
+            <nav className="space-y-0.5">
+              {secondaryItems.map((item) => {
+                const isActive = pathname === item.href
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    className={cn(
+                      'flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-150',
+                      isActive
+                        ? 'bg-sidebar-accent text-sidebar-accent-foreground font-semibold'
+                        : 'text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground'
+                    )}
+                  >
+                    <item.icon size={18} className={cn(isActive ? 'text-primary' : 'text-muted-foreground')} />
+                    <span className="text-sm">{item.label}</span>
+                  </Link>
+                )
+              })}
+            </nav>
+          </div>
         </div>
 
-        <div>
-          <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-3 px-2">
-            Sistema
-          </p>
-          <nav className="space-y-0.5">
-            {secondaryItems.map((item) => {
-              const isActive = pathname === item.href
-              return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  className={cn(
-                    'flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-150',
-                    isActive
-                      ? 'bg-indigo-50 text-indigo-600 font-semibold'
-                      : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900'
-                  )}
-                >
-                  <item.icon size={18} className={cn(isActive ? 'text-indigo-600' : 'text-gray-400')} />
-                  <span className="text-sm">{item.label}</span>
-                </Link>
-              )
-            })}
-          </nav>
+        {/* Logout */}
+        <div className="p-4 border-t border-sidebar-border">
+          <button
+            onClick={handleLogout}
+            className="w-full flex items-center gap-3 px-3 py-3 text-sm text-destructive hover:bg-destructive/10 rounded-xl transition-colors"
+          >
+            <LogOut size={18} />
+            <span className="font-medium">Cerrar Sesión</span>
+          </button>
         </div>
-      </div>
-
-      {/* Logout */}
-      <div className="p-4 border-t border-gray-100">
-        <button
-          onClick={handleLogout}
-          className="w-full flex items-center gap-3 px-3 py-3 text-sm text-red-500 hover:bg-red-50 rounded-xl transition-colors"
-        >
-          <LogOut size={18} />
-          <span className="font-medium">Cerrar Sesión</span>
-        </button>
-      </div>
-    </aside>
+      </aside>
+    </>
   )
 }

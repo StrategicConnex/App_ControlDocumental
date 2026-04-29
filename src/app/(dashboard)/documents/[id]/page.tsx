@@ -9,8 +9,9 @@ export const metadata = {
   title: "Detalle de Documento | Strategic Connex",
 };
 
-export default async function DocumentDetailPage({ params }: { params: { id: string } }) {
+export default async function DocumentDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const supabase = await createClient();
+  const resolvedParams = await params;
 
   let doc: {
     id: string;
@@ -34,8 +35,8 @@ export default async function DocumentDetailPage({ params }: { params: { id: str
   }[] = [];
 
   try {
-    doc = await getDocumentById(supabase, params.id);
-    versions = await getDocumentVersions(supabase, params.id);
+    doc = await getDocumentById(supabase, resolvedParams.id);
+    versions = await getDocumentVersions(supabase, resolvedParams.id);
   } catch (e) {
     console.error("Error fetching document details", e);
   }

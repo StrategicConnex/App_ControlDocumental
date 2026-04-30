@@ -1,9 +1,10 @@
 ```
 # Especificación de Requerimientos de Software (SRS)
 ## SC Platform — Plataforma de Compliance Documental y Operativo para Oil & Gas
-**Versión:** 3.3  
+**Versión:** 3.4  
 **Fecha:** 30 de abril de 2026  
-**Estado:** Estable con Auditoría Forense y Hardening de Seguridad completo
+**Estado:** Estable con Capa de Diagnóstico IA y RAG Optimizado
+
 
 ---
 
@@ -222,6 +223,23 @@ La plataforma utiliza un motor de orquestación inteligente para gestionar múlt
 #### RF-28: Scoring de Proveedores
 - Algoritmo que puntúa proveedores según rendimiento histórico.
 - Priorización ajustable (Costo vs. Velocidad vs. Precisión).
+
+### 2.8 Módulo 8 — Asistente de Inteligencia Documental (RAG)
+
+#### RF-29: Motor de Preguntas y Respuestas (Q&A Engine)
+- El sistema permite realizar consultas en lenguaje natural sobre el repositorio documental.
+- Implementación de RAG (Retrieval-Augmented Generation) para extraer contextos precisos de documentos PDF/DOCX.
+- Búsqueda híbrida: combina búsqueda semántica (vectorial) con búsqueda por palabras clave (keyword search) para máxima precisión.
+
+#### RF-30: Monitoreo de Salud de IA (Diagnostics)
+- Dashboard de diagnóstico para proveedores de IA: `/api/ai/health`.
+- Reporte detallado de errores: captura mensajes técnicos de proveedores (ej. cuotas agotadas, errores de autenticación).
+- Failover dinámico: reintento automático con proveedores alternativos en milisegundos.
+
+#### RF-31: Procesamiento de Documentos
+- Vectorización automática de documentos al ser cargados o aprobados.
+- Soporte para embeddings multilingües (`text-embedding-3-small`).
+
 
 ---
 

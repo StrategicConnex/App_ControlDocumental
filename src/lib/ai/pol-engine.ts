@@ -314,7 +314,7 @@ export class ProviderOrchestrator {
         console.error(`POL: Health Check falló para ${id}:`, e.message || e);
         const stat = this.stats.get(id)!;
         stat.status = 'down';
-        results[id] = 'down';
+        results[id] = `down: ${e.message || e}`;
       }
     }
     return results;

@@ -1,30 +1,33 @@
+
 import { NextResponse } from 'next/server';
 import { aiClient } from '@/lib/ai/ai-client';
+import { createClient } from '@/lib/supabase/server';
 
-/**
- * AI Health Check API.
- * Verifies connectivity to OpenRouter and DeepSeek.
- */
 export async function GET() {
   try {
-    const health = await aiClient.checkHealth();
-    
-    let status = 'healthy';
-    if (!health.openrouter && !health.deepseek) {
-      status = 'critical';
-    } else if (!health.openrouter) {
-      status = 'degraded';
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+
+    // Solo permitir a usuarios autenticados (opcional: solo admins)
+    if (!user) {
+      return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
     }
 
+    const health = await aiClient.checkHealth();
+    
     return NextResponse.json({
-      status,
+      status: 'ok',
+      timestamp: new Date().toISOString(),
       providers: health,
-      timestamp: new Date().toISOString()
+      embedding: {
+        provider: 'openrouter',
+        model: 'openai/text-embedding-3-small'
+      }
     });
   } catch (error: any) {
     return NextResponse.json({ 
       status: 'error', 
-      message: error.message 
+      message: error.message || 'Error desconocido en el health check' 
     }, { status: 500 });
   }
 }

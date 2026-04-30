@@ -294,8 +294,8 @@ export class ProviderOrchestrator {
   /**
    * Health check proactivo
    */
-  async performHealthCheck(): Promise<Record<string, ProviderHealth>> {
-    const results: Record<string, ProviderHealth> = {};
+  async performHealthCheck(): Promise<Record<string, string>> {
+    const results: Record<string, string> = {};
     console.log('POL: Iniciando Health Check proactivo...');
     for (const [id, provider] of this.registry) {
       try {

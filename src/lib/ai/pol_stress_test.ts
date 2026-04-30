@@ -26,7 +26,7 @@ async function testPOL() {
       { strategy: 'balanced' }
     );
     console.log(`Respuesta recibida de: ${res1.provider} (${res1.model})`);
-    console.log(`Latencia: ${res1.responseTimeMs}ms | Tokens: ${res1.usage.total_tokens}`);
+    console.log(`Latencia: ${res1.latency}ms | Tokens: ${res1.usage.total_tokens}`);
   } catch (e: any) {
     console.error('Error en Chat 1:', e.message);
   }
@@ -40,7 +40,7 @@ async function testPOL() {
       { strategy: 'cost' }
     );
     console.log(`Respuesta recibida de: ${res2.provider} (${res2.model})`);
-    console.log(`Latencia: ${res2.responseTimeMs}ms | Tokens: ${res2.usage.total_tokens}`);
+    console.log(`Latencia: ${res2.latency}ms | Tokens: ${res2.usage.total_tokens}`);
   } catch (e: any) {
     console.error('Error en Chat 2:', e.message);
   }

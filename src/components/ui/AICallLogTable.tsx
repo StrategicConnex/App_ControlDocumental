@@ -23,44 +23,44 @@ interface Log {
 
 export default function AICallLogTable({ logs }: { logs: Log[] }) {
   return (
-    <div className="rounded-xl border border-white/10 bg-white/5 backdrop-blur-sm overflow-hidden">
+    <div className="rounded-xl border border-border bg-card overflow-hidden shadow-sm">
       <Table>
-        <TableHeader className="bg-white/5">
-          <TableRow className="border-white/10 hover:bg-transparent">
-            <TableHead className="text-gray-400 font-bold uppercase text-[10px]">Proveedor</TableHead>
-            <TableHead className="text-gray-400 font-bold uppercase text-[10px]">Modelo</TableHead>
-            <TableHead className="text-gray-400 font-bold uppercase text-[10px]">Tokens</TableHead>
-            <TableHead className="text-gray-400 font-bold uppercase text-[10px]">Latencia</TableHead>
-            <TableHead className="text-gray-400 font-bold uppercase text-[10px]">Estado</TableHead>
-            <TableHead className="text-gray-400 font-bold uppercase text-[10px] text-right">Fecha</TableHead>
+        <TableHeader className="bg-muted/50">
+          <TableRow className="border-border hover:bg-transparent">
+            <TableHead className="text-muted-foreground font-bold uppercase text-[10px] tracking-wider">Proveedor</TableHead>
+            <TableHead className="text-muted-foreground font-bold uppercase text-[10px] tracking-wider">Modelo</TableHead>
+            <TableHead className="text-muted-foreground font-bold uppercase text-[10px] tracking-wider">Tokens</TableHead>
+            <TableHead className="text-muted-foreground font-bold uppercase text-[10px] tracking-wider">Latencia</TableHead>
+            <TableHead className="text-muted-foreground font-bold uppercase text-[10px] tracking-wider">Estado</TableHead>
+            <TableHead className="text-muted-foreground font-bold uppercase text-[10px] tracking-wider text-right">Fecha</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {logs.map((log) => (
-            <TableRow key={log.id} className="border-white/5 hover:bg-white/5 transition-colors">
-              <TableCell className="font-medium text-white">
-                {log.provider === 'google' ? '🚀 Gemini' : log.provider}
+            <TableRow key={log.id} className="border-border hover:bg-muted/50 transition-colors">
+              <TableCell className="font-semibold text-foreground">
+                {log.provider === 'google' ? '🚀 Gemini' : log.provider === 'openai' ? '🧠 OpenAI' : log.provider}
               </TableCell>
-              <TableCell className="text-gray-300 text-xs font-mono">
+              <TableCell className="text-muted-foreground text-xs font-mono">
                 {log.model}
               </TableCell>
-              <TableCell className="text-gray-300">
-                <span className="font-bold text-indigo-400">{log.total_tokens}</span>
+              <TableCell>
+                <span className="font-bold text-primary">{log.total_tokens.toLocaleString()}</span>
               </TableCell>
-              <TableCell className="text-gray-300">
-                <span className={log.response_time_ms > 5000 ? 'text-amber-400' : 'text-emerald-400'}>
+              <TableCell>
+                <span className={log.response_time_ms > 5000 ? 'text-amber-600 font-medium' : 'text-emerald-600 font-medium'}>
                   {log.response_time_ms}ms
                 </span>
               </TableCell>
               <TableCell>
                 <Badge 
-                  variant={log.success ? "default" : "destructive"}
-                  className={log.success ? "bg-emerald-500/20 text-emerald-400 border-emerald-500/30" : ""}
+                  variant={log.success ? "secondary" : "destructive"}
+                  className={log.success ? "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-500/20" : ""}
                 >
                   {log.success ? 'Éxito' : 'Error'}
                 </Badge>
               </TableCell>
-              <TableCell className="text-right text-gray-500 text-[10px]">
+              <TableCell className="text-right text-muted-foreground text-[10px] font-medium">
                 {new Date(log.created_at).toLocaleString()}
               </TableCell>
             </TableRow>

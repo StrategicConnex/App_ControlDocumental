@@ -16,35 +16,65 @@ export async function POST(req: NextRequest) {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
 
-    // 1. Marcar la notificación como leída y procesada
-    await supabase
-      .from('notifications')
-      .update({ is_read: true, metadata: { status: 'approved' } })
-      .eq('id', notificationId);
+    // Permission check: Solo admin o gestor pueden aprobar
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('role, org_id')
+      .eq('id', user.id)
+      .single() as any; // Cast as any for simplicity in this edge case or define a proper interface if available
 
-    // 2. Ejecutar la acción según el tipo
-    if (type === 'invoice_discrepancy') {
-      // Por ejemplo, aprobar la factura a pesar de la discrepancia menor
-      await supabase
-        .from('invoices')
-        .update({ 
-          status: 'aprobada', 
-          metadata: { audit_notes: 'Aprobado mediante acción rápida de notificación.' } 
-        })
-        .eq('id', resourceId);
-    } else if (type === 'contract_risk') {
-      // Por ejemplo, marcar el contrato como "aceptado con observaciones"
-      await supabase
-        .from('contracts')
-        .update({ 
-          status: 'active', // 'active' es el default en la base, 'aceptado' no existe en el schema actual
-          compliance_score: 100,
-          metadata: { audit_notes: 'Riesgo aceptado mediante acción rápida.' }
-        })
-        .eq('id', resourceId);
+    if (!profile || !['admin', 'gestor', 'owner'].includes(profile.role)) {
+      return NextResponse.json({ error: 'Permisos insuficientes' }, { status: 403 });
     }
 
-    return NextResponse.json({ success: true });
+    // 1. Marcar la notificación como leída (Optimistic update on DB)
+    const { error: notifError } = await supabase
+      .from('notifications')
+      .update({ is_read: true, metadata: { status: 'approved', approved_by: user.id } })
+      .eq('id', notificationId)
+      .eq('org_id', profile.org_id); // Security: Ensure same org
+
+    if (notifError) throw notifError;
+
+    try {
+      // 2. Ejecutar la acción según el tipo
+      if (type === 'invoice_discrepancy') {
+        const { error: updateError } = await supabase
+          .from('invoices')
+          .update({ 
+            status: 'aprobada', 
+            metadata: { audit_notes: `Aprobado por ${user.email} vía acción rápida.` } 
+          })
+          .eq('id', resourceId)
+          .eq('org_id', profile.org_id);
+        
+        if (updateError) throw updateError;
+
+      } else if (type === 'contract_risk') {
+        const { error: updateError } = await supabase
+          .from('contracts')
+          .update({ 
+            status: 'active',
+            compliance_score: 100,
+            metadata: { audit_notes: `Riesgo aceptado por ${user.email}.` }
+          })
+          .eq('id', resourceId)
+          .eq('org_id', profile.org_id);
+
+        if (updateError) throw updateError;
+      }
+
+      return NextResponse.json({ success: true });
+
+    } catch (updateErr) {
+      // Rollback: Marcar la notificación como NO leída si la acción falló
+      await supabase
+        .from('notifications')
+        .update({ is_read: false, metadata: { error: 'Failed to apply action' } })
+        .eq('id', notificationId);
+      
+      throw updateErr;
+    }
 
   } catch (error: any) {
     console.error('Quick Approval Error:', error);

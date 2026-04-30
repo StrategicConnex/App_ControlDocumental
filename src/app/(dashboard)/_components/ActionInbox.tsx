@@ -13,6 +13,14 @@ import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 
 import { useRouter } from "next/navigation";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 export default function ActionInbox({ initialAlerts, orgId }: { initialAlerts: AlertItem[], orgId?: string | undefined }) {
   const router = useRouter();
@@ -142,7 +150,7 @@ export default function ActionInbox({ initialAlerts, orgId }: { initialAlerts: A
                   {alert.type === 'document' ? <FileText size={18} /> : alert.type === 'personnel' ? <Users size={18} /> : <Truck size={18} />}
                 </div>
 
-                <div className="flex-1 min-w-0 cursor-pointer" onClick={() => router.push(alert.link)}>
+                <div className="flex-1 min-w-0 cursor-pointer" onClick={() => alert.link !== '#' && router.push(alert.link)}>
                   <div className="flex items-center gap-2 mb-1">
                     <p className="text-sm font-semibold text-foreground truncate hover:text-primary transition-colors">
                       {alert.title}
@@ -160,35 +168,44 @@ export default function ActionInbox({ initialAlerts, orgId }: { initialAlerts: A
                 </div>
 
                 {/* Quick Actions (Show on hover) */}
-                <div className="opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-2 shrink-0">
+                <div 
+                  className="opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-2 shrink-0"
+                  onClick={(e) => e.stopPropagation()}
+                >
                   <Button 
                     size="sm" 
                     variant="outline" 
                     className="h-8"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      router.push(alert.link);
+                    onClick={() => {
+                      if (alert.link && alert.link !== '#') router.push(alert.link);
+                      else toast.error("Enlace no disponible");
                     }}
                   >
                     Ver Detalles
                   </Button>
-                  <Button size="sm" className="h-8" onClick={(e) => {
-                    e.stopPropagation();
-                    handleQuickResolve(alert, e);
-                  }}>
-                    {resolveMutation.isPending && resolveMutation.variables?.id === alert.id ? "Resolviendo..." : <><Check size={16} className="mr-1" /> Resolver rápido</>}
+                  <Button size="sm" className="h-8" onClick={(e) => handleQuickResolve(alert, e)}>
+                    {resolveMutation.isPending && resolveMutation.variables?.id === alert.id ? "Resolviendo..." : <><Check size={16} className="mr-1" /> Resolver</>}
                   </Button>
-                  <Button 
-                    size="icon" 
-                    variant="ghost" 
-                    className="h-8 w-8 text-muted-foreground"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      toast.info("Opciones adicionales próximamente");
-                    }}
-                  >
-                    <MoreHorizontal size={16} />
-                  </Button>
+                  
+                  <DropdownMenu>
+                    <DropdownMenuTrigger className="h-8 w-8 flex items-center justify-center rounded-md hover:bg-muted transition-colors text-muted-foreground">
+                      <MoreHorizontal size={16} />
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuLabel>Opciones</DropdownMenuLabel>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem onClick={() => alert.link !== '#' && router.push(alert.link)}>
+                        <FileText size={14} className="mr-2" /> Ver página completa
+                      </DropdownMenuItem>
+                      <DropdownMenuItem>
+                        <Clock size={14} className="mr-2" /> Posponer (Snooze)
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem className="text-destructive">
+                        Ignorar alerta
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </div>
               </motion.div>
             )

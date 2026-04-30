@@ -5,7 +5,7 @@ export async function getDocuments(supabase: SupabaseClient, orgId?: string, cat
     .from('documents')
     .select(`
       *,
-      profiles:created_by (full_name),
+      profiles:created_by (id, full_name, first_name, last_name),
       approvals(count)
     `)
     .order('created_at', { ascending: false });
@@ -28,7 +28,7 @@ export async function getDocumentById(supabase: SupabaseClient, id: string) {
     .from('documents')
     .select(`
       *,
-      profiles:created_by (full_name)
+      profiles:created_by (id, full_name, first_name, last_name)
     `)
     .eq('id', id)
     .single();

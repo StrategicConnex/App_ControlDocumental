@@ -1,7 +1,7 @@
 // Build trigger: 2026-04-30 02:56
 import OpenAI from 'openai';
 import { z } from 'zod';
-import { ProviderOrchestrator } from './pol-engine';
+import { ProviderOrchestrator, POLResponse, AIMessage } from './pol-engine';
 import { AI_MODELS, getPolConfigs } from './pol-configs';
 
 const envSchema = z.object({
@@ -9,7 +9,7 @@ const envSchema = z.object({
   OPENROUTER_BASE_URL: z.string().url().default('https://openrouter.ai/api/v1'),
   DEEPSEEK_API_KEY: z.string().min(1, "DEEPSEEK_API_KEY es requerido"),
   DEEPSEEK_BASE_URL: z.string().url().default('https://api.deepseek.com/v1'),
-  GEMINI_API_KEY: z.string().optional(),
+  GEMINI_API_KEY: z.string().min(1, "GEMINI_API_KEY es requerido"),
   NEXT_PUBLIC_APP_URL: z.string().url().default('https://sc-platform.com')
 });
 
@@ -21,19 +21,24 @@ try {
     OPENROUTER_BASE_URL: process.env.OPENROUTER_BASE_URL,
     DEEPSEEK_API_KEY: process.env.DEEPSEEK_API_KEY,
     DEEPSEEK_BASE_URL: process.env.DEEPSEEK_BASE_URL,
-    GEMINI_API_KEY: process.env.GEMINI_API_KEY || 'AIzaSyD4FU9vyGm9hcVP9ZdbpBlYA9_ShO7eno0',
+    GEMINI_API_KEY: process.env.GEMINI_API_KEY,
     NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL,
   });
-} catch (error) {
-  console.warn("⚠️ Advertencia: Faltan variables de entorno para IA.");
-  env = {
-    OPENROUTER_API_KEY: process.env.OPENROUTER_API_KEY || 'missing-key',
-    OPENROUTER_BASE_URL: 'https://openrouter.ai/api/v1',
-    DEEPSEEK_API_KEY: process.env.DEEPSEEK_API_KEY || 'missing-key',
-    DEEPSEEK_BASE_URL: 'https://api.deepseek.com/v1',
-    GEMINI_API_KEY: 'AIzaSyD4FU9vyGm9hcVP9ZdbpBlYA9_ShO7eno0',
-    NEXT_PUBLIC_APP_URL: 'https://sc-platform.com'
-  };
+} catch (error: any) {
+  if (process.env.NODE_ENV === 'production') {
+    console.error("❌ ERROR FATAL: Faltan variables de entorno críticas para la IA en producción.");
+    throw new Error("Missing AI Environment Variables");
+  } else {
+    console.warn("⚠️ Advertencia: Faltan variables de entorno para IA. Usando placeholders para desarrollo.");
+    env = {
+      OPENROUTER_API_KEY: process.env.OPENROUTER_API_KEY || 'dev-key-required',
+      OPENROUTER_BASE_URL: 'https://openrouter.ai/api/v1',
+      DEEPSEEK_API_KEY: process.env.DEEPSEEK_API_KEY || 'dev-key-required',
+      DEEPSEEK_BASE_URL: 'https://api.deepseek.com/v1',
+      GEMINI_API_KEY: process.env.GEMINI_API_KEY || 'dev-key-required',
+      NEXT_PUBLIC_APP_URL: 'https://sc-platform.com'
+    };
+  }
 }
 
 export { AI_MODELS };
@@ -41,16 +46,8 @@ export const polConfigs = getPolConfigs(env);
 
 export type AIProvider = 'openrouter' | 'deepseek-direct' | 'google-gemini';
 
-export interface AIResponse {
-  content: string;
+export interface AIResponse extends POLResponse {
   provider: AIProvider;
-  model: string;
-  usage: {
-    prompt_tokens: number;
-    completion_tokens: number;
-    total_tokens: number;
-  };
-  responseTimeMs: number;
 }
 
 export class AIClient {
@@ -98,7 +95,7 @@ export class AIClient {
   }
 
   async chat(
-    messages: Array<{ role: 'system' | 'user' | 'assistant'; content: string }>,
+    messages: AIMessage[],
     orgId: string,
     options?: { 
       strategy?: 'cost' | 'latency' | 'balanced'; 
@@ -125,15 +122,8 @@ export class AIClient {
       );
 
       return {
-        content: result.content,
-        provider: result.providerId as AIProvider,
-        model: result.model,
-        usage: {
-          prompt_tokens: result.usage?.prompt_tokens || 0,
-          completion_tokens: result.usage?.completion_tokens || 0,
-          total_tokens: result.usage?.total_tokens || 0,
-        },
-        responseTimeMs: result.latency
+        ...result,
+        provider: result.providerId as AIProvider
       };
     } catch (error: any) {
       const errorMessage = error.message || String(error);

@@ -55,72 +55,72 @@ export default function AIDashboardPage() {
   }
 
   return (
-    <div className="p-8 space-y-8 min-h-screen bg-[#0a0a0f] text-white">
+    <div className="p-8 space-y-8 min-h-screen bg-background text-foreground">
       {/* Header */}
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
           <div className="flex items-center gap-2 mb-2">
-            <Badge className="bg-indigo-500/20 text-indigo-400 border-indigo-500/30 font-bold uppercase tracking-widest text-[9px]">
+            <Badge variant="outline" className="font-bold uppercase tracking-widest text-[9px] border-primary/30 text-primary">
               Infraestructura v4.0
             </Badge>
-            <span className="text-gray-600">/</span>
-            <span className="text-xs text-gray-400 font-mono">Provider Orchestration Layer</span>
+            <span className="text-muted-foreground/30">/</span>
+            <span className="text-xs text-muted-foreground font-mono">Provider Orchestration Layer</span>
           </div>
-          <h1 className="text-4xl font-black tracking-tighter bg-gradient-to-r from-white via-white to-white/40 bg-clip-text text-transparent">
+          <h1 className="text-4xl font-black tracking-tighter">
             AI Operations Center
           </h1>
-          <p className="text-gray-500 text-sm mt-1">
+          <p className="text-muted-foreground text-sm mt-1">
             Monitoreo en tiempo real de la capa de inteligencia distribuida.
           </p>
         </div>
         
         <button 
           onClick={fetchMetrics}
-          className="flex items-center gap-2 px-4 py-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl transition-all active:scale-95"
+          className="flex items-center gap-2 px-4 py-2 bg-muted hover:bg-muted/80 border border-border rounded-xl transition-all active:scale-95 shadow-sm"
         >
-          <RefreshCcw className="w-4 h-4 text-indigo-400" />
+          <RefreshCcw className="w-4 h-4 text-primary" />
           <span className="text-xs font-bold uppercase tracking-tighter">Actualizar</span>
         </button>
       </div>
 
       {/* KPI Section */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         <AIKPICard 
           title="Consumo de Tokens"
           value={data.summary.totalTokens.toLocaleString()}
-          icon={<Cpu className="w-5 h-5 text-indigo-400" />}
+          icon={<Cpu className="w-5 h-5 text-primary" />}
           trend={{ value: 12, isPositive: true }}
           description="Total tokens procesados (7d)"
         />
         <AIKPICard 
           title="Tasa de Éxito"
           value={`${data.summary.successRate.toFixed(1)}%`}
-          icon={<ShieldCheck className={`w-5 h-5 ${data.summary.successRate > 95 ? 'text-emerald-400' : 'text-amber-400'}`} />}
+          icon={<ShieldCheck className={`w-5 h-5 ${data.summary.successRate > 95 ? 'text-emerald-500' : 'text-amber-500'}`} />}
           description="Disponibilidad global del POL"
         />
         <AIKPICard 
           title="Latencia Promedio"
           value={`${data.summary.avgLatency.toFixed(0)}ms`}
-          icon={<Zap className="w-5 h-5 text-amber-400" />}
+          icon={<Zap className="w-5 h-5 text-amber-500" />}
           description="Tiempo de respuesta end-to-end"
         />
         <AIKPICard 
           title="Costo Estimado"
           value={`$${data.summary.estimatedCost.toFixed(2)}`}
-          icon={<DollarSign className="w-5 h-5 text-emerald-400" />}
+          icon={<DollarSign className="w-5 h-5 text-emerald-500" />}
           description="Gasto operativo proyectado"
         />
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Left Column: Live Status & Health */}
-        <div className="md:col-span-1 space-y-6">
+        <div className="lg:col-span-1 space-y-6">
           <AILiveRanking ranking={data.ranking} />
           
-          <Card className="bg-white/5 border-white/10 backdrop-blur-xl rounded-2xl overflow-hidden group">
-            <CardHeader className="border-b border-white/5 bg-white/[0.02]">
-              <CardTitle className="text-sm font-black uppercase tracking-widest text-gray-400 flex items-center gap-2">
-                <Activity className="w-4 h-4 text-indigo-400" />
+          <Card className="border-border bg-card rounded-2xl overflow-hidden shadow-sm">
+            <CardHeader className="border-b border-border bg-muted/50">
+              <CardTitle className="text-sm font-black uppercase tracking-widest text-muted-foreground flex items-center gap-2">
+                <Activity className="w-4 h-4 text-primary" />
                 Health by Provider
               </CardTitle>
             </CardHeader>
@@ -131,13 +131,13 @@ export default function AIDashboardPage() {
         </div>
 
         {/* Middle/Right Column: Usage Trend & Recent Activity */}
-        <div className="md:col-span-2 space-y-6">
-          <Card className="bg-white/5 border-white/10 backdrop-blur-xl rounded-2xl overflow-hidden">
-            <CardHeader className="flex flex-row items-center justify-between border-b border-white/5 bg-white/[0.02]">
-              <CardTitle className="text-sm font-black uppercase tracking-widest text-gray-400">
+        <div className="lg:col-span-2 space-y-6">
+          <Card className="border-border bg-card rounded-2xl overflow-hidden shadow-sm">
+            <CardHeader className="flex flex-row items-center justify-between border-b border-border bg-muted/50">
+              <CardTitle className="text-sm font-black uppercase tracking-widest text-muted-foreground">
                 Token Usage Trend
               </CardTitle>
-              <Badge className="bg-emerald-500/20 text-emerald-400 border-emerald-500/30 text-[9px]">Normal Flow</Badge>
+              <Badge variant="secondary" className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20 text-[9px]">Normal Flow</Badge>
             </CardHeader>
             <CardContent className="p-8">
               <div className="h-48 w-full">
@@ -148,9 +148,9 @@ export default function AIDashboardPage() {
 
           <div className="space-y-4">
             <div className="flex items-center justify-between">
-              <h3 className="text-sm font-black uppercase tracking-widest text-gray-400">Recent Telemetry</h3>
-              <button className="text-[10px] font-bold text-indigo-400 flex items-center gap-1 hover:underline">
-                View all logs <ChevronRight className="w-3 h-3" />
+              <h3 className="text-sm font-black uppercase tracking-widest text-muted-foreground">Recent Telemetry</h3>
+              <button className="text-[10px] font-bold text-primary flex items-center gap-1 hover:underline">
+                Ver todos los logs <ChevronRight className="w-3 h-3" />
               </button>
             </div>
             <AICallLogTable logs={data.recentLogs} />
@@ -160,25 +160,25 @@ export default function AIDashboardPage() {
       
       {/* Infrastructure Status */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-4">
-        <div className="flex items-center gap-4 p-4 rounded-xl bg-white/5 border border-white/10">
-          <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_10px_rgba(16,185,129,0.5)]" />
+        <div className="flex items-center gap-4 p-4 rounded-xl bg-card border border-border shadow-sm hover:border-primary/20 transition-colors">
+          <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.4)]" />
           <div>
-            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-tighter">Primary Node</p>
-            <p className="text-xs font-bold text-white">Google Cloud - us-east4</p>
+            <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-tighter">Primary Node</p>
+            <p className="text-xs font-bold text-foreground">Google Cloud - us-east4</p>
           </div>
         </div>
-        <div className="flex items-center gap-4 p-4 rounded-xl bg-white/5 border border-white/10">
-          <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_10px_rgba(16,185,129,0.5)]" />
+        <div className="flex items-center gap-4 p-4 rounded-xl bg-card border border-border shadow-sm hover:border-primary/20 transition-colors">
+          <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.4)]" />
           <div>
-            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-tighter">Failover Engine</p>
-            <p className="text-xs font-bold text-white">OpenRouter Global Edge</p>
+            <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-tighter">Failover Engine</p>
+            <p className="text-xs font-bold text-foreground">OpenRouter Global Edge</p>
           </div>
         </div>
-        <div className="flex items-center gap-4 p-4 rounded-xl bg-white/5 border border-white/10">
-          <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_10px_rgba(16,185,129,0.5)]" />
+        <div className="flex items-center gap-4 p-4 rounded-xl bg-card border border-border shadow-sm hover:border-primary/20 transition-colors">
+          <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.4)]" />
           <div>
-            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-tighter">Compliance DB</p>
-            <p className="text-xs font-bold text-white">Supabase Transactional Audit</p>
+            <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-tighter">Compliance DB</p>
+            <p className="text-xs font-bold text-foreground">Supabase Transactional Audit</p>
           </div>
         </div>
       </div>

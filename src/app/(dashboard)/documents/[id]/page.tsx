@@ -55,7 +55,9 @@ export default async function DocumentDetailPage({ params }: { params: Promise<{
   }
 
   const uploaderName = doc.profiles
-    ? `${doc.profiles.first_name} ${doc.profiles.last_name}`
+    ? (doc.profiles.first_name && doc.profiles.last_name 
+        ? `${doc.profiles.first_name} ${doc.profiles.last_name}` 
+        : (doc.profiles as any).full_name || 'Usuario desconocido')
     : 'Sistema';
 
   const now = new Date();
@@ -151,6 +153,41 @@ export default async function DocumentDetailPage({ params }: { params: Promise<{
                 <p className="text-sm font-mono font-medium text-gray-900">{doc.code}</p>
               </div>
             </div>
+          </section>
+
+          <section className="bg-white p-6 rounded-[2rem] card-shadow border border-gray-100">
+            <h3 className="font-bold text-gray-900 mb-6 flex items-center gap-2">
+              <FileText size={18} className="text-indigo-600" /> Vista Previa del Documento
+            </h3>
+            {doc.file_url ? (
+              <div className="aspect-[3/4] md:aspect-video w-full rounded-2xl overflow-hidden border border-gray-100 bg-gray-50 flex items-center justify-center">
+                {doc.file_url.toLowerCase().endsWith('.pdf') || doc.file_url.includes('pdf') ? (
+                  <iframe 
+                    src={`${doc.file_url}#toolbar=0`} 
+                    className="w-full h-full border-none"
+                    title={doc.title}
+                  />
+                ) : (
+                  <div className="text-center p-8">
+                    <FileText size={48} className="mx-auto text-gray-200 mb-4" />
+                    <p className="text-sm text-gray-500 mb-4">Vista previa no disponible para este tipo de archivo.</p>
+                    <a 
+                      href={doc.file_url} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="text-sm font-bold text-indigo-600 hover:underline"
+                    >
+                      Abrir en nueva pestaña
+                    </a>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="aspect-video w-full rounded-2xl border-2 border-dashed border-gray-100 flex flex-col items-center justify-center text-gray-400">
+                <FileText size={48} className="mb-4 opacity-20" />
+                <p className="text-sm font-medium">No hay archivo cargado en esta versión.</p>
+              </div>
+            )}
           </section>
 
           <section className="bg-white p-6 rounded-[2rem] card-shadow border border-gray-100">

@@ -27,16 +27,24 @@ export async function getDashboardAlerts(supabase: SupabaseClient, orgId?: strin
 
   // 1. Notifications
   notificationsData.forEach(n => {
+    const metadata = n.metadata as any;
+    let link = '#';
+    if (metadata?.resourceId) {
+      if (metadata.actionType?.includes('invoice')) link = `/billing/invoices/${metadata.resourceId}`;
+      else if (metadata.actionType?.includes('contract')) link = `/contracts/${metadata.resourceId}`;
+      else link = `/documents/${metadata.resourceId}`;
+    }
+
     alerts.push({
       id: `notif-${n.id}`,
       type: 'notification',
       title: n.title,
       status: n.severity || 'info',
-      link: '#',
+      link: link,
       priority: n.severity === 'critical' ? 'high' : 'medium',
       notificationId: n.id,
-      resourceId: (n.metadata as any)?.resourceId,
-      actionType: (n.metadata as any)?.actionType
+      resourceId: metadata?.resourceId,
+      actionType: metadata?.actionType
     });
   });
 

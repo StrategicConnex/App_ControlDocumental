@@ -1,9 +1,9 @@
 ```
 # Especificación de Requerimientos de Software (SRS)
 ## SC Platform — Plataforma de Compliance Documental y Operativo para Oil & Gas
-**Versión:** 3.1  
-**Fecha:** 28 de abril de 2026  
-**Estado:** Final para implementación
+**Versión:** 3.3  
+**Fecha:** 30 de abril de 2026  
+**Estado:** Estable con Auditoría Forense y Hardening de Seguridad completo
 
 ---
 
@@ -28,12 +28,14 @@ Este documento describe los requerimientos funcionales y no funcionales de **SC 
 4. **Arquitectura enterprise-ready:** disaster recovery con RPO < 1h, observabilidad completa, tests de seguridad, CI/CD.
 
 **Stack tecnológico:**
-- Frontend: Next.js 14 + React + Tailwind CSS
-- Backend: Next.js API Routes + Supabase (PostgreSQL + Realtime + Storage)
+- Frontend: Next.js 16 + React + Tailwind CSS + Framer Motion
+- Backend: Next.js App Router + Supabase (PostgreSQL + Realtime + Storage)
+- AI Layer: Provider Orchestration Layer (POL) - Ruteo dinámico entre Gemini, OpenAI y DeepSeek.
 - Autenticación: Supabase Auth con MFA
 - PDF: @react-pdf/renderer
-- OCR: Tesseract.js + Google Document AI (opcional)
-- Estado: React Query
+- OCR: Tesseract.js + AI Vision
+- Estado: React Query (TanStack Query)
+- Tipado: TypeScript (Strict mode con exactOptionalPropertyTypes habilitado)
 
 **Usuarios objetivo:** empresas de servicios para Oil & Gas, contratistas, proveedores de operadoras, empresas B2B que requieren compliance documental estricto.
 
@@ -56,11 +58,12 @@ SC Platform cubre los siguientes módulos:
 ### 1.4 Tecnologías Base
 | Componente | Tecnología |
 |---|---|
-| Frontend | Aplicación Web (React / Next.js) |
+| Frontend | Aplicación Web (React / Next.js 16) |
+| AI Engine | Provider Orchestration Layer (POL) |
 | Base de Datos | Supabase (PostgreSQL) |
 | Autenticación | Supabase Auth |
-| Almacenamiento de archivos | Supabase Storage |
-| Notificaciones | Sistema de alertas en tiempo real + WhatsApp |
+| Almacenamiento | Supabase Storage |
+| Notificaciones | Realtime Alertas + WhatsApp + Email |
 
 ### 1.5 Usuarios del Sistema
 - **Administrador:** Control total del sistema.
@@ -205,7 +208,20 @@ El panel muestra en tiempo real:
 #### RF-25: Reportes
 - Generación de reportes por período (mensual, trimestral, anual).
 - Exportación en PDF o Excel.
-- Filtrado por módulo, cliente o proyecto.
+### 2.7 Módulo 7 — Capa de Orquestación de IA (POL)
+La plataforma utiliza un motor de orquestación inteligente para gestionar múltiples modelos de IA (Gemini, GPT-4, DeepSeek) de manera eficiente.
+
+#### RF-26: Ruteo Dinámico (Smart Routing)
+- El sistema evalúa latencia, costo y disponibilidad para elegir el mejor proveedor por cada tarea.
+- Fallover automático: si un proveedor falla (ej. OpenAI), el sistema reintenta con un secundario (ej. Gemini).
+
+#### RF-27: Telemetría de IA
+- Registro de latencia, consumo de tokens y costos por cada llamada.
+- Monitoreo de "Health" de proveedores en tiempo real.
+
+#### RF-28: Scoring de Proveedores
+- Algoritmo que puntúa proveedores según rendimiento histórico.
+- Priorización ajustable (Costo vs. Velocidad vs. Precisión).
 
 ---
 
@@ -216,6 +232,7 @@ El panel muestra en tiempo real:
 - **RNF-02:** Control de acceso basado en roles (RBAC): cada usuario solo ve lo que le corresponde.
 - **RNF-03:** Todas las comunicaciones deben usar HTTPS.
 - **RNF-04:** Los archivos en Supabase Storage deben tener políticas de acceso privadas por defecto.
+- **RNF-04-B:** Prohibición estricta de Secretos Hardcoded. Todas las API Keys (IA, Supabase, etc) deben gestionarse vía variables de entorno con validación en runtime (Zod).
 
 ### 3.2 Rendimiento
 - **RNF-05:** El dashboard debe cargar en menos de 3 segundos.

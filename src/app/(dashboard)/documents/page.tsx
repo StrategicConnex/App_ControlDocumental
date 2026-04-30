@@ -33,6 +33,7 @@ export default async function DocumentsPage() {
     expiryDate: doc.expiry_date,
     uploadedBy: doc.profiles,
     createdAt: doc.created_at,
+    fileUrl: doc.file_url,
     approvalCount: doc.approvals?.[0]?.count || 0,
   }));
 

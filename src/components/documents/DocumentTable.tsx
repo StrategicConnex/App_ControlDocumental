@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { cn } from "@/lib/utils";
-import { Search, Filter, MoreVertical, FileText, Check, X, Archive, Loader2 } from "lucide-react";
+import { Search, Filter, MoreVertical, FileText, Check, X, Archive, Loader2, Download, ExternalLink } from "lucide-react";
 import Link from "next/link";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
@@ -11,6 +11,8 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { motion, AnimatePresence } from "framer-motion";
+
+import { useRouter } from "next/navigation";
 
 export type DocumentStatus = 'borrador' | 'revision' | 'aprobado' | 'vencido' | 'por_vencer';
 
@@ -24,6 +26,7 @@ export interface DocumentProps {
   expiryDate: string | null;
   uploadedBy: { first_name: string; last_name: string } | null;
   createdAt: string;
+  fileUrl?: string;
   approvalCount?: number;
 }
 
@@ -36,6 +39,7 @@ const statusConfig: Record<DocumentStatus, { variant: "default" | "secondary" | 
 };
 
 export default function DocumentTable({ documents: initialDocuments }: { documents: DocumentProps[] }) {
+  const router = useRouter();
   const [documents, setDocuments] = useState<DocumentProps[]>(initialDocuments);
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [search, setSearch] = useState("");
@@ -144,13 +148,14 @@ export default function DocumentTable({ documents: initialDocuments }: { documen
                 return (
                   <TableRow 
                     key={doc.id} 
+                    onClick={() => router.push(`/documents/${doc.id}`)}
                     className={cn(
-                      "group cursor-pointer transition-colors",
+                      "group cursor-pointer transition-colors hover:bg-muted/50",
                       selected.has(doc.id) ? "bg-primary/5 hover:bg-primary/10" : "",
                       isProcessing ? "opacity-50 pointer-events-none" : ""
                     )}
                   >
-                    <TableCell className="text-center">
+                    <TableCell className="text-center" onClick={(e) => e.stopPropagation()}>
                       <Checkbox 
                         checked={selected.has(doc.id)}
                         onCheckedChange={() => handleSelect(doc.id)}
@@ -158,14 +163,26 @@ export default function DocumentTable({ documents: initialDocuments }: { documen
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-3">
-                        <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
+                        <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center text-primary shrink-0">
                           <FileText size={16} />
                         </div>
-                        <div>
-                          <p className="text-sm font-semibold text-foreground group-hover:text-primary transition-colors">
-                            {doc.title}
-                          </p>
-                          <p className="text-xs text-muted-foreground font-mono">{doc.code}</p>
+                        <div className="min-w-0">
+                          {doc.fileUrl ? (
+                            <a 
+                              href={doc.fileUrl} 
+                              target="_blank" 
+                              rel="noopener noreferrer" 
+                              className="text-sm font-semibold text-foreground hover:text-primary transition-colors truncate block"
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              {doc.title}
+                            </a>
+                          ) : (
+                            <p className="text-sm font-semibold text-foreground truncate">
+                              {doc.title}
+                            </p>
+                          )}
+                          <p className="text-xs text-muted-foreground font-mono truncate">{doc.code}</p>
                         </div>
                       </div>
                     </TableCell>
@@ -205,7 +222,7 @@ export default function DocumentTable({ documents: initialDocuments }: { documen
                         {doc.uploadedBy ? `${doc.uploadedBy.first_name} ${doc.uploadedBy.last_name}` : 'Sistema'}
                       </span>
                     </TableCell>
-                    <TableCell className="text-right">
+                    <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
                       {isProcessing ? (
                         <Loader2 className="h-5 w-5 animate-spin text-muted-foreground ml-auto mr-2" />
                       ) : (
@@ -229,9 +246,16 @@ export default function DocumentTable({ documents: initialDocuments }: { documen
                                 <Archive className="mr-2 h-4 w-4" /> Mover a borrador
                               </DropdownMenuItem>
                             )}
+                            {doc.fileUrl && (
+                              <DropdownMenuItem asChild>
+                                <a href={doc.fileUrl} download target="_blank" rel="noopener noreferrer">
+                                  <Download className="mr-2 h-4 w-4" /> Descargar
+                                </a>
+                              </DropdownMenuItem>
+                            )}
                             <Link href={`/documents/${doc.id}`}>
                               <DropdownMenuItem>
-                                Ver detalles
+                                <ExternalLink className="mr-2 h-4 w-4" /> Ver detalles
                               </DropdownMenuItem>
                             </Link>
                           </DropdownMenuContent>

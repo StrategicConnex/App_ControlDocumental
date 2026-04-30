@@ -21,14 +21,34 @@ export interface ProviderStats {
   errorRate: number; // 0 to 1
   totalCalls: number;
   failCount: number;
+  consecutiveFailures: number;
   lastChecked: Date;
 }
 
+export interface AIMessage {
+  role: 'system' | 'user' | 'assistant';
+  content: string;
+}
+
+export interface AIUsage {
+  prompt_tokens: number;
+  completion_tokens: number;
+  total_tokens: number;
+}
+
+export interface POLResponse {
+  content: string;
+  providerId: string;
+  model: string;
+  usage: AIUsage;
+  latency: number;
+}
+
 export interface POLOptions {
-  strategy?: 'cost' | 'latency' | 'balanced' | undefined;
-  maxRetries?: number | undefined;
-  useCache?: boolean | undefined;
-  response_format?: { type: 'json_object' | 'text' } | undefined;
+  strategy?: 'cost' | 'latency' | 'balanced';
+  maxRetries?: number;
+  useCache?: boolean;
+  response_format?: { type: 'json_object' | 'text' };
 }
 
 /**
@@ -50,6 +70,7 @@ export class ProviderOrchestrator {
         errorRate: 0,
         totalCalls: 0,
         failCount: 0,
+        consecutiveFailures: 0,
         lastChecked: new Date()
       });
       this.clients.set(config.id, new OpenAI({
@@ -144,9 +165,9 @@ export class ProviderOrchestrator {
    * Ejecuta una llamada de Chat con Failover automático
    */
   async chat(
-    messages: any[],
+    messages: AIMessage[],
     options: POLOptions = {}
-  ): Promise<{ content: string; providerId: string; model: string; usage: any; latency: number }> {
+  ): Promise<POLResponse> {
     const strategy = options.strategy || 'balanced';
     const rankedProviders = this.getRankedProviders(strategy);
     
@@ -184,12 +205,16 @@ export class ProviderOrchestrator {
         this.updateStats(provider.id, true, latency);
 
         const result = {
-          content: response.choices[0]?.message?.content || '',
-          providerId: provider.id,
-          model: provider.model,
-          usage: response.usage,
-          latency
-        };
+        content: response.choices[0]?.message?.content || '',
+        providerId: provider.id,
+        model: provider.model,
+        usage: {
+          prompt_tokens: response.usage?.prompt_tokens || 0,
+          completion_tokens: response.usage?.completion_tokens || 0,
+          total_tokens: response.usage?.total_tokens || 0
+        },
+        latency
+      };
 
         // Update cache
         if (options.useCache) {
@@ -223,7 +248,7 @@ export class ProviderOrchestrator {
   /**
    * Actualiza las estadísticas de un proveedor basado en telemetría externa o resultados de llamadas
    */
-  public updateStats(id: string, success: boolean, latency: number, error?: any) {
+  public updateStats(id: string, success: boolean, latency: number, error?: Error | any) {
     const stat = this.stats.get(id)!;
     stat.totalCalls++;
     stat.lastChecked = new Date();
@@ -233,18 +258,24 @@ export class ProviderOrchestrator {
       stat.avgLatencyMs = (stat.avgLatencyMs * 0.8) + (latency * 0.2);
       // Suavizar error rate
       stat.errorRate = stat.errorRate * 0.9;
+      stat.consecutiveFailures = 0; // Reset circuit breaker
       if (stat.status === 'degraded' && stat.errorRate < 0.1) stat.status = 'healthy';
     } else {
       stat.failCount++;
+      stat.consecutiveFailures++;
       stat.errorRate = (stat.errorRate * 0.7) + 0.3;
       
-      // Lógica de degradación
-      if (stat.errorRate > 0.5) stat.status = 'down';
-      else if (stat.errorRate > 0.2) stat.status = 'degraded';
+      // Circuit Breaker: Si hay más de 5 fallos consecutivos, marcar como down inmediatamente
+      if (stat.consecutiveFailures >= 5 || stat.errorRate > 0.5) {
+        stat.status = 'down';
+      } else if (stat.errorRate > 0.2) {
+        stat.status = 'degraded';
+      }
       
       // Si es un error de saldo o auth, marcar como down inmediatamente
       if (error?.status === 401 || error?.status === 402) {
         stat.status = 'down';
+        stat.consecutiveFailures = 10; // Forzar permanencia en DOWN
       }
     }
   }

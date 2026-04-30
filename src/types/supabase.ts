@@ -1200,6 +1200,24 @@ export type Database = {
           version_id: string
         }[]
       }
+      match_document_chunks_hybrid: {
+        Args: {
+          match_count: number
+          match_threshold: number
+          p_org_id: string
+          query_embedding: string
+          query_text: string
+        }
+        Returns: {
+          content: string
+          document_id: string
+          id: string
+          metadata: Json
+          similarity: number
+          text_rank: number
+          version_id: string
+        }[]
+      }
       restore_document_version: {
         Args: { p_document_id: string; p_target_version: number }
         Returns: string

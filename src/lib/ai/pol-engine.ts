@@ -25,10 +25,10 @@ export interface ProviderStats {
 }
 
 export interface POLOptions {
-  strategy?: 'cost' | 'latency' | 'balanced';
-  maxRetries?: number;
-  useCache?: boolean;
-  response_format?: { type: 'json_object' | 'text' };
+  strategy?: 'cost' | 'latency' | 'balanced' | undefined;
+  maxRetries?: number | undefined;
+  useCache?: boolean | undefined;
+  response_format?: { type: 'json_object' | 'text' } | undefined;
 }
 
 /**

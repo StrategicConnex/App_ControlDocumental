@@ -65,10 +65,10 @@ export async function GET() {
     const timeSeries = Array.from({ length: 7 }, (_, i) => {
       const date = new Date();
       date.setDate(date.getDate() - (6 - i));
-      const dateStr = date.toISOString().split('T')[0];
+      const dateStr = date.toISOString().split('T')[0] ?? '';
       
       const dayTokens = seriesArr
-        .filter(d => d.created_at?.startsWith(dateStr))
+        .filter(d => d.created_at && d.created_at.startsWith(dateStr))
         .reduce((sum, d) => sum + (d.total_tokens || 0), 0);
 
       return {

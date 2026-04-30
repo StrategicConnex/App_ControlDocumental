@@ -100,13 +100,18 @@ export class AIClient {
   async chat(
     messages: Array<{ role: 'system' | 'user' | 'assistant'; content: string }>,
     orgId: string,
-    options?: { strategy?: 'cost' | 'latency' | 'balanced'; useCache?: boolean }
+    options?: { 
+      strategy?: 'cost' | 'latency' | 'balanced'; 
+      useCache?: boolean;
+      response_format?: 'json_object' | 'text';
+    }
   ): Promise<AIResponse> {
     const startTime = Date.now();
     try {
       const result = await this.orchestrator.chat(messages, {
         strategy: options?.strategy || 'balanced',
-        useCache: options?.useCache ?? true
+        useCache: options?.useCache ?? true,
+        response_format: options?.response_format ? { type: options.response_format } : undefined
       });
 
       await this.logAICall(

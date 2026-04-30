@@ -28,6 +28,7 @@ export interface POLOptions {
   strategy?: 'cost' | 'latency' | 'balanced';
   maxRetries?: number;
   useCache?: boolean;
+  response_format?: { type: 'json_object' | 'text' };
 }
 
 /**
@@ -175,7 +176,8 @@ export class ProviderOrchestrator {
           model: provider.model,
           messages,
           temperature: 0.1,
-          max_tokens: 1000
+          max_tokens: 1000,
+          response_format: options.response_format
         });
 
         const latency = Date.now() - startTime;

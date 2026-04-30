@@ -142,9 +142,11 @@ export default function ActionInbox({ initialAlerts, orgId }: { initialAlerts: A
                   {alert.type === 'document' ? <FileText size={18} /> : alert.type === 'personnel' ? <Users size={18} /> : <Truck size={18} />}
                 </div>
 
-                <div className="flex-1 min-w-0">
+                <div className="flex-1 min-w-0 cursor-pointer" onClick={() => router.push(alert.link)}>
                   <div className="flex items-center gap-2 mb-1">
-                    <p className="text-sm font-semibold text-foreground truncate">{alert.title}</p>
+                    <p className="text-sm font-semibold text-foreground truncate hover:text-primary transition-colors">
+                      {alert.title}
+                    </p>
                     {isHighPriority && <Badge variant="destructive" className="h-5 text-[10px]">Crítico</Badge>}
                   </div>
                   <div className="flex items-center gap-3 text-xs text-muted-foreground">
@@ -163,14 +165,28 @@ export default function ActionInbox({ initialAlerts, orgId }: { initialAlerts: A
                     size="sm" 
                     variant="outline" 
                     className="h-8"
-                    onClick={() => router.push(alert.link)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      router.push(alert.link);
+                    }}
                   >
                     Ver Detalles
                   </Button>
-                  <Button size="sm" className="h-8" onClick={(e) => handleQuickResolve(alert, e)}>
+                  <Button size="sm" className="h-8" onClick={(e) => {
+                    e.stopPropagation();
+                    handleQuickResolve(alert, e);
+                  }}>
                     {resolveMutation.isPending && resolveMutation.variables?.id === alert.id ? "Resolviendo..." : <><Check size={16} className="mr-1" /> Resolver rápido</>}
                   </Button>
-                  <Button size="icon" variant="ghost" className="h-8 w-8 text-muted-foreground">
+                  <Button 
+                    size="icon" 
+                    variant="ghost" 
+                    className="h-8 w-8 text-muted-foreground"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      toast.info("Opciones adicionales próximamente");
+                    }}
+                  >
                     <MoreHorizontal size={16} />
                   </Button>
                 </div>

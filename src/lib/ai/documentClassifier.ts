@@ -1,21 +1,24 @@
 import { deepseekClient } from './deepseek-client';
-import { SupabaseClient } from '@supabase/supabase-js';
+import type { SupabaseClient } from '@supabase/supabase-js';
 
-export interface ClassificationResult {
-  category: 'iso' | 'contrato' | 'factura' | 'tecnico' | 'legal' | 'otros';
-  confidence: number;
-  extractedMetadata: {
-    title?: string;
-    code?: string;
-    expiryDate?: string;
-    responsible?: string;
-    amount?: number;
-    currency?: string;
-    [key: string]: any;
-  };
-  keyTerms: string[];
-  summary: string;
-}
+import { z } from 'zod';
+
+export const ClassificationResultSchema = z.object({
+  category: z.enum(['iso', 'contrato', 'factura', 'tecnico', 'legal', 'otros']),
+  confidence: z.number(),
+  extractedMetadata: z.object({
+    title: z.string().optional(),
+    code: z.string().optional(),
+    expiryDate: z.string().optional(),
+    responsible: z.string().optional(),
+    amount: z.number().optional(),
+    currency: z.string().optional(),
+  }).catchall(z.any()),
+  keyTerms: z.array(z.string()),
+  summary: z.string()
+});
+
+export type ClassificationResult = z.infer<typeof ClassificationResultSchema>;
 
 /**
  * Uses DeepSeek to classify a document and extract key metadata.
@@ -45,7 +48,7 @@ export async function classifyDocument(documentContent: string, documentName?: s
   });
 
   const rawContent = completion.choices[0]?.message?.content || '{}';
-  return JSON.parse(rawContent) as ClassificationResult;
+  return ClassificationResultSchema.parse(JSON.parse(rawContent));
 }
 
 /**

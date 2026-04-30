@@ -14,7 +14,7 @@ export class VectorizerService {
   /**
    * Procesa una versión de documento, la divide en fragmentos y genera embeddings.
    */
-  async vectorizeDocumentVersion(versionId: string, content: string, orgId: string): Promise<VectorizationResult> {
+  async vectorizeDocumentVersion(versionId: string, documentId: string, content: string, orgId: string): Promise<VectorizationResult> {
     try {
       const supabase = await createClient();
 
@@ -25,6 +25,7 @@ export class VectorizerService {
 
       for (let i = 0; i < chunks.length; i++) {
         const chunkText = chunks[i];
+        if (!chunkText) continue;
         
         // 2. Generar embedding usando AIClient
         const embedding = await aiClient.generateEmbedding(chunkText);
@@ -32,11 +33,10 @@ export class VectorizerService {
         // 3. Guardar en document_chunks
         const { error: insertError } = await supabase.from('document_chunks').insert({
           version_id: versionId,
-          org_id: orgId,
+          document_id: documentId,
           content: chunkText,
-          embedding: embedding,
-          chunk_index: i,
-          metadata: { length: chunkText.length }
+          embedding: `[${(embedding as number[]).join(',')}]`,
+          chunk_index: i
         });
 
         if (insertError) throw insertError;
@@ -88,7 +88,7 @@ export class VectorizerService {
     // 2. Ejecutar búsqueda vectorial en Supabase usando la función RPC match_document_chunks
     // Nota: Esta función debe estar definida en PostgreSQL (la incluiremos en la migración)
     const { data, error } = await supabase.rpc('match_document_chunks', {
-      query_embedding: queryEmbedding,
+      query_embedding: `[${queryEmbedding.join(',')}]`,
       match_threshold: 0.5,
       match_count: limit,
       p_org_id: orgId

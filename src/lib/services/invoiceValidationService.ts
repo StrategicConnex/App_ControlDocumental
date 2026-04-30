@@ -1,4 +1,4 @@
-import { SupabaseClient } from '@supabase/supabase-js';
+import type { SupabaseClient } from '@supabase/supabase-js';
 import { deepseekClient } from '../ai/deepseek-client';
 
 export interface InvoiceValidationResult {

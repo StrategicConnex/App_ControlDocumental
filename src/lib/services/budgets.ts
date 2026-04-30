@@ -1,4 +1,4 @@
-import { SupabaseClient } from '@supabase/supabase-js';
+import type { SupabaseClient } from '@supabase/supabase-js';
 
 export async function getBudgets(supabase: SupabaseClient, orgId?: string) {
   let query = supabase

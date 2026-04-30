@@ -47,7 +47,7 @@ export default async function DashboardLayout({
               <NotificationBell />
               <Avatar className="h-8 w-8 cursor-pointer">
                 <AvatarFallback className="bg-primary/10 text-primary border border-primary/20 text-xs font-bold">
-                  {user?.email?.[0].toUpperCase() || 'U'}
+                  {user?.email?.[0]?.toUpperCase() || 'U'}
                 </AvatarFallback>
               </Avatar>
             </div>
@@ -56,7 +56,7 @@ export default async function DashboardLayout({
             {children}
           </main>
         </div>
-        <AIAssistant orgId={orgId} />
+        <AIAssistant orgId={orgId || ''} />
       </div>
     </SidebarProvider>
   );

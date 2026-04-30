@@ -31,12 +31,12 @@ export async function POST(req: NextRequest) {
       if (actionType === 'invoice_discrepancy') {
         await supabase
           .from('invoices')
-          .update({ status: 'aprobado', audit_notes: 'Aprobación masiva desde panel de control.' })
+          .update({ status: 'aprobado' })
           .eq('id', resourceId);
       } else if (actionType === 'contract_risk') {
         await supabase
           .from('contracts')
-          .update({ status: 'aceptado', audit_score: 100 })
+          .update({ status: 'aceptado', compliance_score: 100 })
           .eq('id', resourceId);
       }
     }

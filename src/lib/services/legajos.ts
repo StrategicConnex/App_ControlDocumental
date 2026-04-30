@@ -1,4 +1,4 @@
-import { SupabaseClient } from '@supabase/supabase-js';
+import type { SupabaseClient } from '@supabase/supabase-js';
 
 export async function getLegajos(supabase: SupabaseClient, orgId?: string) {
   let query = supabase
@@ -75,7 +75,8 @@ export function validateLegajoForOperadora(
     CHEVRON: ['cert_art', 'antecedentes_penales', 'test_psicotecnico']
   };
 
-  const missingFields = requirements[operadora].filter(field => !data[field]);
+  const reqs = requirements[operadora] ?? [];
+  const missingFields = reqs.filter(field => !data[field]);
   
   return {
     valid: missingFields.length === 0,

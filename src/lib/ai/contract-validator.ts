@@ -1,17 +1,21 @@
 import { aiClient } from './ai-client';
 import { createClient } from '@/utils/supabase/server';
 
-export interface ContractValidationResult {
-  compliant: boolean;
-  score: number;
-  findings: Array<{
-    clause: string;
-    status: 'compliant' | 'non-compliant' | 'warning';
-    description: string;
-    recommendation?: string;
-  }>;
-  summary: string;
-}
+import { z } from 'zod';
+
+export const ContractValidationResultSchema = z.object({
+  compliant: z.boolean(),
+  score: z.number(),
+  findings: z.array(z.object({
+    clause: z.string(),
+    status: z.enum(['compliant', 'non-compliant', 'warning']),
+    description: z.string(),
+    recommendation: z.string().optional()
+  })),
+  summary: z.string()
+});
+
+export type ContractValidationResult = z.infer<typeof ContractValidationResultSchema>;
 
 /**
  * Service for intelligent contract auditing.
@@ -64,12 +68,10 @@ export class ContractValidator {
       { role: 'user', content: prompt }
     ], orgId, { response_format: 'json_object' });
 
-    const result = JSON.parse(response.content) as ContractValidationResult;
+    const result = ContractValidationResultSchema.parse(JSON.parse(response.content));
 
     // 3. Guardar resultado en la base de datos
-    await supabase.from('contracts').upsert({
-      id: contractId,
-      org_id: orgId,
+    await supabase.from('contracts').update({
       status: result.compliant ? 'active' : 'pending_review',
       compliance_score: result.score,
       metadata: { 
@@ -77,7 +79,7 @@ export class ContractValidator {
         findings_count: result.findings.length,
         summary: result.summary
       }
-    });
+    }).eq('id', contractId);
 
     return result;
   }

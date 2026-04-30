@@ -34,7 +34,7 @@ export default async function Dashboard() {
     getPersonnel(supabase).catch(() => []),
     getVehicles(supabase).catch(() => []),
     getBudgets(supabase).catch(() => []),
-    supabase.from('notifications').select('*').eq('org_id', orgId).eq('is_read', false).limit(20).then(res => res.data || [])
+    orgId ? supabase.from('notifications').select('*').eq('org_id', orgId).eq('is_read', false).limit(20).then(res => res.data || []) : Promise.resolve([])
   ]);
 
   // Aggregate Metrics
@@ -58,12 +58,12 @@ export default async function Dashboard() {
       id: `notif-${n.id}`,
       type: 'notification',
       title: n.title,
-      status: n.severity,
+      status: n.severity || 'info',
       link: '#',
       priority: n.severity === 'critical' ? 'high' : 'medium',
       notificationId: n.id,
-      resourceId: n.metadata?.resourceId,
-      actionType: n.metadata?.actionType
+      resourceId: (n.metadata as any)?.resourceId,
+      actionType: (n.metadata as any)?.actionType
     });
   });
 
@@ -142,7 +142,7 @@ export default async function Dashboard() {
         </div>
         
         <div className="lg:col-span-1 space-y-6">
-          <ComplianceDashboard orgId={orgId} />
+          <ComplianceDashboard orgId={orgId || ''} />
           
           <Card className="border-border shadow-sm">
             <CardHeader className="pb-3">

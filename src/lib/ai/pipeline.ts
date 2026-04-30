@@ -16,15 +16,15 @@ export interface AuditResult {
   discrepancies?: Array<{
     type: string;
     description: string;
-    expected?: string;
-    found?: string;
+    expected?: string | undefined;
+    found?: string | undefined;
     severity: 'low' | 'medium' | 'high';
   }>;
   findings?: Array<{
     clause: string;
     status: string;
     description: string;
-    recommendation?: string;
+    recommendation?: string | undefined;
   }>;
 }
 
@@ -76,6 +76,7 @@ export class AIPipeline {
       // 2. Ejecutar Vectorización (Siempre ocurre)
       const vectorResult = await vectorizerService.vectorizeDocumentVersion(
         versionId,
+        doc.id,
         version.content_extracted,
         orgId
       );

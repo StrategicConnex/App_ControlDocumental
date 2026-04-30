@@ -33,6 +33,9 @@ export default function InvoicesAuditPage() {
       .eq('id', user.id)
       .single();
 
+    const org_id = profile?.org_id;
+    if (!org_id) return;
+
     // Fetch Invoices
     const { data: invData } = await supabase
       .from('documents')
@@ -49,7 +52,7 @@ export default function InvoicesAuditPage() {
           metadata
         )
       `)
-      .eq('org_id', profile?.org_id)
+      .eq('org_id', org_id)
       .eq('category', 'Facturas')
       .is('deleted_at', null);
 
@@ -57,7 +60,7 @@ export default function InvoicesAuditPage() {
     const { data: conData } = await supabase
       .from('documents')
       .select('id, title')
-      .eq('org_id', profile?.org_id)
+      .eq('org_id', org_id)
       .eq('category', 'Contratos')
       .is('deleted_at', null);
 

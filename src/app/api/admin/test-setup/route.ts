@@ -17,7 +17,7 @@ export async function POST(req: NextRequest) {
     const uniqueSlug = `test-audit-${Date.now()}`;
     const { data: org, error: orgError } = await supabase
       .from('organizations')
-      .upsert({ name: 'Test Audit Org', slug: uniqueSlug })
+      .upsert({ id: crypto.randomUUID(), name: 'Test Audit Org', slug: uniqueSlug })
       .select()
       .single();
 
@@ -49,7 +49,8 @@ export async function POST(req: NextRequest) {
         title: 'TEST-CONTRATO-RIESGO-ALTO',
         org_id: orgId,
         status: 'borrador',
-        file_url: 'mock/test.pdf'
+        file_url: 'mock/test.pdf',
+        category: 'Contratos'
       })
       .select()
       .single();
@@ -76,9 +77,8 @@ export async function POST(req: NextRequest) {
       .insert({
         document_id: doc.id,
         version_number: 1,
-        file_path: 'mock/test.pdf',
-        content_extracted: mockContent,
-        created_by: user.id
+        file_url: 'mock/test.pdf',
+        content_extracted: mockContent
       })
       .select()
       .single();
@@ -88,9 +88,14 @@ export async function POST(req: NextRequest) {
     // 3. Crear registro en tabla contracts para auditoría
     await supabase.from('contracts').insert({
       id: doc.id,
+      document_id: doc.id,
       org_id: orgId,
-      total_amount: 500000,
-      status: 'pendiente_revision'
+      contract_value: 500000,
+      status: 'pendiente_revision',
+      contract_number: 'TEST-001',
+      counterparty: 'TEST',
+      start_date: new Date().toISOString(),
+      end_date: new Date().toISOString()
     });
 
     return NextResponse.json({

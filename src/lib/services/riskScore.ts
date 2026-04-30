@@ -78,7 +78,7 @@ function buildResult(score: number): RiskScoreResult {
 /**
  * DB INTERACTIONS
  */
-import { SupabaseClient } from '@supabase/supabase-js';
+import type { SupabaseClient } from '@supabase/supabase-js';
 
 export async function getRiskHistory(supabase: SupabaseClient, orgId: string) {
   const { data, error } = await supabase

@@ -31,6 +31,9 @@ export default function ContractsAuditPage() {
       .eq('id', user.id)
       .single();
 
+    const org_id = profile?.org_id;
+    if (!org_id) return;
+
     const { data } = await supabase
       .from('documents')
       .select(`
@@ -43,7 +46,7 @@ export default function ContractsAuditPage() {
           metadata
         )
       `)
-      .eq('org_id', profile?.org_id)
+      .eq('org_id', org_id)
       .eq('category', 'Contratos')
       .is('deleted_at', null);
 

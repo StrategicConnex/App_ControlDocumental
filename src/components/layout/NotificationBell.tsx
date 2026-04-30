@@ -23,10 +23,13 @@ export function NotificationBell() {
       .eq('id', user.id)
       .single();
 
+    const org_id = profile?.org_id;
+    if (!org_id) return;
+
     const { data } = await supabase
       .from('notifications')
       .select('*')
-      .eq('org_id', profile?.org_id)
+      .eq('org_id', org_id)
       .order('created_at', { ascending: false })
       .limit(10);
 

@@ -41,9 +41,13 @@ export async function POST(req: NextRequest) {
         .eq('version_id', version.id);
 
       if (count === 0 && version.content_extracted) {
+        const docId = Array.isArray(version.documents) ? version.documents[0]?.id : (version.documents as any)?.id;
+        if (!docId) continue;
+        
         // Vectorize!
         const result = await vectorizerService.vectorizeDocumentVersion(
           version.id, 
+          docId,
           version.content_extracted, 
           orgId
         );

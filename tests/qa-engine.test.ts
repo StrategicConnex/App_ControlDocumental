@@ -61,10 +61,9 @@ describe('QAEngine', () => {
     // Act
     const result = await askQuestion({ question: mockQuestion, orgId: mockOrgId });
 
-    // Assert
     expect(result.answer).toContain('30 días');
     expect(result.sources).toHaveLength(1);
-    expect(result.sources[0].title).toBe('Contrato A');
+    expect(result.sources[0]?.title).toBe('Contrato A');
     expect(aiClient.chat).toHaveBeenCalled();
   });
 

@@ -1,19 +1,23 @@
 import { aiClient } from './ai-client';
 import { createClient } from '@/utils/supabase/server';
 
-export interface InvoiceValidationResult {
-  matches_contract: boolean;
-  discrepancies: Array<{
-    type: 'amount' | 'date' | 'tax' | 'item' | 'other';
-    description: string;
-    expected: string;
-    found: string;
-    severity: 'high' | 'medium' | 'low';
-  }>;
-  total_invoice: number;
-  currency: string;
-  summary: string;
-}
+import { z } from 'zod';
+
+export const InvoiceValidationResultSchema = z.object({
+  matches_contract: z.boolean(),
+  discrepancies: z.array(z.object({
+    type: z.enum(['amount', 'date', 'tax', 'item', 'other']),
+    description: z.string(),
+    expected: z.string(),
+    found: z.string(),
+    severity: z.enum(['high', 'medium', 'low'])
+  })),
+  total_invoice: z.number(),
+  currency: z.string(),
+  summary: z.string()
+});
+
+export type InvoiceValidationResult = z.infer<typeof InvoiceValidationResultSchema>;
 
 /**
  * Service for cross-checking invoices against contracts.
@@ -75,22 +79,19 @@ export class InvoiceValidator {
       { role: 'user', content: prompt }
     ], orgId, { response_format: 'json_object' });
 
-    const result = JSON.parse(response.content) as InvoiceValidationResult;
+    const result = InvoiceValidationResultSchema.parse(JSON.parse(response.content));
 
     // 3. Registrar auditoría en la tabla invoices
-    await supabase.from('invoices').upsert({
-      id: invoiceId,
-      contract_id: contractId,
-      org_id: orgId,
-      total_amount: result.total_invoice,
+    await supabase.from('invoices').update({
+      amount: result.total_invoice,
       currency: result.currency,
       validation_status: result.matches_contract ? 'valid' : 'invalid',
-      discrepancies: result.discrepancies,
+      discrepancies: result.discrepancies as any,
       metadata: { 
         last_check: new Date().toISOString(),
         summary: result.summary
       }
-    });
+    }).eq('id', invoiceId);
 
     return result;
   }

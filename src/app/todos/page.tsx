@@ -15,7 +15,7 @@ export default async function Page() {
     <div className="p-8">
       <h1 className="text-2xl font-bold mb-4">Documentos de Prueba</h1>
       <ul className="space-y-2">
-        {documents?.map((doc: { id: string; title: string; status: string }) => (
+        {documents?.map((doc: any) => (
           <li key={doc.id} className="p-4 bg-slate-800 rounded-lg border border-slate-700">
             <span className="font-semibold text-blue-400">[{doc.status}]</span> {doc.title}
           </li>

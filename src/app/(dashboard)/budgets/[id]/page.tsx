@@ -85,7 +85,7 @@ export default function BudgetDetailPage({ params }: { params: Promise<{ id: str
                 {budget.status}
               </div>
             </div>
-            <p className="text-sm text-gray-500 mt-1">ID: {budget.id.split('-')[0].toUpperCase()} • {budget.created_at ? new Date(budget.created_at).toLocaleDateString() : 'Fecha no disponible'}</p>
+            <p className="text-sm text-gray-500 mt-1">ID: {budget.id?.split('-')[0]?.toUpperCase() ?? 'N/A'} • {budget.created_at ? new Date(budget.created_at).toLocaleDateString() : 'Fecha no disponible'}</p>
           </div>
         </div>
         <div className="flex items-center gap-3">

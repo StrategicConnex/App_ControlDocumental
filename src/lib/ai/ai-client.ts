@@ -1,13 +1,44 @@
 import OpenAI from 'openai';
 import { createClient } from '@/utils/supabase/server';
+import { z } from 'zod';
+
+const envSchema = z.object({
+  OPENROUTER_API_KEY: z.string().min(1, "OPENROUTER_API_KEY es requerido"),
+  OPENROUTER_BASE_URL: z.string().url().default('https://openrouter.ai/api/v1'),
+  DEEPSEEK_API_KEY: z.string().min(1, "DEEPSEEK_API_KEY es requerido"),
+  DEEPSEEK_BASE_URL: z.string().url().default('https://api.deepseek.com/v1'),
+  NEXT_PUBLIC_APP_URL: z.string().url().default('https://sc-platform.com')
+});
+
+let env: z.infer<typeof envSchema>;
+
+try {
+  env = envSchema.parse({
+    OPENROUTER_API_KEY: process.env.OPENROUTER_API_KEY,
+    OPENROUTER_BASE_URL: process.env.OPENROUTER_BASE_URL,
+    DEEPSEEK_API_KEY: process.env.DEEPSEEK_API_KEY,
+    DEEPSEEK_BASE_URL: process.env.DEEPSEEK_BASE_URL,
+    NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL,
+  });
+} catch (error) {
+  console.warn("⚠️ Advertencia: Faltan variables de entorno para IA. La app podría fallar en runtime si se intenta llamar a la API.");
+  // Fallback silencioso solo para que el compilador no explote durante build. En prod esto debería fallar.
+  env = {
+    OPENROUTER_API_KEY: process.env.OPENROUTER_API_KEY || 'missing-key',
+    OPENROUTER_BASE_URL: 'https://openrouter.ai/api/v1',
+    DEEPSEEK_API_KEY: process.env.DEEPSEEK_API_KEY || 'missing-key',
+    DEEPSEEK_BASE_URL: 'https://api.deepseek.com/v1',
+    NEXT_PUBLIC_APP_URL: 'https://sc-platform.com'
+  };
+}
 
 // Configuración de OpenRouter (Gateway principal)
-const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY || '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';
-const OPENROUTER_BASE_URL = process.env.OPENROUTER_BASE_URL || 'https://openrouter.ai/api/v1';
+const OPENROUTER_API_KEY = env.OPENROUTER_API_KEY;
+const OPENROUTER_BASE_URL = env.OPENROUTER_BASE_URL;
 
 // Configuración de DeepSeek Directo (Fallback)
-const DEEPSEEK_API_KEY = process.env.DEEPSEEK_API_KEY || 'sk-207e809433304fd7aff5914aa313785e';
-const DEEPSEEK_BASE_URL = process.env.DEEPSEEK_BASE_URL || 'https://api.deepseek.com/v1';
+const DEEPSEEK_API_KEY = env.DEEPSEEK_API_KEY;
+const DEEPSEEK_BASE_URL = env.DEEPSEEK_BASE_URL;
 
 export const AI_MODELS = {
   DEEPSEEK_CHAT: 'deepseek/deepseek-chat',
@@ -69,7 +100,9 @@ export class AIClient {
         model: 'openai/text-embedding-3-small',
         input: text.replace(/\n/g, ' '),
       });
-      return response.data[0].embedding;
+      const embedding = response.data[0]?.embedding;
+      if (!embedding) throw new Error('No se pudo generar el embedding');
+      return embedding;
     } catch (error: unknown) {
       const errorMessage = error instanceof Error ? error.message : String(error);
       console.error('Error generando embedding:', errorMessage);
@@ -120,7 +153,7 @@ export class AIClient {
       messages,
       temperature: options?.temperature ?? 0.1,
       max_tokens: options?.max_tokens ?? 2000,
-      response_format: options?.response_format === 'json_object' ? { type: 'json_object' } : undefined
+      ...(options?.response_format === 'json_object' && { response_format: { type: 'json_object' } })
     });
 
     return {
@@ -171,7 +204,7 @@ export class AIClient {
         model,
         success,
         response_time_ms: time,
-        error_message: error
+        error_message: error ?? null
       });
     } catch (e) {
       console.error('Error logging AI call:', e);

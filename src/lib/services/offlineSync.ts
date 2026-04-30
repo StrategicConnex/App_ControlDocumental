@@ -1,4 +1,4 @@
-import { SupabaseClient } from '@supabase/supabase-js';
+import type { SupabaseClient } from '@supabase/supabase-js';
 import { getQueue, removeFromQueue, OfflineAction } from '../offline/queue';
 import { createDocumentVersion } from './versions';
 import { recordApprovalDecision } from './approvals';

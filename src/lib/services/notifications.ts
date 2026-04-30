@@ -23,13 +23,13 @@ export const notificationService = {
     
     const { error } = await supabase.from('notifications').insert({
       org_id: payload.orgId,
-      user_id: payload.userId,
+      user_id: payload.userId ?? null,
       type: payload.type,
       severity: payload.severity,
       title: payload.title,
       message: payload.message,
-      link: payload.link,
-      metadata: payload.metadata
+      link: payload.link ?? null,
+      metadata: payload.metadata ?? null
     });
 
     if (error) {

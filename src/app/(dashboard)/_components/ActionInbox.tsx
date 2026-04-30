@@ -12,7 +12,10 @@ import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 
+import { useRouter } from "next/navigation";
+
 export default function ActionInbox({ initialAlerts, orgId }: { initialAlerts: AlertItem[], orgId?: string | undefined }) {
+  const router = useRouter();
   const queryClient = useQueryClient();
   const supabase = createClient();
   const [selected, setSelected] = useState<Set<string>>(new Set());
@@ -156,7 +159,14 @@ export default function ActionInbox({ initialAlerts, orgId }: { initialAlerts: A
 
                 {/* Quick Actions (Show on hover) */}
                 <div className="opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-2 shrink-0">
-                  <Button size="sm" variant="outline" className="h-8">Ver Detalles</Button>
+                  <Button 
+                    size="sm" 
+                    variant="outline" 
+                    className="h-8"
+                    onClick={() => router.push(alert.link)}
+                  >
+                    Ver Detalles
+                  </Button>
                   <Button size="sm" className="h-8" onClick={(e) => handleQuickResolve(alert, e)}>
                     {resolveMutation.isPending && resolveMutation.variables?.id === alert.id ? "Resolviendo..." : <><Check size={16} className="mr-1" /> Resolver rápido</>}
                   </Button>

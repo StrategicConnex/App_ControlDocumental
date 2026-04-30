@@ -56,7 +56,7 @@ async function testRanking() {
   ranked1.forEach((p, i) => {
     // @ts-ignore
     const score = orchestrator.calculateScore(p.id, 'balanced');
-    console.log(`${i + 1}. ${p.name} | Score: ${score.toFixed(4)}`);
+    console.log(`${i + 1}. ${p.name} | Score: ${score.total.toFixed(4)}`);
   });
 
   // Caso 2: Gemini se vuelve lento (ej. 5000ms)
@@ -68,7 +68,7 @@ async function testRanking() {
   ranked2.forEach((p, i) => {
     // @ts-ignore
     const score = orchestrator.calculateScore(p.id, 'balanced');
-    console.log(`${i + 1}. ${p.name} | Score: ${score.toFixed(4)}`);
+    console.log(`${i + 1}. ${p.name} | Score: ${score.total.toFixed(4)}`);
   });
 
   // Caso 3: DeepSeek con errores
@@ -81,7 +81,7 @@ async function testRanking() {
   ranked3.forEach((p, i) => {
     // @ts-ignore
     const score = orchestrator.calculateScore(p.id, 'balanced');
-    console.log(`${i + 1}. ${p.name} | Score: ${score.toFixed(4)}`);
+    console.log(`${i + 1}. ${p.name} | Score: ${score.total.toFixed(4)}`);
   });
 }
 

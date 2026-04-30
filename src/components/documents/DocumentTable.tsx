@@ -247,13 +247,11 @@ export default function DocumentTable({ documents: initialDocuments }: { documen
                               </DropdownMenuItem>
                             )}
                             {doc.fileUrl && (
-                              <DropdownMenuItem asChild>
-                                <a href={doc.fileUrl} download target="_blank" rel="noopener noreferrer">
-                                  <Download className="mr-2 h-4 w-4" /> Descargar
-                                </a>
+                              <DropdownMenuItem onClick={() => window.open(doc.fileUrl, '_blank')}>
+                                <Download className="mr-2 h-4 w-4" /> Descargar
                               </DropdownMenuItem>
                             )}
-                            <Link href={`/documents/${doc.id}`}>
+                            <Link href={`/documents/${doc.id}`} passHref>
                               <DropdownMenuItem>
                                 <ExternalLink className="mr-2 h-4 w-4" /> Ver detalles
                               </DropdownMenuItem>

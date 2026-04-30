@@ -14,8 +14,8 @@ async function runStressTest() {
   // 1. Obtener un documento real para la prueba
   const { data: doc, error: docError } = await supabase.from('documents').select('id, org_id').limit(1).single();
   
-  if (docError || !doc) {
-    console.error('Error: No se encontró ningún documento en la base de datos para realizar la prueba.');
+  if (docError || !doc || !doc.org_id) {
+    console.error('Error: No se encontró ningún documento válido o con org_id en la base de datos para realizar la prueba.');
     console.error('Detalle:', docError);
     return;
   }

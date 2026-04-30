@@ -70,7 +70,9 @@ export class AIClient {
         model: 'openai/text-embedding-3-small',
         input: text.replace(/\n/g, ' '),
       });
-      return response.data[0]?.embedding;
+      const embedding = response.data[0]?.embedding;
+      if (!embedding) throw new Error('No se recibió el embedding del proveedor.');
+      return embedding;
     } catch (error) {
       console.error('Error generando embedding:', error);
       throw error;

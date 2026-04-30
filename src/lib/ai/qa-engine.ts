@@ -99,8 +99,7 @@ REGLAS CRÍTICAS:
     answer: aiResponse.content,
     tokens_used: aiResponse.usage.total_tokens,
     documents_used: docs.map(d => d.id),
-    provider_used: aiResponse.provider,
-    latency_ms: latencySearch + latencyAI
+    provider_used: aiResponse.provider
   });
 
   return {

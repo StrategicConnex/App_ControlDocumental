@@ -177,7 +177,7 @@ export class ProviderOrchestrator {
           messages,
           temperature: 0.1,
           max_tokens: 1000,
-          response_format: options.response_format
+          ...(options.response_format ? { response_format: options.response_format } : {})
         });
 
         const latency = Date.now() - startTime;

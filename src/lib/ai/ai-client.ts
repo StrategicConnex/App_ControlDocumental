@@ -111,7 +111,7 @@ export class AIClient {
       const result = await this.orchestrator.chat(messages, {
         strategy: options?.strategy || 'balanced',
         useCache: options?.useCache ?? true,
-        response_format: options?.response_format ? { type: options.response_format } : undefined
+        ...(options?.response_format ? { response_format: { type: options.response_format } } : {})
       });
 
       await this.logAICall(

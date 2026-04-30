@@ -7,6 +7,20 @@ export interface VectorizationResult {
   error?: string;
 }
 
+export interface HybridSearchResult {
+  id: string;
+  document_id: string;
+  version_id: string;
+  content: string;
+  metadata: {
+    title?: string;
+    category?: string;
+    [key: string]: any;
+  };
+  similarity: number;
+  text_rank: number;
+}
+
 /**
  * Service for document vectorization and storage in pgvector.
  */
@@ -14,33 +28,61 @@ export class VectorizerService {
   /**
    * Procesa una versión de documento, la divide en fragmentos y genera embeddings.
    */
-  async vectorizeDocumentVersion(versionId: string, documentId: string, content: string, orgId: string): Promise<VectorizationResult> {
+  async vectorizeDocumentVersion(
+    versionId: string, 
+    documentId: string, 
+    content: string, 
+    orgId: string,
+    supabaseClient?: any
+  ): Promise<VectorizationResult> {
     try {
-      const supabase = await createClient();
+      const supabase = supabaseClient || await createClient();
+
+      // 0. Obtener metadatos del documento para enriquecimiento
+      const { data: docData } = await supabase
+        .from('documents')
+        .select('title, category, metadata')
+        .eq('id', documentId)
+        .single();
+
+      const enrichmentMetadata = {
+        title: docData?.title,
+        category: docData?.category,
+        ...(docData?.metadata as any || {})
+      };
 
       // 1. Dividir contenido en chunks (Fragmentos de ~1000 caracteres con solapamiento)
       const chunks = this.chunkText(content, 1000, 200);
       
+      if (chunks.length === 0) return { totalChunks: 0, success: true };
+
       console.log(`Vectorizando ${chunks.length} fragmentos para la versión ${versionId}`);
 
-      for (let i = 0; i < chunks.length; i++) {
-        const chunkText = chunks[i];
-        if (!chunkText) continue;
-        
-        // 2. Generar embedding usando AIClient
-        const embedding = await aiClient.generateEmbedding(chunkText);
-
-        // 3. Guardar en document_chunks
-        const { error: insertError } = await supabase.from('document_chunks').insert({
-          version_id: versionId,
-          document_id: documentId,
-          content: chunkText,
-          embedding: `[${(embedding as number[]).join(',')}]`,
-          chunk_index: i
-        });
-
-        if (insertError) throw insertError;
+      // 2. Generar embeddings en lotes (evita límites de rate limit y timeouts)
+      const batchSize = 20;
+      const allEmbeddings: number[][] = [];
+      
+      for (let i = 0; i < chunks.length; i += batchSize) {
+        const batch = chunks.slice(i, i + batchSize);
+        const batchRes = await this.retry(() => aiClient.generateEmbeddingsBatch(batch));
+        allEmbeddings.push(...batchRes);
       }
+
+      // 3. Preparar inserción masiva enriquecida
+      const chunksToInsert = chunks.map((chunkText, i) => ({
+        version_id: versionId,
+        document_id: documentId,
+        org_id: orgId,
+        content: chunkText,
+        embedding: `[${(allEmbeddings[i] as number[]).join(',')}]`,
+        chunk_index: i,
+        metadata: enrichmentMetadata
+      }));
+
+      // 4. Guardar en document_chunks (Inserción masiva única)
+      const { error: insertError } = await supabase.from('document_chunks').insert(chunksToInsert);
+
+      if (insertError) throw insertError;
 
       return { totalChunks: chunks.length, success: true };
     } catch (error: any) {
@@ -50,52 +92,104 @@ export class VectorizerService {
   }
 
   /**
-   * Algoritmo de chunking con solapamiento (overlap) para mantener contexto.
+   * Algoritmo de chunking recursivo que prioriza límites de párrafos y líneas.
    */
-  private chunkText(text: string, size: number, overlap: number): string[] {
+  private chunkText(text: string, maxSize: number, overlap: number): string[] {
     const chunks: string[] = [];
-    let start = 0;
-
-    while (start < text.length) {
-      let end = start + size;
-      
-      // Intentar no cortar palabras a la mitad
-      if (end < text.length) {
-        const lastSpace = text.lastIndexOf(' ', end);
-        if (lastSpace > start) {
-          end = lastSpace;
+    const paragraphs = text.split(/\n\n+/);
+    
+    let currentChunk = "";
+    
+    for (const paragraph of paragraphs) {
+      // Si el párrafo cabe en el chunk actual, lo añadimos
+      if ((currentChunk.length + paragraph.length) <= maxSize) {
+        currentChunk += (currentChunk ? "\n\n" : "") + paragraph;
+      } else {
+        // Si no cabe, guardamos el chunk actual si existe
+        if (currentChunk) {
+          chunks.push(currentChunk.trim());
+          
+          // Aplicar solapamiento (overlap): tomamos el final del chunk anterior
+          const lastWords = currentChunk.split(' ').slice(-Math.floor(overlap / 10)).join(' ');
+          currentChunk = lastWords + "\n\n" + paragraph;
+        } else {
+          // Si el párrafo solo ya es más grande que maxSize, hay que fragmentarlo
+          if (paragraph.length > maxSize) {
+            const fragments = this.splitBySeparator(paragraph, "\n", maxSize, overlap);
+            chunks.push(...fragments);
+            currentChunk = "";
+          } else {
+            currentChunk = paragraph;
+          }
         }
       }
-
-      chunks.push(text.substring(start, end).trim());
-      start = end - overlap;
-      if (start < 0) start = 0;
-      if (start >= text.length || end >= text.length) break;
     }
-
+    
+    if (currentChunk) chunks.push(currentChunk.trim());
     return chunks;
+  }
+
+  /**
+   * Divide un texto largo usando un separador (ej. salto de línea o espacio).
+   */
+  private splitBySeparator(text: string, separator: string, maxSize: number, overlap: number): string[] {
+    const parts = text.split(separator);
+    const result: string[] = [];
+    let current = "";
+
+    for (const part of parts) {
+      if ((current.length + part.length) <= maxSize) {
+        current += (current ? separator : "") + part;
+      } else {
+        if (current) result.push(current.trim());
+        current = part;
+      }
+    }
+    if (current) result.push(current.trim());
+    return result;
   }
 
   /**
    * Busca fragmentos semánticamente similares a una consulta.
    */
-  async searchSimilarChunks(query: string, orgId: string, limit: number = 5) {
+  /**
+   * Busca fragmentos semánticamente similares a una consulta.
+   */
+  async searchSimilarChunks(
+    query: string, 
+    orgId: string, 
+    limit: number = 5,
+    matchThreshold: number = 0.4
+  ): Promise<HybridSearchResult[]> {
     const supabase = await createClient();
     
     // 1. Generar embedding para la consulta
     const queryEmbedding = await aiClient.generateEmbedding(query);
 
-    // 2. Ejecutar búsqueda vectorial en Supabase usando la función RPC match_document_chunks
-    // Nota: Esta función debe estar definida en PostgreSQL (la incluiremos en la migración)
-    const { data, error } = await supabase.rpc('match_document_chunks', {
+    // 2. Ejecutar búsqueda híbrida en Supabase
+    const { data, error } = await supabase.rpc('match_document_chunks_hybrid', {
       query_embedding: `[${queryEmbedding.join(',')}]`,
-      match_threshold: 0.5,
+      query_text: query,
+      match_threshold: matchThreshold,
       match_count: limit,
       p_org_id: orgId
     });
 
     if (error) throw error;
-    return data;
+    return data as HybridSearchResult[];
+  }
+
+  /**
+   * Lógica de reintento exponencial.
+   */
+  private async retry<T>(fn: () => Promise<T>, retries: number = 3): Promise<T> {
+    try {
+      return await fn();
+    } catch (error) {
+      if (retries <= 0) throw error;
+      await new Promise(resolve => setTimeout(resolve, (4 - retries) * 1000));
+      return this.retry(fn, retries - 1);
+    }
   }
 }
 

@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { createClient } from '@/utils/supabase/client';
 import { 
   Receipt, 
@@ -15,89 +16,86 @@ import {
 import { cn } from '@/lib/utils';
 
 export default function InvoicesAuditPage() {
-  const [invoices, setInvoices] = useState<any[]>([]);
-  const [contracts, setContracts] = useState<any[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
   const [validatingId, setValidatingId] = useState<string | null>(null);
-
   const supabase = createClient();
+  const queryClient = useQueryClient();
 
-  const fetchData = useCallback(async () => {
-    setIsLoading(true);
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
+  const { data, isLoading, refetch: fetchData } = useQuery({
+    queryKey: ['invoices-audit'],
+    queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return { invoices: [], contracts: [] };
 
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('org_id')
-      .eq('id', user.id)
-      .single();
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('org_id')
+        .eq('id', user.id)
+        .single();
 
-    const org_id = profile?.org_id;
-    if (!org_id) return;
+      const org_id = profile?.org_id;
+      if (!org_id) return { invoices: [], contracts: [] };
 
-    // Fetch Invoices
-    const { data: invData } = await supabase
-      .from('documents')
-      .select(`
-        id,
-        title,
-        invoices (
+      const { data: invData } = await supabase
+        .from('documents')
+        .select(`
           id,
-          contract_id,
-          validation_status,
-          total_amount,
-          currency,
-          discrepancies,
-          metadata
-        )
-      `)
-      .eq('org_id', org_id)
-      .eq('category', 'Facturas')
-      .is('deleted_at', null);
+          title,
+          invoices (
+            id,
+            contract_id,
+            validation_status,
+            amount,
+            currency,
+            discrepancies,
+            metadata
+          )
+        `)
+        .eq('org_id', org_id)
+        .eq('category', 'Facturas')
+        .is('deleted_at', null);
 
-    // Fetch Contracts for selection
-    const { data: conData } = await supabase
-      .from('documents')
-      .select('id, title')
-      .eq('org_id', org_id)
-      .eq('category', 'Contratos')
-      .is('deleted_at', null);
+      const { data: conData } = await supabase
+        .from('documents')
+        .select('id, title')
+        .eq('org_id', org_id)
+        .eq('category', 'Contratos')
+        .is('deleted_at', null);
 
-    setInvoices(invData || []);
-    setContracts(conData || []);
-    setIsLoading(false);
-  }, [supabase]);
-
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      fetchData();
-    }, 0);
-    return () => clearTimeout(timer);
-  }, [fetchData]);
-
-  const validateInvoice = async (invoiceId: string, contractId: string, orgId: string) => {
-    if (!contractId) {
-      alert('Debes asociar esta factura a un contrato primero.');
-      return;
+      return {
+        invoices: invData || [],
+        contracts: conData || []
+      };
     }
+  });
 
-    setValidatingId(invoiceId);
-    try {
+  const invoices = data?.invoices || [];
+  const contracts = data?.contracts || [];
+
+  const validateMutation = useMutation({
+    mutationFn: async ({ invoiceId, contractId, orgId }: { invoiceId: string; contractId: string; orgId: string }) => {
       const response = await fetch('/api/ai/validate/invoice', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ invoiceId, contractId, orgId })
       });
-      
-      if (response.ok) {
-        await fetchData();
-      }
-    } catch (error) {
-      console.error('Error validating invoice:', error);
-    } finally {
+      if (!response.ok) throw new Error('Error validating invoice');
+      return response.json();
+    },
+    onMutate: (vars) => {
+      setValidatingId(vars.invoiceId);
+    },
+    onSettled: () => {
       setValidatingId(null);
+      queryClient.invalidateQueries({ queryKey: ['invoices-audit'] });
     }
+  });
+
+  const validateInvoice = (invoiceId: string, contractId: string, orgId: string) => {
+    if (!contractId) {
+      alert('Debes asociar esta factura a un contrato primero.');
+      return;
+    }
+    validateMutation.mutate({ invoiceId, contractId, orgId });
   };
 
   if (isLoading) {
@@ -138,7 +136,7 @@ export default function InvoicesAuditPage() {
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-50">
-            {invoices.map((doc) => {
+            {invoices.map((doc: any) => {
               const audit = doc.invoices?.[0];
               const status = audit?.validation_status || 'pending';
               const discrepancies = audit?.discrepancies || [];

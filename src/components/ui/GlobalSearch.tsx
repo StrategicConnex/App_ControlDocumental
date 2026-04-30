@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { createClient } from '@/utils/supabase/client';
 import { globalSearch, SearchResult } from '@/lib/services/search';
 import {
@@ -28,8 +29,6 @@ const MODULE_CONFIG: Record<SearchResult['module'], {
 export default function GlobalSearch() {
   const [open, setOpen]       = useState(false);
   const [query, setQuery]     = useState('');
-  const [results, setResults] = useState<SearchResult[]>([]);
-  const [loading, setLoading] = useState(false);
   const [selected, setSelected] = useState(0);
 
   const inputRef     = useRef<HTMLInputElement>(null);
@@ -55,31 +54,25 @@ export default function GlobalSearch() {
       // Clear state when closing (async to avoid cascading renders)
       setTimeout(() => {
         setQuery('');
-        setResults([]);
         setSelected(0);
       }, 0);
     }
   }, [open]);
 
   // ── Debounced search ─────────────────────────────────────────────────────────
-  const search = useCallback(async (q: string) => {
-    if (q.trim().length < 2) { setResults([]); return; }
-    setLoading(true);
-    try {
-      const data = await globalSearch(supabase, q);
-      setResults(data);
-      setSelected(0);
-    } catch {
-      setResults([]);
-    } finally {
-      setLoading(false);
-    }
-  }, [supabase]);
+  const { data: results = [], isLoading: loading } = useQuery({
+    queryKey: ['global-search', query],
+    queryFn: async () => {
+      if (query.trim().length < 2) return [];
+      return globalSearch(supabase, query);
+    },
+    enabled: query.trim().length >= 2,
+    staleTime: 1000 * 60, // Caching results for 1 minute
+  });
 
   useEffect(() => {
-    const t = setTimeout(() => search(query), 300);
-    return () => clearTimeout(t);
-  }, [query, search]);
+    setSelected(0);
+  }, [results]);
 
   // ── Keyboard navigation ──────────────────────────────────────────────────────
   const handleKeyDown = (e: React.KeyboardEvent) => {

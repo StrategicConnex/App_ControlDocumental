@@ -3,6 +3,9 @@ import { getDocuments } from "@/lib/services/documents";
 import { getPersonnel } from "@/lib/services/personnel";
 import { getVehicles } from "@/lib/services/vehicles";
 import { getBudgets } from "@/lib/services/budgets";
+import { getDashboardAlerts } from "@/lib/services/dashboard";
+import { getComplianceMetrics } from "@/lib/services/search";
+import { getRiskHistory } from "@/lib/services/riskScore";
 import { 
   Users, 
   DollarSign, 
@@ -13,7 +16,8 @@ import {
 import Link from 'next/link';
 import ComplianceDashboard from "@/components/ui/ComplianceDashboard";
 import { MetricCard } from "./_components/MetricCard";
-import ActionInbox, { AlertItem } from "./_components/ActionInbox";
+import ActionInbox from "./_components/ActionInbox";
+import { AlertItem } from "@/lib/services/dashboard";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 export const metadata = {
@@ -29,12 +33,14 @@ export default async function Dashboard() {
   const orgId = profile?.org_id;
 
   // Fetch all data in parallel
-  const [docsData, personnelData, vehiclesData, budgetsData, notificationsData] = await Promise.all([
+  const [docsData, personnelData, vehiclesData, budgetsData, initialAlerts, metrics, history] = await Promise.all([
     getDocuments(supabase).catch(() => []),
     getPersonnel(supabase).catch(() => []),
     getVehicles(supabase).catch(() => []),
     getBudgets(supabase).catch(() => []),
-    orgId ? supabase.from('notifications').select('*').eq('org_id', orgId).eq('is_read', false).limit(20).then(res => res.data || []) : Promise.resolve([])
+    getDashboardAlerts(supabase, orgId ?? undefined),
+    getComplianceMetrics(supabase),
+    orgId ? getRiskHistory(supabase, orgId).catch(() => []) : Promise.resolve([])
   ]);
 
   // Aggregate Metrics
@@ -49,40 +55,7 @@ export default async function Dashboard() {
   const totalRevenue = acceptedBudgets.reduce((acc, curr) => acc + Number(curr.total_amount || 0), 0);
   const conversionRate = budgetsData.length > 0 ? Math.round((acceptedBudgets.length / budgetsData.length) * 100) : 0;
 
-  // Unified Alerts Feed -> Action Inbox format
-  const alerts: AlertItem[] = [];
-  
-  // 1. Add real notifications from Supabase (Priority)
-  notificationsData.forEach(n => {
-    alerts.push({
-      id: `notif-${n.id}`,
-      type: 'notification',
-      title: n.title,
-      status: n.severity || 'info',
-      link: '#',
-      priority: n.severity === 'critical' ? 'high' : 'medium',
-      notificationId: n.id,
-      resourceId: (n.metadata as any)?.resourceId,
-      actionType: (n.metadata as any)?.actionType
-    });
-  });
-
-  // 2. Add derived alerts
-  docsData.forEach(d => { 
-    if (d.status === 'por_vencer' || d.status === 'vencido') 
-      alerts.push({ id: `doc-${d.id}`, type: 'document', title: d.title, status: d.status, link: `/documents/${d.id}`, priority: d.status === 'vencido' ? 'high' : 'medium' }); 
-  });
-  personnelData.forEach(p => { 
-    if (p.status === 'por_vencer' || p.status === 'vencido' || p.status === 'bloqueado') 
-      alerts.push({ id: `per-${p.id}`, type: 'personnel', title: `${p.first_name} ${p.last_name}`, status: p.status, link: `/personnel/${p.id}`, priority: (p.status === 'vencido' || p.status === 'bloqueado') ? 'high' : 'medium' }); 
-  });
-  vehiclesData.forEach(v => { 
-    if (v.status === 'por_vencer' || v.status === 'vencido' || v.status === 'bloqueado') 
-      alerts.push({ id: `veh-${v.id}`, type: 'vehicle', title: `${v.license_plate} - ${v.brand}`, status: v.status, link: `/vehicles/${v.id}`, priority: (v.status === 'vencido' || v.status === 'bloqueado') ? 'high' : 'medium' }); 
-  });
-
-  alerts.sort((a, b) => (b.priority === 'high' ? 1 : 0) - (a.priority === 'high' ? 1 : 0));
-  const topAlerts = alerts.slice(0, 8);
+  const topAlerts = initialAlerts.slice(0, 8);
 
   const formatCurrency = (amount: number) => new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', maximumFractionDigits: 0 }).format(amount);
 
@@ -136,13 +109,17 @@ export default async function Dashboard() {
               </div>
             </CardHeader>
             <CardContent className="pt-6">
-              <ActionInbox initialAlerts={topAlerts} />
+              <ActionInbox initialAlerts={topAlerts} orgId={orgId ?? undefined} />
             </CardContent>
           </Card>
         </div>
         
         <div className="lg:col-span-1 space-y-6">
-          <ComplianceDashboard orgId={orgId || ''} />
+          <ComplianceDashboard 
+            orgId={orgId ?? undefined} 
+            initialMetrics={metrics} 
+            initialHistory={history} 
+          />
           
           <Card className="border-border shadow-sm">
             <CardHeader className="pb-3">

@@ -1,6 +1,8 @@
+'use client';
+import { useQuery } from '@tanstack/react-query';
+import { createClient } from '@/utils/supabase/client';
 import { getComplianceMetrics } from '@/lib/services/search';
 import { getRiskHistory } from '@/lib/services/riskScore';
-import { createClient } from '@/utils/supabase/server';
 import { TrendingUp, TrendingDown, Minus, Activity } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import RiskTrendChart from './RiskTrendChart';
@@ -44,20 +46,41 @@ function ComplianceBar({
 }
 
 // ─── Main component ───────────────────────────────────────────────────────────
-export default async function ComplianceDashboard({ orgId }: { orgId?: string }) {
-  const supabase = await createClient();
-  const [metrics, history] = await Promise.all([
-    getComplianceMetrics(supabase),
-    orgId ? getRiskHistory(supabase, orgId).catch(() => []) : Promise.resolve([])
-  ]);
+export default function ComplianceDashboard({ 
+  orgId, 
+  initialMetrics, 
+  initialHistory 
+}: { 
+  orgId?: string | undefined,
+  initialMetrics: any,
+  initialHistory: any[]
+}) {
+  const supabase = createClient();
+
+  const { data: metrics } = useQuery({
+    queryKey: ['compliance-metrics', orgId],
+    queryFn: () => getComplianceMetrics(supabase),
+    initialData: initialMetrics,
+    staleTime: 1000 * 60 * 5,
+  });
+
+  const { data: history = [] } = useQuery({
+    queryKey: ['risk-history', orgId],
+    queryFn: () => orgId ? getRiskHistory(supabase, orgId) : Promise.resolve([]),
+    initialData: initialHistory,
+    enabled: !!orgId,
+    staleTime: 1000 * 60 * 10,
+  });
+
+  const overallRate = metrics?.overall?.rate ?? 0;
 
   const overallColor =
-    metrics.overall.rate >= 80 ? 'text-emerald-600' :
-    metrics.overall.rate >= 50 ? 'text-amber-600'   : 'text-rose-600';
+    overallRate >= 80 ? 'text-emerald-600' :
+    overallRate >= 50 ? 'text-amber-600'   : 'text-rose-600';
 
   const overallBg =
-    metrics.overall.rate >= 80 ? 'from-emerald-600 to-emerald-800' :
-    metrics.overall.rate >= 50 ? 'from-amber-500 to-amber-700'     : 'from-rose-600 to-rose-800';
+    overallRate >= 80 ? 'from-emerald-600 to-emerald-800' :
+    overallRate >= 50 ? 'from-amber-500 to-amber-700'     : 'from-rose-600 to-rose-800';
 
   return (
     <section

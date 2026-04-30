@@ -1,48 +1,31 @@
 "use client";
 
 import React, { useState } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { createClient } from "@/utils/supabase/client";
+import { getDashboardAlerts, AlertItem } from "@/lib/services/dashboard";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { FileText, Users, Truck, Check, Clock, MoreHorizontal, FileCheck2, AlertCircle } from "lucide-react";
+import { FileText, Users, Truck, Check, Clock, MoreHorizontal, FileCheck2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
+import { toast } from "sonner";
 
-export type AlertItem = {
-  id: string;
-  type: 'document' | 'personnel' | 'vehicle' | 'notification';
-  title: string;
-  status: string;
-  link: string;
-  priority?: 'high' | 'medium' | 'low';
-  notificationId?: string;
-  resourceId?: string;
-  actionType?: string;
-};
-
-export default function ActionInbox({ initialAlerts }: { initialAlerts: AlertItem[] }) {
-  const [alerts, setAlerts] = useState<AlertItem[]>(initialAlerts);
+export default function ActionInbox({ initialAlerts, orgId }: { initialAlerts: AlertItem[], orgId?: string | undefined }) {
+  const queryClient = useQueryClient();
+  const supabase = createClient();
   const [selected, setSelected] = useState<Set<string>>(new Set());
-  const [isResolving, setIsResolving] = useState<string | null>(null);
 
-  const handleSelect = (id: string) => {
-    const newSelected = new Set(selected);
-    if (newSelected.has(id)) newSelected.delete(id);
-    else newSelected.add(id);
-    setSelected(newSelected);
-  };
+  const { data: alerts = initialAlerts } = useQuery({
+    queryKey: ['dashboard-alerts', orgId],
+    queryFn: () => getDashboardAlerts(supabase, orgId),
+    initialData: initialAlerts,
+    staleTime: 1000 * 60 * 5, // 5 minutes
+  });
 
-  const selectAll = () => {
-    if (selected.size === alerts.length) setSelected(new Set());
-    else setSelected(new Set(alerts.map(a => a.id)));
-  };
-
-  // REAL API Implementation for persistence verification
-  const handleQuickResolve = async (item: AlertItem, e: React.MouseEvent) => {
-    e.preventDefault();
-    setIsResolving(item.id);
-    
-    try {
+  const resolveMutation = useMutation({
+    mutationFn: async (item: AlertItem) => {
       // Si es una notificación real accionable
       if (item.notificationId && item.resourceId) {
         const response = await fetch('/api/audit/approve', {
@@ -56,21 +39,42 @@ export default function ActionInbox({ initialAlerts }: { initialAlerts: AlertIte
         });
 
         if (!response.ok) throw new Error('Error al procesar la acción');
-        
-        console.log(`✅ Acción persistida en Supabase para ${item.title}`);
-      } else {
-        // Para alertas derivadas (Documentos vencidos, etc), simulamos o implementamos lógica específica
-        console.log(`ℹ️ Alerta derivada resuelta (localmente): ${item.title}`);
-        await new Promise(resolve => setTimeout(resolve, 500));
+        return { success: true, item };
       }
-
-      setAlerts(prev => prev.filter(a => a.id !== item.id));
-    } catch (error) {
+      
+      // Para alertas derivadas (Documentos vencidos, etc)
+      return { success: true, item, local: true };
+    },
+    onSuccess: (data) => {
+      if (data.local) {
+        toast.info(`Alerta resuelta: ${data.item.title}`);
+      } else {
+        toast.success(`Acción procesada: ${data.item.title}`);
+      }
+      queryClient.invalidateQueries({ queryKey: ['dashboard-alerts'] });
+      queryClient.invalidateQueries({ queryKey: ['compliance-metrics'] });
+    },
+    onError: (error) => {
       console.error('Error al resolver alerta:', error);
-      alert('Error al conectar con el servidor. Intente nuevamente.');
-    } finally {
-      setIsResolving(null);
+      toast.error('Error al conectar con el servidor.');
     }
+  });
+
+  const handleSelect = (id: string) => {
+    const newSelected = new Set(selected);
+    if (newSelected.has(id)) newSelected.delete(id);
+    else newSelected.add(id);
+    setSelected(newSelected);
+  };
+
+  const selectAll = () => {
+    if (selected.size === alerts.length) setSelected(new Set());
+    else setSelected(new Set(alerts.map(a => a.id)));
+  };
+
+  const handleQuickResolve = (item: AlertItem, e: React.MouseEvent) => {
+    e.preventDefault();
+    resolveMutation.mutate(item);
   };
 
   return (
@@ -117,8 +121,9 @@ export default function ActionInbox({ initialAlerts }: { initialAlerts: AlertIte
                 className={cn(
                   "group relative flex items-start gap-4 p-4 rounded-xl border bg-card transition-all hover:shadow-md",
                   selected.has(alert.id) ? "border-primary/50 bg-primary/5" : "border-border hover:border-border/80",
-                  isResolving === alert.id && "opacity-50 pointer-events-none"
-                )}
+                  resolveMutation.isPending && resolveMutation.variables?.id === alert.id && "opacity-50 pointer-events-none"
+                )
+              }
               >
                 <div className="mt-1">
                   <Checkbox 
@@ -153,7 +158,7 @@ export default function ActionInbox({ initialAlerts }: { initialAlerts: AlertIte
                 <div className="opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-2 shrink-0">
                   <Button size="sm" variant="outline" className="h-8">Ver Detalles</Button>
                   <Button size="sm" className="h-8" onClick={(e) => handleQuickResolve(alert, e)}>
-                    {isResolving === alert.id ? "Resolviendo..." : <><Check size={16} className="mr-1" /> Resolver rápido</>}
+                    {resolveMutation.isPending && resolveMutation.variables?.id === alert.id ? "Resolviendo..." : <><Check size={16} className="mr-1" /> Resolver rápido</>}
                   </Button>
                   <Button size="icon" variant="ghost" className="h-8 w-8 text-muted-foreground">
                     <MoreHorizontal size={16} />

@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState, use } from "react";
+import { use } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft, Download, CheckCircle, XCircle, Clock, FileText } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -12,53 +13,34 @@ export default function BudgetDetailPage({ params }: { params: Promise<{ id: str
   const resolvedParams = use(params);
   const router = useRouter();
   const supabase = createClient();
-  const [budget, setBudget] = useState<{
-    id: string;
-    title: string;
-    status: string;
-    created_at: string;
-    total_amount: number;
-    budget_items: {
-      id: string;
-      description: string;
-      quantity: number;
-      unit_price: number;
-      total: number;
-    }[];
-  } | null>(null);
-  const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
 
-  useEffect(() => {
-    async function load() {
-      try {
-        const data = await getBudgetById(supabase, resolvedParams.id);
-        setBudget(data);
-      } catch (e) {
-        console.error(e);
-      } finally {
-        setLoading(false);
-      }
-    }
-    load();
-  }, [resolvedParams.id, supabase]);
+  const { data: budget, isLoading } = useQuery({
+    queryKey: ["budget", resolvedParams.id],
+    queryFn: () => getBudgetById(supabase, resolvedParams.id),
+  });
 
-  const handleStatusChange = async (newStatus: string) => {
-    if (!budget) return;
-    try {
-      await updateBudgetStatus(supabase, resolvedParams.id, newStatus);
-      setBudget({ ...budget, status: newStatus });
+  const updateStatusMutation = useMutation({
+    mutationFn: (newStatus: string) => updateBudgetStatus(supabase, resolvedParams.id, newStatus),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["budget", resolvedParams.id] });
       router.refresh();
-    } catch (e) {
-      console.error(e);
+    },
+    onError: (error) => {
+      console.error(error);
       alert("Error actualizando estado");
     }
+  });
+
+  const handleStatusChange = (newStatus: string) => {
+    updateStatusMutation.mutate(newStatus);
   };
 
   const handleExportPDF = () => {
     alert("Simulación: Generando PDF con diseño corporativo...");
   };
 
-  if (loading) return <div className="p-8 text-center">Cargando...</div>;
+  if (isLoading) return <div className="p-8 text-center">Cargando...</div>;
   if (!budget) return <div className="p-8 text-center">Presupuesto no encontrado.</div>;
 
   const formatCurrency = (amount: number) => {
@@ -111,7 +93,7 @@ export default function BudgetDetailPage({ params }: { params: Promise<{ id: str
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-50">
-                  {budget.budget_items?.map((item) => (
+                  {budget.budget_items?.map((item: any) => (
                     <tr key={item.id}>
                       <td className="py-4 text-sm text-gray-900">{item.description}</td>
                       <td className="py-4 text-sm text-gray-600 text-center">{item.quantity}</td>

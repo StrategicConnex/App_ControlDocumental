@@ -261,7 +261,7 @@ El panel muestra en tiempo real:
 | **`workflows`** | Workflows configurables (nueva) |
 | **`scheduled_reports`** | Reportes automáticos (nueva) |
 | **`webhook_queue`** | Cola de webhooks con reintentos (nueva) |
-| **`document_templates`** | Plantillas de documentos (nueva) |
+| **`document_templates`** | Plantillas de documentos (nueva) |Analizar todo el codigo
 | **`abac_policies`** | Políticas ABAC (nueva) |
 | **`risk_score_history`** | Historial de riesgo (nueva) |
 
@@ -272,8 +272,6 @@ El panel muestra en tiempo real:
 ### 5.1 Flujo de un Documento con Firma Digital
 ```
 
-
-
 Carga → Borrador → En Revisión → Aprobado (quórum) → Firmado Digitalmente → Vigente → Vencido
 
 text
@@ -282,8 +280,6 @@ text
 ### 5.2 Flujo de Acreditación de Proveedor
 ```
 
-
-
 Registro proveedor → Pendiente aprobación → Admin aprueba → Sube documentación → Acreditado
 
 text
@@ -291,8 +287,6 @@ text
 ```
 ### 5.3 Flujo de Workflow Automático
 ```
-
-
 
 Evento (ej. documento vencido) → Trigger → Ejecución de acciones (email, webhook, tarea)
 
@@ -369,8 +363,6 @@ CREATE TABLE organizations (
 );
 ```
 
-
-
 ### 7.2 Tabla: `users`
 
 sql
@@ -385,8 +377,6 @@ CREATE TABLE users (
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 ```
-
-
 
 ### 7.3 Tabla: `documents` (optimizada)
 
@@ -415,8 +405,6 @@ CREATE INDEX idx_documents_expiry ON documents(expiry_date) WHERE deleted_at IS 
 CREATE INDEX idx_documents_search_gin ON documents USING GIN (to_tsvector('spanish', title || ' ' || COALESCE(description, '')));
 ```
 
-
-
 ### 7.4 Vista `documents_with_status` (reemplaza columna status)
 
 sql
@@ -441,8 +429,6 @@ SELECT
 FROM documents d;
 ```
 
-
-
 ### 7.5 Tabla: `document_versions` (con deduplicación)
 
 sql
@@ -464,8 +450,6 @@ ON document_versions (content_hash)
 WHERE content_hash IS NOT NULL;
 ```
 
-
-
 ### 7.6 Tabla: `approvals`
 
 sql
@@ -481,8 +465,6 @@ CREATE TABLE approvals (
   approved_at TIMESTAMPTZ DEFAULT NOW()
 );
 ```
-
-
 
 ### 7.7 Tabla: `digital_signatures`
 
@@ -509,8 +491,6 @@ ON digital_signatures (document_id)
 WHERE validation_timestamp IS NOT NULL;
 ```
 
-
-
 ### 7.8 Tabla: `workflows`
 
 sql
@@ -527,8 +507,6 @@ CREATE TABLE workflows (
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 ```
-
-
 
 ### 7.9 Tabla: `scheduled_reports`
 
@@ -548,8 +526,6 @@ CREATE TABLE scheduled_reports (
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 ```
-
-
 
 ### 7.10 Tabla: `webhook_queue`
 
@@ -574,8 +550,6 @@ CREATE TABLE webhook_queue (
 CREATE INDEX idx_webhook_queue_pending ON webhook_queue(status, next_retry_at) WHERE status = 'pending';
 ```
 
-
-
 ### 7.11 Tabla: `risk_score_history`
 
 sql
@@ -593,8 +567,6 @@ CREATE TABLE risk_score_history (
 
 CREATE INDEX idx_risk_history_org_date ON risk_score_history(org_id, recorded_at DESC);
 ```
-
-
 
 *(El resto de tablas: personnel, vehicles, budgets, alerts, audit_log, abac_policies, document_templates se mantienen según el diseño original con las optimizaciones de índices y soft delete)*
 
@@ -648,8 +620,6 @@ END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 ```
 
-
-
 ### 8.2 Función de alertas optimizada (solo notificaciones)
 
 sql
@@ -681,8 +651,6 @@ END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 ```
 
-
-
 ### 8.3 Función de webhook queue processor
 
 sql
@@ -710,8 +678,6 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 ```
-
-
 
 ### 8.4 Función de risk score diario
 
@@ -764,8 +730,6 @@ END;
 $$ LANGUAGE plpgsql;
 ```
 
-
-
 ### 8.5 Programación de cron jobs
 
 sql
@@ -775,8 +739,6 @@ SELECT cron.schedule('generate-expiry-alerts', '0 7 * * *', 'SELECT generate_exp
 SELECT cron.schedule('process-webhook-queue', '*/1 * * * *', 'SELECT process_webhook_queue()');
 SELECT cron.schedule('record-daily-risk-scores', '0 8 * * *', 'SELECT record_daily_risk_scores()');
 ```
-
-
 
 ------
 
@@ -795,8 +757,6 @@ CREATE OR REPLACE FUNCTION auth_role() RETURNS TEXT AS $$
   SELECT role FROM users WHERE id = auth.uid();
 $$ LANGUAGE sql STABLE;
 ```
-
-
 
 ### 9.2 Políticas base
 
@@ -820,8 +780,6 @@ CREATE POLICY "Only auditors and admins view audit_log" ON audit_log
   FOR SELECT USING (auth_role() IN ('admin', 'auditor'));
 -- No se permiten UPDATE ni DELETE en audit_log
 ```
-
-
 
 ------
 
@@ -857,8 +815,6 @@ text
 │  Vencimientos / Webhook Queue / Alerts│
 └───────────────────────────────────────┘
 ```
-
-
 
 ------
 
@@ -918,7 +874,11 @@ sc-platform/
 │   │   └── whatsapp.ts          (nuevo)
 │   ├── templates/
 │   │   └── document-generator.ts (nuevo)
-│   └── utils/
+│   ├── ai/
+│   │   ├── pol-engine.ts        (nuevo - motor de orquestación)
+│   │   ├── pol-configs.ts       (nuevo - configuración de proveedores)
+│   │   └── ...
+│   ├── utils/
 ├── hooks/
 │   ├── useOfflineSync.ts        (nuevo)
 │   └── ...
@@ -938,8 +898,6 @@ sc-platform/
 ├── tailwind.config.ts
 └── package.json
 ```
-
-
 
 ------
 
@@ -982,8 +940,6 @@ export function SignatureModal({ documentId, versionId, onSigned, onClose }) {
 }
 ```
 
-
-
 ### 12.2 WorkflowEditor (React Flow)
 
 tsx
@@ -1016,8 +972,6 @@ export function WorkflowEditor({ workflow, onSave }) {
 }
 ```
 
-
-
 ### 12.3 ExpiryCalendar
 
 tsx
@@ -1042,8 +996,6 @@ export function ExpiryCalendar({ events }) {
 }
 ```
 
-
-
 ### 12.4 Offline Sync Hook
 
 ts
@@ -1060,8 +1012,6 @@ export function useOfflineSync() {
   }, []);
 }
 ```
-
-
 
 ------
 
@@ -1097,8 +1047,6 @@ export async function signDocument(documentId: string, versionId: string, certif
 }
 ```
 
-
-
 ### 13.2 WhatsApp Service
 
 ts
@@ -1115,8 +1063,6 @@ export async function sendWhatsAppMessage(to: string, template: string, variable
   });
 }
 ```
-
-
 
 ### 13.3 Report Generator (CSV/Excel/PDF)
 
@@ -1147,8 +1093,6 @@ export async function generateReport(orgId: string, filters: any, format: 'pdf' 
 }
 ```
 
-
-
 ------
 
 ## 14. Roadmap de Implementación de Features
@@ -1173,13 +1117,39 @@ export async function generateReport(orgId: string, filters: any, format: 'pdf' 
 | Cron jobs                              | 3                           |
 | Componentes React                      | 28                          |
 | Páginas Next.js                        | 18                          |
-| Servicios/Utilidades                   | 20                          |
-| Tests (unit + integration + RLS + E2E) | ~60                         |
+| Servicios/Utilidades                   | 22                          |
+| Motores de Orquestación (POL)         | 1                           |
+| Tests (unit + integration + RLS + E2E) | ~65                         |
 | Pipelines CI/CD                        | 3 workflows                 |
 
 ------
 
-## 16. Conclusión
+## 16. Inteligencia de Orquestación de IA (POL)
+
+### 16.1 Arquitectura del Engine
+El sistema utiliza un **Provider Orchestration Layer (POL)** diseñado para garantizar la máxima resiliencia y eficiencia de costos en el procesamiento de documentos mediante IA.
+
+- **Algoritmo de Scoring Dinámico:** Evalúa proveedores en tiempo real basándose en:
+    - **Latencia (30%):** Tiempo de respuesta normalizado.
+    - **Costo (70%):** Eficiencia por token (priorizando modelos como Google Gemini).
+- **Penalización Exponencial de Errores:** Se aplica un factor de castigo `Math.pow(1 + errorRate, 5)` ante fallos técnicos o rate limits, desplazando automáticamente al proveedor inestable al final de la cola de failover.
+
+### 16.2 Estrategia de Ruteo
+| Proveedor | Modelo | Rol | Razón de Selección |
+|---|---|---|---|
+| **Google Gemini** | `gemini-3-flash` | Primario | Líder de Costos y Ventana de Contexto |
+| **DeepSeek** | `deepseek-chat` | Backup | Equilibrio Performance/Costo |
+| **OpenRouter** | Multi-model | Failover Final | Acceso a modelos GPT-4/Claude como última instancia |
+
+### 16.3 Observabilidad y Control (AI Ops Center)
+El dashboard integra un panel de **Live Ranking** que expone:
+- **Routing Reason:** Justificación lógica de por qué un proveedor está en su posición actual.
+- **Score Breakdown:** Desglose visual del puntaje (Salud, Latencia, Economía).
+- **Telemetría en Vivo:** Integración con `ai_call_logs` para monitoreo de errores en tiempo real.
+
+------
+
+## 17. Conclusión
 
 El presente SRS incorpora todas las correcciones de optimización (rendimiento, deduplicación, vistas materializadas) y 12 nuevas features de alto valor diferencial, posicionando a SC Platform como el estándar de compliance documental para Oil & Gas en Argentina y la región. El código de cada componente está listo para ser implementado en Next.js 14 + Supabase, siguiendo las convenciones definidas.
 

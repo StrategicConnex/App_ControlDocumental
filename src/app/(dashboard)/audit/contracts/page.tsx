@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { createClient } from '@/utils/supabase/client';
 import { 
   FileCheck, 
@@ -14,70 +15,66 @@ import {
 import { cn } from '@/lib/utils';
 
 export default function ContractsAuditPage() {
-  const [contracts, setContracts] = useState<any[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
   const [validatingId, setValidatingId] = useState<string | null>(null);
-
+  const queryClient = useQueryClient();
   const supabase = createClient();
 
-  const fetchContracts = useCallback(async () => {
-    setIsLoading(true);
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
+  const { data: contracts = [], isLoading, refetch: fetchContracts } = useQuery({
+    queryKey: ['contracts-audit'],
+    queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return [];
 
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('org_id')
-      .eq('id', user.id)
-      .single();
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('org_id')
+        .eq('id', user.id)
+        .single();
 
-    const org_id = profile?.org_id;
-    if (!org_id) return;
+      const org_id = profile?.org_id;
+      if (!org_id) return [];
 
-    const { data } = await supabase
-      .from('documents')
-      .select(`
-        id,
-        title,
-        category,
-        contracts (
-          status,
-          compliance_score,
-          metadata
-        )
-      `)
-      .eq('org_id', org_id)
-      .eq('category', 'Contratos')
-      .is('deleted_at', null);
+      const { data } = await supabase
+        .from('documents')
+        .select(`
+          id,
+          title,
+          category,
+          contracts (
+            status,
+            compliance_score,
+            metadata
+          )
+        `)
+        .eq('org_id', org_id)
+        .eq('category', 'Contratos')
+        .is('deleted_at', null);
 
-    setContracts(data || []);
-    setIsLoading(false);
-  }, [supabase]);
+      return data || [];
+    }
+  });
 
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      fetchContracts();
-    }, 0);
-    return () => clearTimeout(timer);
-  }, [fetchContracts]);
-
-  const validateContract = async (contractId: string, orgId: string) => {
-    setValidatingId(contractId);
-    try {
+  const validateMutation = useMutation({
+    mutationFn: async ({ contractId, orgId }: { contractId: string; orgId: string }) => {
       const response = await fetch('/api/ai/validate/contract', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ contractId, orgId })
       });
-      
-      if (response.ok) {
-        await fetchContracts();
-      }
-    } catch (error) {
-      console.error('Error validating contract:', error);
-    } finally {
+      if (!response.ok) throw new Error('Error validating contract');
+      return response.json();
+    },
+    onMutate: (vars) => {
+      setValidatingId(vars.contractId);
+    },
+    onSettled: () => {
       setValidatingId(null);
+      queryClient.invalidateQueries({ queryKey: ['contracts-audit'] });
     }
+  });
+
+  const validateContract = (contractId: string, orgId: string) => {
+    validateMutation.mutate({ contractId, orgId });
   };
 
   if (isLoading) {
@@ -96,7 +93,7 @@ export default function ContractsAuditPage() {
           <p className="text-gray-500 mt-2">Validación automática de cláusulas críticas y cumplimiento industrial.</p>
         </div>
         <button 
-          onClick={fetchContracts}
+          onClick={() => fetchContracts()}
           className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
         >
           <RefreshCw className="w-5 h-5 text-gray-400" />
@@ -157,7 +154,7 @@ export default function ContractsAuditPage() {
                       />
                     </div>
                     <p className="text-xs text-gray-500 italic line-clamp-2">
-                      {audit.metadata?.summary || 'No hay resumen disponible.'}
+                      {(audit.metadata as any)?.summary || 'No hay resumen disponible.'}
                     </p>
                   </div>
                 ) : (

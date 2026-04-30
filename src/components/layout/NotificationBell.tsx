@@ -1,47 +1,52 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Bell, AlertTriangle, Info, CheckCircle2, X } from 'lucide-react';
 import { createClient } from '@/utils/supabase/client';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
 
+interface NotificationMetadata {
+  actionable?: boolean;
+  resourceId?: string;
+  actionType?: string;
+}
+
 export function NotificationBell() {
-  const [notifications, setNotifications] = useState<any[]>([]);
   const [isOpen, setIsOpen] = useState(false);
-  const [unreadCount, setUnreadCount] = useState(0);
-
   const supabase = createClient();
+  const queryClient = useQueryClient();
 
-  const fetchNotifications = useCallback(async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
+  const { data: notifications = [] } = useQuery({
+    queryKey: ['notifications'],
+    queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return [];
 
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('org_id')
-      .eq('id', user.id)
-      .single();
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('org_id')
+        .eq('id', user.id)
+        .single();
 
-    const org_id = profile?.org_id;
-    if (!org_id) return;
+      const org_id = profile?.org_id;
+      if (!org_id) return [];
 
-    const { data } = await supabase
-      .from('notifications')
-      .select('*')
-      .eq('org_id', org_id)
-      .order('created_at', { ascending: false })
-      .limit(10);
+      const { data } = await supabase
+        .from('notifications')
+        .select('*')
+        .eq('org_id', org_id)
+        .order('created_at', { ascending: false })
+        .limit(10);
 
-    setNotifications(data || []);
-    setUnreadCount(data?.filter(n => !n.is_read).length || 0);
-  }, [supabase]);
+      return data || [];
+    }
+  });
+
+  const unreadCount = notifications.filter(n => !n.is_read).length;
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      fetchNotifications();
-    }, 0);
-    
     // Suscripción en tiempo real a nuevas notificaciones
     const channel = supabase
       .channel('realtime_notifications')
@@ -50,62 +55,66 @@ export function NotificationBell() {
         schema: 'public', 
         table: 'notifications' 
       }, () => {
-        fetchNotifications();
+        queryClient.invalidateQueries({ queryKey: ['notifications'] });
       })
       .subscribe();
 
     return () => {
-      clearTimeout(timer);
       supabase.removeChannel(channel);
     };
-  }, [fetchNotifications, supabase]);
+  }, [supabase, queryClient]);
 
-  const markAsRead = async (id: string) => {
-    await supabase.from('notifications').update({ is_read: true }).eq('id', id);
-    fetchNotifications();
-  };
+  const markAsReadMutation = useMutation({
+    mutationFn: async (id: string) => {
+      await supabase.from('notifications').update({ is_read: true }).eq('id', id);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['notifications'] });
+    }
+  });
 
-  const handleQuickApprove = async (notification: any) => {
-    try {
+  const quickApproveMutation = useMutation({
+    mutationFn: async (notification: any) => {
       const response = await fetch('/api/audit/approve', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           notificationId: notification.id,
-          resourceId: notification.metadata.resourceId,
-          type: notification.metadata.actionType
+          resourceId: (notification.metadata as unknown as NotificationMetadata)?.resourceId,
+          type: (notification.metadata as unknown as NotificationMetadata)?.actionType
         })
       });
-
-      if (response.ok) {
-        // Actualizar UI localmente
-        fetchNotifications();
-      }
-    } catch (error) {
-      console.error('Error in quick approval:', error);
+      if (!response.ok) throw new Error('Error in quick approval');
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['notifications'] });
     }
-  };
+  });
 
-  const handleBulkApprove = async () => {
-    const actionable = notifications.filter(n => n.metadata?.actionable && !n.is_read);
-    if (actionable.length === 0) return;
+  const bulkApproveMutation = useMutation({
+    mutationFn: async () => {
+      const actionable = notifications.filter(n => (n.metadata as unknown as NotificationMetadata)?.actionable && !n.is_read);
+      if (actionable.length === 0) return;
 
-    try {
       const response = await fetch('/api/audit/approve/bulk', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ notifications: actionable })
       });
-
-      if (response.ok) {
-        fetchNotifications();
-      }
-    } catch (error) {
-      console.error('Error in bulk approval:', error);
+      if (!response.ok) throw new Error('Error in bulk approval');
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['notifications'] });
     }
-  };
+  });
 
-  const actionableCount = notifications.filter(n => n.metadata?.actionable && !n.is_read).length;
+  const markAsRead = (id: string) => markAsReadMutation.mutate(id);
+  const handleQuickApprove = (notification: any) => quickApproveMutation.mutate(notification);
+  const handleBulkApprove = () => bulkApproveMutation.mutate();
+
+  const actionableCount = notifications.filter(n => (n.metadata as unknown as NotificationMetadata)?.actionable && !n.is_read).length;
 
   return (
     <div className="relative">
@@ -176,7 +185,7 @@ export function NotificationBell() {
                           <p className="text-[11px] text-gray-500 mt-1 line-clamp-2 leading-relaxed">{n.message}</p>
                           
                           {/* Acciones Rápidas */}
-                          {n.metadata?.actionable && !n.is_read && (
+                          {(n.metadata as unknown as NotificationMetadata)?.actionable && !n.is_read && (
                             <div className="mt-3 flex gap-2">
                               <button 
                                 onClick={(e) => {
@@ -200,7 +209,7 @@ export function NotificationBell() {
                           )}
 
                           <p className="text-[9px] text-gray-400 mt-2 font-medium uppercase tracking-wider">
-                            {new Date(n.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                            {n.created_at ? new Date(n.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''}
                           </p>
                         </div>
                       </div>

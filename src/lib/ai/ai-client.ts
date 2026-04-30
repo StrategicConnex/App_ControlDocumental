@@ -86,7 +86,10 @@ export class AIClient {
         model: 'openai/text-embedding-3-small',
         input: texts.map(t => t.replace(/\n/g, ' ')),
       });
-      return response.data.map(item => item.embedding);
+      return response.data.map(item => {
+        if (!item.embedding) throw new Error('No se recibió un embedding en el lote.');
+        return item.embedding;
+      });
     } catch (error) {
       console.error('Error generando embeddings por lote:', error);
       throw error;

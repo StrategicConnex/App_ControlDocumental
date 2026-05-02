@@ -40,7 +40,9 @@ export default function RiskEvolutionChart({ history }: RiskEvolutionChartProps)
   }, [history]);
 
   const lastTwo = chartData.slice(-2);
-  const trend = lastTwo.length === 2 ? lastTwo[1].avgScore - lastTwo[0].avgScore : 0;
+  const trend = lastTwo.length === 2 
+    ? (lastTwo[1]?.avgScore ?? 0) - (lastTwo[0]?.avgScore ?? 0) 
+    : 0;
 
   return (
     <Card className="rounded-[2.5rem] border-gray-100 card-shadow bg-white overflow-hidden">

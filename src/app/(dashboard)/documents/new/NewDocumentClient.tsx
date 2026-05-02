@@ -30,7 +30,7 @@ export default function NewDocumentClient() {
         const { data, error } = await supabase
           .from('vendor_document_requests')
           .select('*, document_type:doc_type_id(name)')
-          .eq('id', requestId)
+          .eq('id', requestId!)
           .single();
         
         if (data) {

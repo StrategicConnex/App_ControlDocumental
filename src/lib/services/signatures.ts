@@ -23,7 +23,7 @@ export async function computeHash(content: string | ArrayBuffer): Promise<string
 
 /**
  * Signs a document digitally.
- * Records the hash, IP, and timestamp in the database.
+ * Records the deterministic hash, IP, and timestamp in the database.
  */
 export async function signDocument(
   supabase: SupabaseClient,
@@ -32,9 +32,13 @@ export async function signDocument(
     version_id: string;
     signer_id: string;
     content: string; // The content or file reference to hash
+    ip_address: string;
   }
-): Promise<void> {
-  const signatureHash = await computeHash(`${payload.content}-${payload.signer_id}-${Date.now()}`);
+): Promise<string> {
+  // Deterministic Hash: content + metadata (verifiable)
+  const signatureHash = await computeHash(
+    `${payload.content}|${payload.document_id}|${payload.version_id}|${payload.signer_id}`
+  );
 
   const { error } = await supabase
     .from('digital_signatures')
@@ -43,22 +47,32 @@ export async function signDocument(
       version_id: payload.version_id,
       signer_id: payload.signer_id,
       signature_hash: signatureHash,
-      signer_certificate_hash: 'SELF-SIGNED-V1', // Simplified for now
-      ip_address: '127.0.0.1', // Should be fetched from server context in real app
-      validation_provider: 'Propio',
+      signer_certificate_hash: 'SELF-SIGNED-V2', 
+      ip_address: payload.ip_address,
+      validation_provider: 'StrategicConnex-Internal',
       validation_timestamp: new Date().toISOString()
     });
 
-  if (error) throw error;
+  if (error) {
+    console.error('Error recording digital signature:', error);
+    throw new Error(`Failed to record digital signature: ${error.message}`);
+  }
 
-  // Update document to 'firmado' status (custom logic)
-  await supabase
+  // Update document metadata
+  const { error: updateError } = await supabase
     .from('documents')
     .update({ 
       metadata: { 
         is_signed: true,
-        signed_at: new Date().toISOString()
+        signed_at: new Date().toISOString(),
+        last_signature_hash: signatureHash
       } 
     })
     .eq('id', payload.document_id);
+
+  if (updateError) {
+    console.warn('Signature recorded but document metadata update failed:', updateError);
+  }
+
+  return signatureHash;
 }

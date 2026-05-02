@@ -101,9 +101,16 @@ export default function VendorsAdminPage() {
     setIsCreating(true);
     try {
       const { data: { user } } = await supabase.auth.getUser();
-      const { data: profile } = await supabase.from('profiles').select('org_id').eq('id', user!.id).single();
+      if (!user) throw new Error('Usuario no autenticado');
+
+      const { data: profile } = await supabase.from('profiles').select('org_id').eq('id', user.id).single();
       
-      await createVendor(supabase, profile!.org_id, newVendor);
+      if (!profile?.org_id) {
+        toast.error('No se encontró la organización asociada a tu perfil');
+        return;
+      }
+      
+      await createVendor(supabase, profile.org_id, newVendor);
       toast.success('Proveedor creado exitosamente');
       setIsNewVendorOpen(false);
       setNewVendor({ name: '', tax_id: '', contact_email: '' });
@@ -122,11 +129,18 @@ export default function VendorsAdminPage() {
     setIsCreating(true);
     try {
       const { data: { user } } = await supabase.auth.getUser();
-      const { data: profile } = await supabase.from('profiles').select('org_id').eq('id', user!.id).single();
+      if (!user) throw new Error('Usuario no autenticado');
+
+      const { data: profile } = await supabase.from('profiles').select('org_id').eq('id', user.id).single();
+
+      if (!profile?.org_id) {
+        toast.error('No se encontró la organización asociada a tu perfil');
+        return;
+      }
 
       await assignDocumentToVendor(
         supabase, 
-        profile!.org_id, 
+        profile.org_id, 
         selectedVendor.id, 
         assignData.doc_type_id, 
         assignData.frequency as any

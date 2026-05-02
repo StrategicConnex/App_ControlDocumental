@@ -61,6 +61,11 @@ export default function NewDocumentClient() {
       const { data: profile } = await supabase.from('profiles').select('org_id').eq('id', user.id).single();
       const orgId = profile?.org_id;
 
+      if (!orgId) {
+        toast.error('No se encontró la organización asociada a tu perfil');
+        return;
+      }
+
       // 1. Upload to Storage
       const fileExt = formData.file.name.split('.').pop();
       const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;

@@ -170,11 +170,11 @@ export default function VendorsAdminPage() {
         </div>
         <div className="flex gap-3">
           <Dialog open={isNewVendorOpen} onOpenChange={setIsNewVendorOpen}>
-            <DialogTrigger asChild>
+            <DialogTrigger render={
               <Button className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl shadow-lg shadow-indigo-600/20">
                 <Plus size={18} className="mr-2" /> Nuevo Proveedor
               </Button>
-            </DialogTrigger>
+            } />
             <DialogContent className="sm:max-w-[425px] rounded-[2rem]">
               <DialogHeader>
                 <DialogTitle className="text-2xl font-bold">Agregar Proveedor</DialogTitle>

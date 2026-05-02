@@ -111,9 +111,9 @@ export default function NewDocumentClient() {
           <h2 className="text-2xl font-bold text-gray-900">¡Carga Exitosa!</h2>
           <p className="text-gray-500 mt-2">El documento ha sido enviado para verificación.</p>
         </div>
-        <Button asChild variant="outline" className="rounded-xl">
+        <Button variant="outline" className="rounded-xl" render={
           <Link href="/">Volver al Panel</Link>
-        </Button>
+        } />
       </div>
     );
   }

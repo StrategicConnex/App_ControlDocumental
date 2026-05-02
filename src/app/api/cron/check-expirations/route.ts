@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import { notificationService } from '@/lib/services/notifications';
 
+export const dynamic = 'force-dynamic';
+
 /**
  * Endpoint para ser llamado por un CRON job externo.
  * Procesa vencimientos de documentos y genera notificaciones.

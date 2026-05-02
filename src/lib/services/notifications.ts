@@ -1,4 +1,4 @@
-import { createClient } from '@/utils/supabase/server';
+import { createAdminClient } from '@/utils/supabase/admin';
 
 export interface NotificationPayload {
   orgId: string;
@@ -19,7 +19,7 @@ export const notificationService = {
    * Envía una notificación a la base de datos.
    */
   async send(payload: NotificationPayload) {
-    const supabase = await createClient();
+    const supabase = createAdminClient();
     
     const { error } = await supabase.from('notifications').insert({
       org_id: payload.orgId,
@@ -42,7 +42,7 @@ export const notificationService = {
    * Obtiene notificaciones no leídas de la organización.
    */
   async getUnread(orgId: string) {
-    const supabase = await createClient();
+    const supabase = createAdminClient();
     const { data, error } = await supabase
       .from('notifications')
       .select('*')
@@ -59,7 +59,7 @@ export const notificationService = {
    * @param orgId Opcional. Si se provee, solo procesa para esa organización.
    */
   async processExpirations(orgId?: string) {
-    const supabase = await createClient();
+    const supabase = createAdminClient();
     const today = new Date();
     const thirtyDaysFromNow = new Date();
     thirtyDaysFromNow.setDate(today.getDate() + 30);

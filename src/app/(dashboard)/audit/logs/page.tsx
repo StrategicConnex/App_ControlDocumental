@@ -199,7 +199,7 @@ export default function AuditLogsPage() {
                   <TableCell className="font-medium text-xs whitespace-nowrap">
                     <div className="flex items-center gap-2">
                       <div className="w-1.5 h-1.5 bg-primary rounded-full animate-pulse" />
-                      {formatDate(log.created_at)}
+                      {log.created_at ? formatDate(log.created_at) : 'Sin fecha'}
                     </div>
                   </TableCell>
                   <TableCell>

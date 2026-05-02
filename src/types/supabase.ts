@@ -1385,6 +1385,10 @@ export type Database = {
         Args: { p_document_id: string; p_target_version: number }
         Returns: string
       }
+      process_full_compliance_automation_v3: {
+        Args: Record<string, never>
+        Returns: undefined
+      }
     }
     Enums: {
       [_ in never]: never

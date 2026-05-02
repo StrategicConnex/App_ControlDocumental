@@ -1263,6 +1263,8 @@ export type Database = {
           is_required: boolean | null
           updated_at: string | null
           vendor_org_id: string | null
+          org_id: string | null
+          document_type: string | null
         }
         Insert: {
           client_org_id?: string | null
@@ -1274,6 +1276,8 @@ export type Database = {
           is_required?: boolean | null
           updated_at?: string | null
           vendor_org_id?: string | null
+          org_id?: string | null
+          document_type?: string | null
         }
         Update: {
           client_org_id?: string | null
@@ -1285,6 +1289,8 @@ export type Database = {
           is_required?: boolean | null
           updated_at?: string | null
           vendor_org_id?: string | null
+          org_id?: string | null
+          document_type?: string | null
         }
         Relationships: [
           {

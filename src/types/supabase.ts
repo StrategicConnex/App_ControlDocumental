@@ -722,6 +722,47 @@ export type Database = {
         }
         Relationships: []
       }
+      notification_settings: {
+        Row: {
+          alert_documentos_vencidos: boolean | null
+          alert_vencimientos_criticos: boolean | null
+          alert_vencimientos_proximos: boolean | null
+          created_at: string | null
+          id: string
+          org_id: string
+          schedule_days: number[] | null
+          updated_at: string | null
+        }
+        Insert: {
+          alert_documentos_vencidos?: boolean | null
+          alert_vencimientos_criticos?: boolean | null
+          alert_vencimientos_proximos?: boolean | null
+          created_at?: string | null
+          id?: string
+          org_id: string
+          schedule_days?: number[] | null
+          updated_at?: string | null
+        }
+        Update: {
+          alert_documentos_vencidos?: boolean | null
+          alert_vencimientos_criticos?: boolean | null
+          alert_vencimientos_proximos?: boolean | null
+          created_at?: string | null
+          id?: string
+          org_id?: string
+          schedule_days?: number[] | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notification_settings_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: true
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       notifications: {
         Row: {
           created_at: string | null

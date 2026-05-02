@@ -15,6 +15,7 @@ import {
   ChevronRight,
   LogOut,
   Zap,
+  ShieldCheck,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { createClient } from '@/utils/supabase/client'
@@ -33,6 +34,7 @@ const menuItems = [
 const aiItems = [
   { icon: FileText, label: 'Contratos', href: '/contracts' },
   { icon: Zap, label: 'Facturas IA', href: '/invoices' },
+  { icon: ShieldCheck, label: 'Logs Auditoría', href: '/audit/logs' },
 ]
 
 const secondaryItems = [

@@ -6,7 +6,7 @@ export default async function LegajosLayout({
   children: React.ReactNode;
 }) {
   // admin, operator manage legajos; auditor can view
-  await checkRole(['admin', 'operator', 'auditor'], '/');
+  await checkRole(['ADMIN', 'MANAGER', 'AUDITOR'], '/');
 
   return <>{children}</>;
 }

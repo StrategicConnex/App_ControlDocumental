@@ -6,7 +6,7 @@ export default async function BudgetsLayout({
   children: React.ReactNode;
 }) {
   // admin, operator can manage; auditor can view
-  await checkRole(['admin', 'operator', 'auditor'], '/');
+  await checkRole(['ADMIN', 'MANAGER', 'AUDITOR'], '/');
 
   return <>{children}</>;
 }

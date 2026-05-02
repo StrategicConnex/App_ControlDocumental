@@ -6,7 +6,7 @@ export default async function AuditRootLayout({
   children: React.ReactNode;
 }) {
   // Protect all /audit sub-routes
-  await checkRole(['admin', 'auditor'], '/');
+  await checkRole(['ADMIN', 'AUDITOR'], '/');
 
   return <>{children}</>;
 }

@@ -6,7 +6,7 @@ export default async function PersonnelLayout({
   children: React.ReactNode;
 }) {
   // Only admin and operator should manage personnel
-  await checkRole(['admin', 'operator'], '/');
+  await checkRole(['ADMIN', 'MANAGER'], '/');
 
   return <>{children}</>;
 }

@@ -6,7 +6,7 @@ export default async function VehiclesLayout({
   children: React.ReactNode;
 }) {
   // admin, operator manage vehicles; auditor can view
-  await checkRole(['admin', 'operator', 'auditor'], '/');
+  await checkRole(['ADMIN', 'MANAGER', 'AUDITOR'], '/');
 
   return <>{children}</>;
 }

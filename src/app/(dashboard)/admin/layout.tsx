@@ -6,7 +6,7 @@ export default async function AdminLayout({
   children: React.ReactNode;
 }) {
   // STRICT: Only admin can access admin tools
-  await checkRole(['admin'], '/');
+  await checkRole(['ADMIN'], '/');
 
   return <>{children}</>;
 }

@@ -1,0 +1,30 @@
+﻿src/components/documents/DigitalSignatureSection.tsx(78,21): error TS2345: Argument of type '{ created_at: string | null; document_id: string; id: string; ip_address: string | null; signature_hash: string; signed_at: string; signer_certificate_hash: string; signer_id: string; user_agent: string | null; validation_provider: string | null; validation_timestamp: string | null; version_id: string | null; profil...' is not assignable to parameter of type 'SetStateAction<Signature[]>'.
+  Type '{ created_at: string | null; document_id: string; id: string; ip_address: string | null; signature_hash: string; signed_at: string; signer_certificate_hash: string; signer_id: string; user_agent: string | null; validation_provider: string | null; validation_timestamp: string | null; version_id: string | null; profil...' is not assignable to type 'Signature[]'.
+    Type '{ created_at: string | null; document_id: string; id: string; ip_address: string | null; signature_hash: string; signed_at: string; signer_certificate_hash: string; signer_id: string; user_agent: string | null; validation_provider: string | null; validation_timestamp: string | null; version_id: string | null; profil...' is not assignable to type 'Signature'.
+      Types of property 'validation_timestamp' are incompatible.
+        Type 'string | null' is not assignable to type 'string'.
+          Type 'null' is not assignable to type 'string'.
+src/lib/services/notifications.server.ts(81,38): error TS2345: Argument of type '"org_id"' is not assignable to parameter of type '"id" | "status" | "document_id" | "vehicle_id" | "expiry_date"'.
+src/lib/services/notifications.server.ts(91,29): error TS2339: Property 'org_id' does not exist on type '{ document_id: string | null; expiry_date: string | null; id: string; status: string | null; vehicle_id: string | null; vehicles: { license_plate: string | null; brand: string | null; model: string | null; } | null; documents: { ...; } | null; }'.
+src/lib/services/notifications.server.ts(98,46): error TS2769: No overload matches this call.
+  Overload 1 of 4, '(value: string | number | Date): Date', gave the following error.
+    Argument of type 'string | null' is not assignable to parameter of type 'string | number | Date'.
+      Type 'null' is not assignable to type 'string | number | Date'.
+  Overload 2 of 4, '(value: string | number): Date', gave the following error.
+    Argument of type 'string | null' is not assignable to parameter of type 'string | number'.
+      Type 'null' is not assignable to type 'string | number'.
+src/lib/services/notifications.server.ts(102,22): error TS2339: Property 'org_id' does not exist on type '{ document_id: string | null; expiry_date: string | null; id: string; status: string | null; vehicle_id: string | null; vehicles: { license_plate: string | null; brand: string | null; model: string | null; } | null; documents: { ...; } | null; }'.
+src/lib/services/notifications.server.ts(122,42): error TS2345: Argument of type '"org_id"' is not assignable to parameter of type '"id" | "status" | "document_id" | "personnel_id" | "expiry_date"'.
+src/lib/services/notifications.server.ts(132,29): error TS2339: Property 'org_id' does not exist on type '{ document_id: string | null; expiry_date: string | null; id: string; personnel_id: string | null; status: string | null; personnel: { first_name: string | null; last_name: string | null; } | null; documents: { ...; } | null; }'.
+src/lib/services/notifications.server.ts(139,46): error TS2769: No overload matches this call.
+  Overload 1 of 4, '(value: string | number | Date): Date', gave the following error.
+    Argument of type 'string | null' is not assignable to parameter of type 'string | number | Date'.
+      Type 'null' is not assignable to type 'string | number | Date'.
+  Overload 2 of 4, '(value: string | number): Date', gave the following error.
+    Argument of type 'string | null' is not assignable to parameter of type 'string | number'.
+      Type 'null' is not assignable to type 'string | number'.
+src/lib/services/notifications.server.ts(143,22): error TS2339: Property 'org_id' does not exist on type '{ document_id: string | null; expiry_date: string | null; id: string; personnel_id: string | null; status: string | null; personnel: { first_name: string | null; last_name: string | null; } | null; documents: { ...; } | null; }'.
+src/lib/services/vendors.ts(245,9): error TS2532: Object is possibly 'undefined'.
+src/lib/services/vendors.ts(252,9): error TS2532: Object is possibly 'undefined'.
+src/lib/services/vendors.ts(254,9): error TS2532: Object is possibly 'undefined'.
+tests/pipeline.test.ts(6,10): error TS2305: Module '"@/lib/services/notifications"' has no exported member 'notificationService'.

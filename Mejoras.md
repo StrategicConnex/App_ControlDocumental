@@ -40,7 +40,7 @@ Este documento describe la especificación completa de **SC Platform**, una plat
 | IA | DeepSeek API (Modelo deepseek-chat) |
 | OCR | Tesseract.js + Google Document AI (opcional) |
 | Autenticación | Supabase Auth + MFA |
-| Notificaciones | WhatsApp Business + Push + Email |
+| Notificaciones | Realtime Push + Email |
 
 ### 1.3 API Key de DeepSeek
 ```env
@@ -933,7 +933,7 @@ NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=sb_publishable_zwbDgYNEndJn8rDoPH48WQ_4-xt4
 SUPABASE_SERVICE_ROLE_KEY=sb_secret_jGWuuG7s5YPB_uI2pcAWSw_s9Ahp2xLNEXT_PUBLIC_SUPA
 
 # Opcional: Integraciones
-WHATSAPP_TOKEN=your_whatsapp_token
+
 GOOGLE_APPLICATION_CREDENTIALS=path/to/google_credentials.json
 ```
 

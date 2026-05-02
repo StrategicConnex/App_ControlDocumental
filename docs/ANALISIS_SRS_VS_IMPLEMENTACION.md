@@ -30,7 +30,7 @@ SC Platform es un **Sistema de Gestión Documental (DMS) enterprise** diseñado 
 
 ### Principales Riesgos
 
-1. **Desalineación SRS-Código:** El SRS documenta funcionalidades que no existen en el código (WhatsApp, reportes CSV/Excel/PDF, modo offline completo, GraphQL) y omite funcionalidades que sí están implementadas
+1. **Desalineación SRS-Código:** El SRS documenta funcionalidades que no existen en el código (reportes CSV/Excel/PDF, modo offline completo, GraphQL) y omite funcionalidades que sí están implementadas
 2. **Testing insuficiente:** Solo 2 archivos de test visibles (`pipeline.test.ts`, `qa-engine.test.ts`) vs ~75 declarados en SRS
 3. **Dependencias de entorno:** Múltiples API keys de IA requeridas (Gemini, DeepSeek, OpenRouter, Anthropic) — single point of failure si no están configuradas
 4. **Deuda técnica acumulada:** Archivos `tsc-errors.txt` y `tsc-errors-utf8.txt` indican errores de compilación TypeScript no resueltos
@@ -52,7 +52,7 @@ El SRS define SC Platform como un *"estándar de compliance documental para Oil 
 
 ### 1.2 Propósito Real (Código)
 
-El código implementa un **DMS funcional con capacidades de IA** que cumple el 70-80% de lo declarado. Las funcionalidades core están sólidas, pero las avanzadas (WhatsApp, reportes exportables, offline completo, GraphQL) están ausentes o son stubs.
+El código implementa un **DMS funcional con capacidades de IA** que cumple el 70-80% de lo declarado. Las funcionalidades core están sólidas, pero las avanzadas (reportes exportables, offline completo, GraphQL) están ausentes o son stubs.
 
 ### 1.3 Gap Estratégico
 
@@ -62,7 +62,7 @@ El código implementa un **DMS funcional con capacidades de IA** que cumple el 7
 | Diferenciador IA | POL completo + auditoría | POL + auditoría implementados | ✅ Alineado |
 | Escalabilidad | Multi-tenant SaaS | Multi-tenant con org_id | ✅ Alineado |
 | Offline/PWA | Modo offline completo | Queue básico IndexedDB | ❌ Gap significativo |
-| Integraciones | SAP, RRHH, WhatsApp | Ninguna integración externa | ❌ No implementado |
+| Integraciones | SAP, RRHH | Ninguna integración externa | ❌ No implementado |
 
 ---
 
@@ -184,12 +184,12 @@ El código implementa un **DMS funcional con capacidades de IA** que cumple el 7
 | Supabase | ✅ | 2.49.4 | ✅ Coincide |
 | pgvector | ✅ | Configurado en migrations | ✅ Coincide |
 | ReactFlow | ✅ | 11.11.3 | ✅ Coincide |
-| WhatsApp Business API | ✅ | No en package.json | ❌ No implementado |
+| Reportes CSV/Excel/PDF | ✅ | No en package.json | ❌ No implementado |
 | GraphQL | ✅ (roadmap) | No implementado | ❌ No implementado |
 | json2csv | ✅ | No en package.json | ❌ No implementado |
 | ExcelJS | ✅ | No en package.json | ❌ No implementado |
 | moment.js | ✅ | No en package.json | ⚠️ SRS lo menciona para calendar |
-| @whatsapp-business/messages | ✅ | No en package.json | ❌ No implementado |
+| json2csv | ✅ | No en package.json | ❌ No implementado |
 
 ---
 
@@ -443,11 +443,7 @@ src/
 
 ### 5.3 Funcionalidades NO Implementadas (Solo en SRS)
 
-#### ❌ WhatsApp Business API
 
-- El SRS documenta integración con `@whatsapp-business/messages`
-- No hay dependencia en `package.json`
-- No hay servicio WhatsApp en el código
 
 #### ❌ Reportes Exportables (CSV/Excel/PDF)
 
@@ -708,7 +704,7 @@ Visitante → /verify/[id] (sin autenticación)
 
 ### 12.4 Largo Plazo (Sprint 13+)
 
-1. **WhatsApp integration:** Implementar cuando haya demanda real
+1. **Integración SAP/RRHH:** Implementar según necesidades de clientes enterprise
 2. **GraphQL API:** Solo si hay consumidores externos
 3. **Integraciones SAP/RRHH:** Según necesidades de clientes enterprise
 
@@ -740,7 +736,7 @@ Visitante → /verify/[id] (sin autenticación)
 
 ### Fase 4: Escalabilidad (Semanas 17-24)
 
-- [ ] WhatsApp Business API (si hay demanda)
+- [ ] Integraciones externas según roadmap
 - [ ] Integraciones externas según roadmap
 - [ ] Performance optimization (Redis cache, CDN)
 - [ ] Multi-region deployment
@@ -774,7 +770,7 @@ Visitante → /verify/[id] (sin autenticación)
 | **Offline queue** | ⚠️ Parcial | IndexedDB básico, sin sync completo | **Medio** | Extender con sync bidireccional |
 | **Firma digital** | ⚠️ Parcial | Hash SHA-256 + verificación QR | **Medio** | Falta integración proveedor externo |
 | **PWA/Service Worker** | ⚠️ Parcial | next-pwa configurado, sw.js existe | **Bajo** | Verificar funcionalidad completa |
-| **WhatsApp Business API** | ❌ No implementado | No hay código ni dependencia | **Alto** | Documentar como futuro o implementar |
+
 | **Reportes CSV/Excel/PDF** | ❌ No implementado | No hay código ni dependencias | **Alto** | Implementar o retirar del SRS |
 | **GraphQL API** | ❌ No implementado | Solo en roadmap | **Alto** | Retirar del SRS o marcar como Fase 4 |
 | **Integración SAP** | ❌ No implementado | Solo en roadmap | **Alto** | Mantener en roadmap |
@@ -1130,7 +1126,7 @@ Browser → Vercel Edge → Next.js App Router → Services Layer → Supabase
 
 #### Fase 4 — ⏳ PLANIFICADA
 
-- WhatsApp, integraciones SAP/RRHH, GraphQL, webhook retry
+- Integraciones SAP/RRHH, GraphQL, webhook retry
 
 ---
 

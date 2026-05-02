@@ -1,0 +1,24 @@
+
+> sc-platform-compliance@0.1.0 build
+> next build
+
+Ôû▓ Next.js 16.2.4 (Turbopack)
+- Environments: .env.local
+
+  Creating an optimized production build ...
+Ô£ô Compiled successfully in 111s
+  Running TypeScript ...
+Failed to type check.
+
+./src/app/api/documents/[id]/status/route.ts:58:27
+Type error: Argument of type 'string | null' is not assignable to parameter of type 'string'.
+  Type 'null' is not assignable to type 'string'.
+
+  56 |             })
+  57 |             .eq('id', id)
+> 58 |             .eq('org_id', profile.org_id);
+     |                           ^
+  59 |
+  60 |         if (updateError) {
+  61 |             console.error('Error updating document status:', updateError);
+Next.js build worker exited with code: 1 and signal: null

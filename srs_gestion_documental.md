@@ -25,7 +25,7 @@ Este documento describe los requerimientos funcionales y no funcionales de **SC 
 **Diferenciadores clave:**
 1. **Multi-tenant con ABAC:** no solo roles, sino permisos granulares por atributos (categoría, estado, proyecto, operadora).
 2. **Risk Scoring automático:** semáforo verde/amarillo/rojo que mide el riesgo operativo de la organización.
-3. **Features avanzados out-of-the-box:** OCR con IA, notificaciones push y WhatsApp, modo offline, firma digital.
+3. **Features avanzados out-of-the-box:** OCR con IA, notificaciones push, modo offline, firma digital.
 4. **Arquitectura enterprise-ready:** disaster recovery con RPO < 1h, observabilidad completa, tests de seguridad, CI/CD.
 
 **Stack tecnológico:**
@@ -64,7 +64,7 @@ SC Platform cubre los siguientes módulos:
 | Base de Datos | Supabase (PostgreSQL) |
 | Autenticación | Supabase Auth |
 | Almacenamiento | Supabase Storage |
-| Notificaciones | Realtime Alertas + WhatsApp + Email |
+| Notificaciones | Realtime Alertas + Email |
 
 ### 1.5 Usuarios del Sistema
 - **Administrador:** Control total del sistema.
@@ -906,8 +906,6 @@ sc-platform/
 │   ├── reports/
 │   │   └── reportGenerator.ts   (nuevo)
 │   ├── notifications/
-│   │   └── whatsapp.ts          (nuevo)
-│   ├── templates/
 │   │   └── document-generator.ts (nuevo)
 │   ├── ai/
 │   │   ├── pol-engine.ts        (nuevo - motor de orquestación)
@@ -1082,22 +1080,7 @@ export async function signDocument(documentId: string, versionId: string, certif
 }
 ```
 
-### 13.2 WhatsApp Service
 
-ts
-
-```
-import { Messages } from '@whatsapp-business/messages';
-
-const whatsapp = new Messages(process.env.WHATSAPP_TOKEN, process.env.WHATSAPP_PHONE_ID);
-
-export async function sendWhatsAppMessage(to: string, template: string, variables: Record<string, string>) {
-  await whatsapp.sendTemplate({
-    to, template,
-    components: [{ type: 'body', parameters: Object.entries(variables).map(([k, v]) => ({ type: 'text', text: v })) }]
-  });
-}
-```
 
 ### 13.3 Report Generator (CSV/Excel/PDF)
 
@@ -1136,7 +1119,7 @@ export async function generateReport(orgId: string, filters: any, format: 'pdf' 
 | :----------- | :---- | :----------------------------------------------------------- |
 | Fase 1 (MVP) | 1-3   | Gestión documental, legajos básicos, control vencimientos, portal proveedores |
 | Fase 2       | 4-6   | Firma digital, reportes automáticos, acreditación personal/vehículos, presupuestos |
-| Fase 3       | 7-9   | Workflow visual, OCR avanzado, WhatsApp, GraphQL, modo offline |
+| Fase 3       | 7-9   | Workflow visual, OCR avanzado, GraphQL, modo offline |
 | Fase 4       | 10-12 | Integraciones SAP/RRHH, webhook retry, screenshot auditoría, generación plantillas |
 
 ------

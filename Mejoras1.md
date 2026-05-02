@@ -44,7 +44,7 @@ Este documento describe la especificación completa de **SC Platform**, una plat
 | IA Proveedores | DeepSeek, OpenAI, Anthropic (vía OpenRouter) |
 | OCR | Tesseract.js + Google Document AI (opcional) |
 | Autenticación | Supabase Auth + MFA |
-| Notificaciones | WhatsApp Business + Push + Email |
+| Notificaciones | Realtime Push + Email |
 
 ### 1.3 API Keys Configuradas
 

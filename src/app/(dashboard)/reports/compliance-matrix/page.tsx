@@ -102,7 +102,7 @@ export default function ComplianceMatrixPage() {
       },
       didParseCell: (data) => {
         if (data.section === 'body' && data.column.index > 0) {
-          const text = data.cell.text[0];
+          const text = data.cell.text[0] || '';
           if (text.includes('[OK]')) data.cell.styles.textColor = [16, 185, 129]; // Emerald-600
           if (text.includes('[!]')) data.cell.styles.textColor = [245, 158, 11]; // Amber-600
           if (text.includes('[X]')) data.cell.styles.textColor = [225, 29, 72]; // Rose-600

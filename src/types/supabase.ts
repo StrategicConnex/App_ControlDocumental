@@ -561,6 +561,7 @@ export type Database = {
           org_id: string | null
           status: string | null
           title: string
+          vendor_request_id: string | null
           updated_at: string | null
         }
         Insert: {
@@ -574,11 +575,12 @@ export type Database = {
           doc_type_id?: string | null
           expiry_date?: string | null
           file_url?: string | null
-          id: string
+          id?: string
           metadata?: Json | null
           org_id?: string | null
           status?: string | null
           title: string
+          vendor_request_id?: string | null
           updated_at?: string | null
         }
         Update: {
@@ -597,6 +599,7 @@ export type Database = {
           org_id?: string | null
           status?: string | null
           title?: string
+          vendor_request_id?: string | null
           updated_at?: string | null
         }
         Relationships: [

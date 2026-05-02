@@ -361,7 +361,7 @@ export type Database = {
           created_at: string | null
           document_id: string
           id: string
-          ip_address: unknown
+          ip_address: string | null
           signature_hash: string
           signed_at: string
           signer_certificate_hash: string
@@ -375,7 +375,7 @@ export type Database = {
           created_at?: string | null
           document_id: string
           id?: string
-          ip_address?: unknown
+          ip_address?: string | null
           signature_hash: string
           signed_at?: string
           signer_certificate_hash: string
@@ -389,7 +389,7 @@ export type Database = {
           created_at?: string | null
           document_id?: string
           id?: string
-          ip_address?: unknown
+          ip_address?: string | null
           signature_hash?: string
           signed_at?: string
           signer_certificate_hash?: string

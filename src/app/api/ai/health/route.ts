@@ -3,6 +3,8 @@ import { NextResponse } from 'next/server';
 import { aiClient } from '@/lib/ai/ai-client';
 import { createClient } from '@/utils/supabase/server';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET() {
   try {
     const supabase = await createClient();

@@ -18,6 +18,8 @@ const envSchema = z.object({
 
 let env: z.infer<typeof envSchema>;
 
+const isBuildTime = process.env.NEXT_PHASE === 'phase-production-build';
+
 try {
   env = envSchema.parse({
     OPENROUTER_API_KEY: process.env.OPENROUTER_API_KEY || process.env.OPENAI_API_KEY,
@@ -31,17 +33,18 @@ try {
     NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL,
   });
 } catch (error: any) {
-  if (process.env.NODE_ENV === 'production') {
+  if (process.env.NODE_ENV === 'production' && !isBuildTime) {
     console.error("❌ ERROR FATAL: Faltan variables de entorno críticas para la IA en producción.");
     throw new Error("Missing AI Environment Variables");
   } else {
-    console.warn("⚠️ Advertencia: Faltan variables de entorno para IA. Usando placeholders para desarrollo.");
+    const statusLabel = isBuildTime ? "BUILD-TIME" : "DEVELOPMENT";
+    console.warn(`⚠️ Advertencia [${statusLabel}]: Faltan variables de entorno para IA. Usando placeholders.`);
     env = {
-      OPENROUTER_API_KEY: process.env.OPENROUTER_API_KEY || 'dev-key-required',
+      OPENROUTER_API_KEY: process.env.OPENROUTER_API_KEY || 'placeholder',
       OPENROUTER_BASE_URL: 'https://openrouter.ai/api/v1',
-      DEEPSEEK_API_KEY: process.env.DEEPSEEK_API_KEY || 'dev-key-required',
+      DEEPSEEK_API_KEY: process.env.DEEPSEEK_API_KEY || 'placeholder',
       DEEPSEEK_BASE_URL: 'https://api.deepseek.com/v1',
-      GEMINI_API_KEY: process.env.GEMINI_API_KEY || 'dev-key-required',
+      GEMINI_API_KEY: process.env.GEMINI_API_KEY || 'placeholder',
       XIAOMI_API_KEY: process.env.XIAOMI_API_KEY,
       XIAOMI_BASE_URL: process.env.XIAOMI_BASE_URL,
       XIAOMI_MODEL: process.env.XIAOMI_MODEL,

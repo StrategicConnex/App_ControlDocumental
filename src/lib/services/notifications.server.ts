@@ -72,34 +72,39 @@ export const notificationService = {
     // 1. Verificar vencimientos de Flota
     let vehicleQuery = supabase
       .from('vehicle_docs')
-      .select('*, vehicles(license_plate, brand, model), documents(title)')
+      .select('*, vehicles!inner(license_plate, brand, model, org_id), documents(title)')
       .lte('expiry_date', thirtyDaysIso)
       .gt('expiry_date', today.toISOString())
       .eq('status', 'active');
 
     if (orgId) {
-      vehicleQuery = vehicleQuery.eq('org_id', orgId);
+      vehicleQuery = vehicleQuery.eq('vehicles.org_id', orgId);
     }
 
     const { data: expiringVehicles } = await vehicleQuery;
 
     if (expiringVehicles) {
       for (const doc of expiringVehicles) {
+        // Since we used vehicles!inner, we can access vehicles.org_id
+        const vehicleInfo = doc.vehicles as any;
+        const currentOrgId = vehicleInfo?.org_id;
+        
+        if (!currentOrgId) continue;
+
         const { count } = await supabase
           .from('notifications')
           .select('*', { count: 'exact', head: true })
-          .eq('org_id', doc.org_id)
+          .eq('org_id', currentOrgId)
           .eq('type', 'document_expiry')
           .contains('metadata', { doc_id: doc.id })
           .gte('created_at', new Date(today.getTime() - 24 * 60 * 60 * 1000).toISOString());
 
         if (count && count > 0) continue;
 
+        if (!doc.expiry_date) continue;
         const daysLeft = Math.ceil((new Date(doc.expiry_date).getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
-        const vehicleInfo = (doc.vehicles as any);
-        
         await this.send({
-          orgId: doc.org_id,
+          orgId: currentOrgId,
           type: 'document_expiry',
           severity: daysLeft <= 7 ? 'critical' : 'warning',
           title: `Vencimiento de Documento - ${vehicleInfo.license_plate}`,
@@ -113,34 +118,38 @@ export const notificationService = {
     // 2. Verificar vencimientos de Personal
     let personnelQuery = supabase
       .from('personnel_docs')
-      .select('*, personnel(first_name, last_name), documents(title)')
+      .select('*, personnel!inner(first_name, last_name, org_id), documents(title)')
       .lte('expiry_date', thirtyDaysIso)
       .gt('expiry_date', today.toISOString())
       .eq('status', 'active');
 
     if (orgId) {
-      personnelQuery = personnelQuery.eq('org_id', orgId);
+      personnelQuery = personnelQuery.eq('personnel.org_id', orgId);
     }
 
     const { data: expiringPersonnel } = await personnelQuery;
 
     if (expiringPersonnel) {
       for (const doc of expiringPersonnel) {
+        const personInfo = doc.personnel as any;
+        const currentOrgId = personInfo?.org_id;
+
+        if (!currentOrgId) continue;
+
         const { count } = await supabase
           .from('notifications')
           .select('*', { count: 'exact', head: true })
-          .eq('org_id', doc.org_id)
+          .eq('org_id', currentOrgId)
           .eq('type', 'document_expiry')
           .contains('metadata', { doc_id: doc.id })
           .gte('created_at', new Date(today.getTime() - 24 * 60 * 60 * 1000).toISOString());
 
         if (count && count > 0) continue;
 
+        if (!doc.expiry_date) continue;
         const daysLeft = Math.ceil((new Date(doc.expiry_date).getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
-        const personInfo = (doc.personnel as any);
-
         await this.send({
-          orgId: doc.org_id,
+          orgId: currentOrgId,
           type: 'document_expiry',
           severity: daysLeft <= 7 ? 'critical' : 'warning',
           title: `Vencimiento de Documento - ${personInfo.first_name} ${personInfo.last_name}`,

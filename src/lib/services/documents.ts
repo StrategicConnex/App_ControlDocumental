@@ -92,9 +92,9 @@ export async function getDocumentVersions(supabase: SupabaseClient, documentId: 
  * Simpler version for basic uploads.
  */
 export async function uploadNewVersion(
-  supabase: SupabaseClient, 
-  documentId: string, 
-  file: File, 
+  supabase: SupabaseClient,
+  documentId: string,
+  file: File,
   userId: string,
   currentVersion: number
 ) {
@@ -112,7 +112,16 @@ export async function uploadNewVersion(
     .from('documents')
     .getPublicUrl(filePath);
 
-  // 2. Create new version record
+  // 2. Mark all existing versions as non-current
+  const { error: deactivateError } = await supabase
+    .from('document_versions')
+    .update({ is_current: false })
+    .eq('document_id', documentId)
+    .eq('is_current', true);
+
+  if (deactivateError) throw deactivateError;
+
+  // 3. Create new version record
   const nextVersion = currentVersion + 1;
   const { error: versionError } = await supabase
     .from('document_versions')
@@ -128,13 +137,13 @@ export async function uploadNewVersion(
 
   if (versionError) throw versionError;
 
-  // 3. Update main document
+  // 4. Update main document
   const { error: updateError } = await supabase
     .from('documents')
     .update({
       file_url: publicUrl,
       current_version: nextVersion,
-      status: 'pendiente',
+      status: 'revision',
       updated_at: new Date().toISOString()
     })
     .eq('id', documentId);
@@ -180,23 +189,26 @@ export async function createDocumentVersion(
   const versionNumber = major * 100 + minor;
 
   // 1. Mark all existing versions as non-current
-  await supabase
+  const { error: deactivateError } = await supabase
     .from('document_versions')
     .update({ is_current: false })
-    .eq('document_id', payload.document_id);
+    .eq('document_id', payload.document_id)
+    .eq('is_current', true);
 
-  // 2. Insert new version
+  if (deactivateError) throw deactivateError;
+
+  // 2. Insert new version (mark old versions as non-current first)
   const { data, error } = await supabase
     .from('document_versions')
     .insert({
-      document_id:      payload.document_id,
-      version_number:   versionNumber,
-      version_label:    newLabel,
-      file_url:         payload.file_url ?? null,
+      document_id: payload.document_id,
+      version_number: versionNumber,
+      version_label: newLabel,
+      file_url: payload.file_url ?? null,
       change_description: payload.change_description,
-      change_type:      payload.change_type,
-      created_by:       payload.created_by,
-      is_current:       true,
+      change_type: payload.change_type,
+      created_by: payload.created_by,
+      is_current: true,
     })
     .select()
     .single();
@@ -211,7 +223,7 @@ export async function createDocumentVersion(
 
   // 4. Trigger AI Pipeline (Asynchronous)
   const { data: profile } = await supabase.from('profiles').select('org_id').eq('id', payload.created_by).single();
-  
+
   if (profile?.org_id) {
     fetch(`${process.env.NEXT_PUBLIC_APP_URL || ''}/api/ai/pipeline/trigger`, {
       method: 'POST',

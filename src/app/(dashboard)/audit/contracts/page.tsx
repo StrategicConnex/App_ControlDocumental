@@ -3,11 +3,11 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { createClient } from '@/utils/supabase/client';
-import { 
-  FileCheck, 
-  AlertTriangle, 
-  CheckCircle2, 
-  ShieldCheck, 
+import {
+  FileCheck,
+  AlertTriangle,
+  CheckCircle2,
+  ShieldCheck,
   ExternalLink,
   Loader2,
   RefreshCw
@@ -46,7 +46,7 @@ export default function ContractsAuditPage() {
             metadata
           )
         `)
-        .eq('org_id', org_id)
+        .eq('org_id', org_id as string)
         .eq('category', 'Contratos')
         .is('deleted_at', null);
 
@@ -95,7 +95,7 @@ export default function ContractsAuditPage() {
           <h1 className="text-3xl font-bold text-gray-900 tracking-tight">IA Auditoría de Contratos</h1>
           <p className="text-gray-500 mt-2">Validación automática de cláusulas críticas y cumplimiento industrial.</p>
         </div>
-        <button 
+        <button
           onClick={() => fetchContracts()}
           className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
         >
@@ -110,7 +110,7 @@ export default function ContractsAuditPage() {
           const status = audit?.status || 'pending';
 
           return (
-            <div 
+            <div
               key={doc.id}
               className="bg-white rounded-3xl border border-gray-100 shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden group"
             >
@@ -135,7 +135,7 @@ export default function ContractsAuditPage() {
                 <h3 className="text-lg font-bold text-gray-900 mb-1 group-hover:text-indigo-600 transition-colors">
                   {doc.title}
                 </h3>
-                
+
                 {audit ? (
                   <div className="mt-4 space-y-4">
                     <div className="flex items-center justify-between">
@@ -148,7 +148,7 @@ export default function ContractsAuditPage() {
                       </span>
                     </div>
                     <div className="w-full bg-gray-100 h-1.5 rounded-full overflow-hidden">
-                      <div 
+                      <div
                         className={cn(
                           "h-full transition-all duration-500",
                           score > 80 ? "bg-emerald-500" : score > 50 ? "bg-amber-500" : "bg-rose-500"
@@ -169,7 +169,7 @@ export default function ContractsAuditPage() {
               </div>
 
               <div className="px-6 py-4 bg-gray-50/50 border-t border-gray-100 flex gap-2">
-                <button 
+                <button
                   onClick={() => orgId && validateContract(doc.id, orgId)}
                   disabled={validatingId === doc.id || !orgId}
                   className="flex-1 bg-white border border-gray-200 text-gray-700 py-2 rounded-xl text-xs font-bold hover:bg-gray-100 transition-all flex items-center justify-center gap-2"

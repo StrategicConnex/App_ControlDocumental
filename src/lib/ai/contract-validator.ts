@@ -71,10 +71,10 @@ export class ContractValidator {
     const result = ContractValidationResultSchema.parse(JSON.parse(response.content));
 
     // 3. Guardar resultado en la base de datos
-    await supabase.from('contracts').update({
+    await (supabase.from('contracts') as any).update({
       status: result.compliant ? 'active' : 'pending_review',
       compliance_score: result.score,
-      metadata: { 
+      metadata: {
         last_audit: new Date().toISOString(),
         findings_count: result.findings.length,
         summary: result.summary

@@ -82,12 +82,12 @@ export class InvoiceValidator {
     const result = InvoiceValidationResultSchema.parse(JSON.parse(response.content));
 
     // 3. Registrar auditoría en la tabla invoices
-    await supabase.from('invoices').update({
+    await (supabase.from('invoices') as any).update({
       amount: result.total_invoice,
       currency: result.currency,
       validation_status: result.matches_contract ? 'valid' : 'invalid',
       discrepancies: result.discrepancies as any,
-      metadata: { 
+      metadata: {
         last_check: new Date().toISOString(),
         summary: result.summary
       }

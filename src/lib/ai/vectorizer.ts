@@ -29,9 +29,9 @@ export class VectorizerService {
    * Procesa una versión de documento, la divide en fragmentos y genera embeddings.
    */
   async vectorizeDocumentVersion(
-    versionId: string, 
-    documentId: string, 
-    content: string, 
+    versionId: string,
+    documentId: string,
+    content: string,
     orgId: string,
     supabaseClient?: any
   ): Promise<VectorizationResult> {
@@ -53,7 +53,7 @@ export class VectorizerService {
 
       // 1. Dividir contenido en chunks (Fragmentos de ~1000 caracteres con solapamiento)
       const chunks = this.chunkText(content, 1000, 200);
-      
+
       if (chunks.length === 0) return { totalChunks: 0, success: true };
 
       console.log(`Vectorizando ${chunks.length} fragmentos para la versión ${versionId}`);
@@ -61,7 +61,7 @@ export class VectorizerService {
       // 2. Generar embeddings en lotes (evita límites de rate limit y timeouts)
       const batchSize = 20;
       const allEmbeddings: number[][] = [];
-      
+
       for (let i = 0; i < chunks.length; i += batchSize) {
         const batch = chunks.slice(i, i + batchSize);
         const batchRes = await this.retry(() => aiClient.generateEmbeddingsBatch(batch));
@@ -69,18 +69,18 @@ export class VectorizerService {
       }
 
       // 3. Preparar inserción masiva enriquecida
-      const chunksToInsert = chunks.map((chunkText, i) => ({
+      const chunksToInsert = chunks.map((chunk, i) => ({
         version_id: versionId,
         document_id: documentId,
         org_id: orgId,
-        content: chunkText,
+        content: chunk,
         embedding: `[${(allEmbeddings[i] as number[]).join(',')}]`,
         chunk_index: i,
         metadata: enrichmentMetadata
       }));
 
       // 4. Guardar en document_chunks (Inserción masiva única)
-      const { error: insertError } = await supabase.from('document_chunks').insert(chunksToInsert);
+      const { error: insertError } = await (supabase.from('document_chunks') as any).insert(chunksToInsert);
 
       if (insertError) throw insertError;
 
@@ -97,9 +97,9 @@ export class VectorizerService {
   private chunkText(text: string, maxSize: number, overlap: number): string[] {
     const chunks: string[] = [];
     const paragraphs = text.split(/\n\n+/);
-    
+
     let currentChunk = "";
-    
+
     for (const paragraph of paragraphs) {
       // Si el párrafo cabe en el chunk actual, lo añadimos
       if ((currentChunk.length + paragraph.length) <= maxSize) {
@@ -108,7 +108,7 @@ export class VectorizerService {
         // Si no cabe, guardamos el chunk actual si existe
         if (currentChunk) {
           chunks.push(currentChunk.trim());
-          
+
           // Aplicar solapamiento (overlap): tomamos el final del chunk anterior
           const lastWords = currentChunk.split(' ').slice(-Math.floor(overlap / 10)).join(' ');
           currentChunk = lastWords + "\n\n" + paragraph;
@@ -124,7 +124,7 @@ export class VectorizerService {
         }
       }
     }
-    
+
     if (currentChunk) chunks.push(currentChunk.trim());
     return chunks;
   }
@@ -156,13 +156,13 @@ export class VectorizerService {
    * Busca fragmentos semánticamente similares a una consulta.
    */
   async searchSimilarChunks(
-    query: string, 
-    orgId: string, 
+    query: string,
+    orgId: string,
     limit: number = 5,
     matchThreshold: number = 0.4
   ): Promise<HybridSearchResult[]> {
     const supabase = await createClient();
-    
+
     // 1. Generar embedding para la consulta
     const queryEmbedding = await aiClient.generateEmbedding(query);
 

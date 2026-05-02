@@ -1,6 +1,6 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { recordAuditLog } from './audit';
-import { Database } from '@/types/supabase';
+import type { Database } from '@/types/supabase';
 
 export interface DigitalSignature {
   document_id: string;
@@ -14,10 +14,10 @@ export interface DigitalSignature {
  * Computes a SHA-256 hash of a string or buffer.
  */
 export async function computeHash(content: string | ArrayBuffer): Promise<string> {
-  const msgUint8 = typeof content === 'string' 
-    ? new TextEncoder().encode(content) 
+  const msgUint8 = typeof content === 'string'
+    ? new TextEncoder().encode(content)
     : new Uint8Array(content);
-    
+
   const hashBuffer = await crypto.subtle.digest('SHA-256', msgUint8);
   const hashArray = Array.from(new Uint8Array(hashBuffer));
   return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
@@ -50,7 +50,7 @@ export async function signDocument(
       version_id: payload.version_id,
       signer_id: payload.signer_id,
       signature_hash: signatureHash,
-      signer_certificate_hash: 'SELF-SIGNED-V2', 
+      signer_certificate_hash: 'SELF-SIGNED-V2',
       ip_address: payload.ip_address,
       validation_provider: 'StrategicConnex-Internal',
       validation_timestamp: new Date().toISOString()
@@ -83,16 +83,24 @@ export async function signDocument(
     }
   });
 
-  // Update document metadata
+  // Update document metadata (merge with existing to avoid data loss)
+  const { data: existingDoc } = await supabase
+    .from('documents')
+    .select('metadata')
+    .eq('id', payload.document_id)
+    .single();
+
+  const existingMetadata = (existingDoc?.metadata as Record<string, unknown>) || {};
+  const mergedMetadata = {
+    ...existingMetadata,
+    is_signed: true,
+    signed_at: new Date().toISOString(),
+    last_signature_hash: signatureHash,
+  };
+
   const { error: updateError } = await supabase
     .from('documents')
-    .update({ 
-      metadata: { 
-        is_signed: true,
-        signed_at: new Date().toISOString(),
-        last_signature_hash: signatureHash
-      } 
-    })
+    .update({ metadata: mergedMetadata })
     .eq('id', payload.document_id);
 
   if (updateError) {

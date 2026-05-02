@@ -1,18 +1,17 @@
-import { createClient } from '@/utils/supabase/server';
+import { createAdminClient } from '@/utils/supabase/admin';
 import { notFound } from 'next/navigation';
-import { CheckCircle2, ShieldCheck, FileText, User, Calendar, Network, Lock } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { ShieldCheck, FileText, User, Calendar, Network, Lock } from 'lucide-react';
 
 export const metadata = {
   title: 'Verificación de Documento | Strategic Connex',
 };
 
-export default async function VerifyPage({ params }: { params: { id: string } }) {
-  const supabase = await createClient();
-  const { id } = params;
+export default async function VerifyPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  const supabase = await createAdminClient();
 
   // Fetch signature details with document and signer info
-  // We use admin client or similar because this is public
+  // Uses admin client because this is a public verification page (no auth required)
   const { data: signature, error } = await supabase
     .from('digital_signatures')
     .select(`
@@ -20,7 +19,6 @@ export default async function VerifyPage({ params }: { params: { id: string } })
       documents (title, metadata),
       profiles:signer_id (first_name, last_name)
     `)
-
     .eq('id', id)
     .single();
 
@@ -28,8 +26,8 @@ export default async function VerifyPage({ params }: { params: { id: string } })
     notFound();
   }
 
-  const docInfo = signature.documents as any;
-  const signerInfo = signature.profiles as any;
+  const docInfo = signature.documents as { title: string | null; metadata: Record<string, unknown> | null } | null;
+  const signerInfo = signature.profiles as { first_name: string | null; last_name: string | null } | null;
 
 
   return (

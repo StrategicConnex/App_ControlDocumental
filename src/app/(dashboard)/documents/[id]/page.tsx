@@ -1,5 +1,5 @@
 import { createClient } from "@/utils/supabase/server";
-import { getDocumentById, getDocumentVersions } from "@/lib/services/documents";
+import { getDocumentById, getDocumentVersions, type DocumentVersion } from "@/lib/services/documents";
 import { FileText, ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import DocumentDetailsClient from "./DocumentDetailsClient";
@@ -8,24 +8,39 @@ export const metadata = {
   title: "Detalle de Documento | Strategic Connex",
 };
 
+interface DocumentRecord {
+  id: string;
+  title: string;
+  code: string;
+  category: string;
+  status: string;
+  current_version: number;
+  file_url: string | null;
+  expiry_date: string | null;
+  created_at: string;
+  org_id: string;
+  profiles: {
+    first_name: string | null;
+    last_name: string | null;
+    full_name?: string | null;
+  } | null;
+}
+
 export default async function DocumentDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const supabase = await createClient();
   const resolvedParams = await params;
 
-  let doc: any = null;
-  let versions: any[] = [];
-  let currentUser: any = null;
+  let doc: DocumentRecord | null = null;
+  let versions: DocumentVersion[] = [];
 
   const { data: { user } } = await supabase.auth.getUser();
-  currentUser = user;
 
   try {
-    doc = await getDocumentById(supabase, resolvedParams.id);
+    doc = await getDocumentById(supabase, resolvedParams.id) as DocumentRecord | null;
     versions = await getDocumentVersions(supabase, resolvedParams.id);
   } catch (e) {
     console.error("Error fetching document details", e);
   }
-
 
   if (!doc) {
     return (
@@ -41,19 +56,18 @@ export default async function DocumentDetailPage({ params }: { params: Promise<{
   }
 
   const uploaderName = doc.profiles
-    ? (doc.profiles.first_name && doc.profiles.last_name 
-        ? `${doc.profiles.first_name} ${doc.profiles.last_name}` 
-        : (doc.profiles as any).full_name || 'Usuario desconocido')
+    ? (doc.profiles.first_name && doc.profiles.last_name
+      ? `${doc.profiles.first_name} ${doc.profiles.last_name}`
+      : doc.profiles.full_name || 'Usuario desconocido')
     : 'Sistema';
 
   return (
-    <DocumentDetailsClient 
-      doc={doc} 
-      versions={versions} 
-      uploaderName={uploaderName} 
-      currentUserId={currentUser?.id}
+    <DocumentDetailsClient
+      doc={doc}
+      versions={versions}
+      uploaderName={uploaderName}
+      currentUserId={user?.id ?? ''}
       orgId={doc.org_id}
     />
-
   );
 }

@@ -58,11 +58,11 @@ export async function recordApprovalDecision(
   const { error: insertError } = await supabase
     .from('approvals')
     .insert({
-      document_id:  payload.document_id,
-      approved_by:  payload.approver_id,
-      status:       payload.action === 'approve' ? 'aprobado' : payload.action === 'reject' ? 'rechazado' : 'en_revision',
-      comment:      payload.notes ?? null,
-      approved_at:    new Date().toISOString(),
+      document_id: payload.document_id,
+      approved_by: payload.approver_id,
+      status: payload.action === 'approve' ? 'aprobado' : payload.action === 'reject' ? 'rechazado' : 'en_revision',
+      comment: payload.notes ?? null,
+      approved_at: new Date().toISOString(),
     });
 
   if (insertError) throw insertError;
@@ -82,7 +82,7 @@ export async function recordApprovalDecision(
     if (quorumMet) {
       const { error: updateError } = await supabase
         .from('documents')
-        .update({ 
+        .update({
           status: 'aprobado',
           updated_at: new Date().toISOString()
         })
@@ -97,6 +97,13 @@ export async function recordApprovalDecision(
         .eq('id', payload.document_id);
     }
   } else if (payload.action === 'reject') {
+    const { error: updateError } = await supabase
+      .from('documents')
+      .update({ status: 'borrador' })
+      .eq('id', payload.document_id);
+
+    if (updateError) throw updateError;
+  } else if (payload.action === 'request_changes') {
     const { error: updateError } = await supabase
       .from('documents')
       .update({ status: 'borrador' })
@@ -125,14 +132,22 @@ export async function getDocumentApprovals(
 
 /**
  * Gets count of documents pending review (for notifications badge).
+ * Filters by org_id to prevent cross-org data leakage.
  */
 export async function getPendingReviewCount(
-  supabase: SupabaseClient
+  supabase: SupabaseClient,
+  orgId?: string
 ): Promise<number> {
-  const { count, error } = await supabase
+  let query = supabase
     .from('documents')
     .select('*', { count: 'exact', head: true })
     .eq('status', 'revision');
+
+  if (orgId) {
+    query = query.eq('org_id', orgId);
+  }
+
+  const { count, error } = await query;
 
   if (error) return 0;
   return count ?? 0;

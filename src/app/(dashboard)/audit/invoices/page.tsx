@@ -3,10 +3,10 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { createClient } from '@/utils/supabase/client';
-import { 
-  Receipt, 
-  AlertCircle, 
-  CheckCircle2, 
+import {
+  Receipt,
+  AlertCircle,
+  CheckCircle2,
   Search,
   ArrowRightLeft,
   Loader2,
@@ -50,14 +50,14 @@ export default function InvoicesAuditPage() {
             metadata
           )
         `)
-        .eq('org_id', org_id)
+        .eq('org_id', org_id as string)
         .eq('category', 'Facturas')
         .is('deleted_at', null);
 
       const { data: conData } = await supabase
         .from('documents')
         .select('id, title')
-        .eq('org_id', org_id)
+        .eq('org_id', org_id as string)
         .eq('category', 'Contratos')
         .is('deleted_at', null);
 
@@ -157,7 +157,7 @@ export default function InvoicesAuditPage() {
                     </div>
                   </td>
                   <td className="px-6 py-4">
-                    <select 
+                    <select
                       className="text-xs bg-white border border-gray-200 rounded-lg p-1.5 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 max-w-[200px]"
                       defaultValue={audit?.contract_id || ""}
                     >
@@ -191,7 +191,7 @@ export default function InvoicesAuditPage() {
                     )}
                   </td>
                   <td className="px-6 py-4 text-right">
-                    <button 
+                    <button
                       onClick={() => orgId && validateInvoice(doc.id, audit?.contract_id, orgId)}
                       disabled={validatingId === doc.id || !orgId}
                       className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white text-xs font-bold rounded-xl hover:bg-indigo-700 transition-all disabled:opacity-50"

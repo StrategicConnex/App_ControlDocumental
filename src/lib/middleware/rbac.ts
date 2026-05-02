@@ -1,6 +1,6 @@
 import { createClient } from '@/utils/supabase/server';
 import { redirect } from 'next/navigation';
-import { UserRole, ROLE_PERMISSIONS, hasPermission } from './rbac-shared';
+import { type UserRole, ROLE_PERMISSIONS, hasPermission } from './rbac-shared';
 
 export type { UserRole };
 
@@ -26,7 +26,7 @@ export async function checkRole(allowedRoles: UserRole[], redirectTo: string = '
     .eq('id', user.id)
     .single();
 
-  const userRole = (profile?.role as string).toUpperCase() as UserRole || 'USER';
+  const userRole = ((profile?.role as string)?.toUpperCase() || 'USER') as UserRole;
 
   if (!allowedRoles.includes(userRole)) {
     redirect(redirectTo);
@@ -49,6 +49,6 @@ export async function hasPermissionServer(action: string): Promise<boolean> {
     .eq('id', user.id)
     .single();
 
-  const userRole = (profile?.role as UserRole) || 'viewer';
+  const userRole = ((profile?.role as string)?.toUpperCase() || 'USER') as UserRole;
   return hasPermission(userRole, action);
 }

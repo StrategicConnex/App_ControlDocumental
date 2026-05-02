@@ -23,11 +23,11 @@ import { toast } from "sonner";
 interface Signature {
   id: string;
   signature_hash: string;
-  validation_timestamp: string;
+  validation_timestamp: string | null;
   signer_id: string;
   profiles?: {
-    first_name: string;
-    last_name: string;
+    first_name: string | null;
+    last_name: string | null;
   };
 }
 
@@ -127,7 +127,7 @@ export function DigitalSignatureSection({
         hash: sig.signature_hash,
         signerName: `${sig.profiles?.first_name} ${sig.profiles?.last_name}`,
         signerRole: 'Responsable de Control', // Default or fetch
-        signDate: new Date(sig.validation_timestamp).toLocaleDateString('es-AR'),
+        signDate: sig.validation_timestamp ? new Date(sig.validation_timestamp).toLocaleDateString('es-AR') : 'N/A',
         qrCodeDataUrl: qrDataUrl,
         orgName: 'Strategic Connex' // Default or fetch
       });
@@ -212,7 +212,7 @@ export function DigitalSignatureSection({
 
                 <p className="text-[11px] text-slate-500 flex items-center gap-1.5">
                   <CheckCircle2 size={12} className="text-emerald-500" />
-                  Firmado el {new Date(sig.validation_timestamp).toLocaleDateString('es-AR')} a las {new Date(sig.validation_timestamp).toLocaleTimeString('es-AR')}
+                  Firmado el {sig.validation_timestamp ? new Date(sig.validation_timestamp).toLocaleDateString('es-AR') : 'Fecha no disponible'} a las {sig.validation_timestamp ? new Date(sig.validation_timestamp).toLocaleTimeString('es-AR') : ''}
                 </p>
                 <div className="pt-2">
                   <p className="text-[10px] font-mono text-slate-400 truncate bg-white/50 px-2 py-1 rounded border border-slate-100">

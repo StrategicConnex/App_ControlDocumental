@@ -237,21 +237,24 @@ export async function getComplianceMatrix(supabase: SupabaseClient) {
   const documentsList = documents || [];
 
   vendorsList.forEach(v => {
-    matrix[v.id] = {};
+    if (!v.id) return;
+    const vendorRow: Record<string, any> = {};
+    matrix[v.id] = vendorRow;
+    
     docTypes.forEach(dt => {
       const isRequired = requestsList.find(r => r.org_id === v.id && r.document_type === dt);
       
       if (!isRequired) {
-        matrix[v.id][dt] = { status: 'NOT_REQUIRED' };
+        vendorRow[dt] = { status: 'NOT_REQUIRED' };
         return;
       }
 
       const doc = documentsList.find(d => d.org_id === v.id && d.title.includes(dt));
 
       if (!doc) {
-        matrix[v.id][dt] = { status: 'MISSING' };
+        vendorRow[dt] = { status: 'MISSING' };
       } else {
-        matrix[v.id][dt] = { 
+        vendorRow[dt] = { 
           status: doc.status?.toUpperCase() || 'PENDIENTE',
           expiryDate: doc.expiry_date
         };

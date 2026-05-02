@@ -1,12 +1,12 @@
 "use client";
 
 import React, { useState } from "react";
-import { 
-  FileText, 
-  History, 
-  CheckCircle, 
-  AlertTriangle, 
-  Download, 
+import {
+  FileText,
+  History,
+  CheckCircle,
+  AlertTriangle,
+  Download,
   ArrowLeft
 } from "lucide-react";
 import Link from "next/link";
@@ -16,21 +16,61 @@ import { NewVersionModal } from "@/components/documents/NewVersionModal";
 import { DigitalSignatureSection } from "@/components/documents/DigitalSignatureSection";
 
 interface DocumentDetailsClientProps {
-  doc: any;
-  versions: any[];
+  doc: {
+    id: string;
+    title: string;
+    code: string;
+    category: string;
+    status: string;
+    current_version: number;
+    file_url: string | null;
+    expiry_date: string | null;
+    created_at: string;
+  };
+  versions: {
+    id: string;
+    version_number: number;
+    version_label: string;
+    file_url: string | null;
+    created_at: string;
+    is_current: boolean;
+  }[];
   uploaderName: string;
   currentUserId: string;
   orgId: string;
 }
 
-export default function DocumentDetailsClient({ 
-  doc, 
-  versions, 
+export default function DocumentDetailsClient({
+  doc,
+  versions,
   uploaderName,
   currentUserId,
   orgId
 }: DocumentDetailsClientProps) {
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
+  const [restoringVersion, setRestoringVersion] = useState<number | null>(null);
+
+  const handleRestoreVersion = async (targetVersion: number) => {
+    if (!confirm(`¿Restaurar a la versión ${targetVersion}.0? Esto creará una nueva versión con el contenido anterior.`)) return;
+    setRestoringVersion(targetVersion);
+    try {
+      const res = await fetch(`/api/documents/${doc.id}/restore`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ targetVersion }),
+      });
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error || `HTTP ${res.status}`);
+      }
+      window.location.reload();
+    } catch (err) {
+      console.error('Error restoring version:', err);
+      alert('Error al restaurar la versión. Intente nuevamente.');
+    } finally {
+      setRestoringVersion(null);
+    }
+  };
 
   const now = new Date();
   const isExpiringSoon = doc.expiry_date
@@ -67,7 +107,7 @@ export default function DocumentDetailsClient({
               <Download size={16} /> Descargar Actual
             </a>
           )}
-          <button 
+          <button
             onClick={() => setIsUploadModalOpen(true)}
             className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-xl text-sm font-medium hover:bg-indigo-700 transition-colors shadow-lg shadow-indigo-600/20"
           >
@@ -137,8 +177,8 @@ export default function DocumentDetailsClient({
             {doc.file_url ? (
               <div className="aspect-[3/4] md:aspect-video w-full rounded-2xl overflow-hidden border border-gray-100 bg-gray-50 flex items-center justify-center">
                 {doc.file_url.toLowerCase().endsWith('.pdf') || doc.file_url.includes('pdf') ? (
-                  <iframe 
-                    src={`${doc.file_url}#toolbar=0`} 
+                  <iframe
+                    src={`${doc.file_url}#toolbar=0`}
                     className="w-full h-full border-none"
                     title={doc.title}
                   />
@@ -146,9 +186,9 @@ export default function DocumentDetailsClient({
                   <div className="text-center p-8">
                     <FileText size={48} className="mx-auto text-gray-200 mb-4" />
                     <p className="text-sm text-gray-500 mb-4">Vista previa no disponible para este tipo de archivo.</p>
-                    <a 
-                      href={doc.file_url} 
-                      target="_blank" 
+                    <a
+                      href={doc.file_url}
+                      target="_blank"
                       rel="noopener noreferrer"
                       className="text-sm font-bold text-indigo-600 hover:underline"
                     >
@@ -179,20 +219,20 @@ export default function DocumentDetailsClient({
               </div>
               <div className="relative">
                 <div className={cn("absolute -left-[31px] w-4 h-4 rounded-full border-4 border-white", doc.status === 'aprobado' || doc.status === 'vigente' ? "bg-emerald-500" : "bg-gray-200")} />
-                <p className={cn("text-sm font-bold", doc.status === 'aprobado' || doc.status === 'vigente' ? "text-gray-900" : "text-gray-400")}>
+                <p className={cn("text-sm font-bold", doc.status === 'aprobado' ? "text-gray-900" : "text-gray-400")}>
                   Aprobación Técnica
                 </p>
-                <p className={cn("text-xs mt-1", doc.status === 'aprobado' || doc.status === 'vigente' ? "text-gray-500" : "text-gray-300")}>
-                  {doc.status === 'aprobado' || doc.status === 'vigente' ? 'Aprobado' : 'Pendiente'}
+                <p className={cn("text-xs mt-1", doc.status === 'aprobado' ? "text-gray-500" : "text-gray-300")}>
+                  {doc.status === 'aprobado' ? 'Aprobado' : 'Pendiente'}
                 </p>
               </div>
               <div className="relative">
-                <div className={cn("absolute -left-[31px] w-4 h-4 rounded-full border-4 border-white", doc.status === 'vigente' ? "bg-emerald-500" : "bg-gray-200")} />
-                <p className={cn("text-sm font-bold", doc.status === 'vigente' ? "text-gray-900" : "text-gray-400")}>
+                <div className={cn("absolute -left-[31px] w-4 h-4 rounded-full border-4 border-white", doc.status === 'aprobado' ? "bg-emerald-500" : "bg-gray-200")} />
+                <p className={cn("text-sm font-bold", doc.status === 'aprobado' ? "text-gray-900" : "text-gray-400")}>
                   Publicación Final
                 </p>
-                <p className={cn("text-xs mt-1", doc.status === 'vigente' ? "text-gray-500" : "text-gray-300")}>
-                  {doc.status === 'vigente' ? 'Vigente' : 'Pendiente'}
+                <p className={cn("text-xs mt-1", doc.status === 'aprobado' ? "text-gray-500" : "text-gray-300")}>
+                  {doc.status === 'aprobado' ? 'Vigente' : 'Pendiente'}
                 </p>
               </div>
             </div>
@@ -231,8 +271,12 @@ export default function DocumentDetailsClient({
                         {new Date(v.created_at).toLocaleDateString('es-AR')}
                       </p>
                       {!isCurrent && (
-                        <button className="text-xs font-medium text-indigo-600 hover:text-indigo-700 transition-colors">
-                          Restaurar esta versión
+                        <button
+                          onClick={() => handleRestoreVersion(v.version_number)}
+                          disabled={restoringVersion === v.version_number}
+                          className="text-xs font-medium text-indigo-600 hover:text-indigo-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          {restoringVersion === v.version_number ? 'Restaurando...' : 'Restaurar esta versión'}
                         </button>
                       )}
                     </div>
@@ -244,9 +288,9 @@ export default function DocumentDetailsClient({
             )}
           </section>
 
-          <DigitalSignatureSection 
+          <DigitalSignatureSection
             documentId={doc.id}
-            versionId={versions.find(v => v.version_number === doc.current_version)?.id}
+            versionId={versions.find(v => v.version_number === doc.current_version)?.id ?? ''}
             currentUserId={currentUserId}
             orgId={orgId}
             documentTitle={doc.title}
@@ -257,7 +301,7 @@ export default function DocumentDetailsClient({
         </div>
       </div>
 
-      <NewVersionModal 
+      <NewVersionModal
         isOpen={isUploadModalOpen}
         onClose={() => setIsUploadModalOpen(false)}
         documentId={doc.id}

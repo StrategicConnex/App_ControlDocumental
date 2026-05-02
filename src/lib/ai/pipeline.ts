@@ -45,7 +45,7 @@ export class AIPipeline {
    */
   async processNewVersion(versionId: string, orgId: string): Promise<PipelineResult> {
     const supabase = await createClient();
-    
+
     try {
       // 1. Obtener datos de la versión y el documento
       const { data: version, error: vError } = await supabase
@@ -100,14 +100,14 @@ export class AIPipeline {
             title: 'Riesgo Crítico en Contrato',
             message: `El documento "${doc.title}" tiene un cumplimiento del ${audit.score}%. Se recomienda revisión inmediata.`,
             link: `/audit/contracts`,
-            metadata: { 
-              actionable: true, 
-              actionType: 'contract_risk', 
-              resourceId: doc.id 
+            metadata: {
+              actionable: true,
+              actionType: 'contract_risk',
+              resourceId: doc.id
             }
           });
         }
-      } 
+      }
       else if (category === 'Facturas' || doc.title?.includes('FACTURA')) {
         const { data: invoice } = await supabase
           .from('invoices')
@@ -121,7 +121,7 @@ export class AIPipeline {
           results.auditResult = audit;
 
           // Notificar si hay discrepancias de alta severidad
-          const highRisk = audit.discrepancies.some((d: { severity: string }) => d.severity === 'high');
+          const highRisk = audit.discrepancies?.some((d: { severity: string }) => d.severity === 'high') ?? false;
           if (highRisk) {
             await notificationService.send({
               orgId,
@@ -130,10 +130,10 @@ export class AIPipeline {
               title: 'Discrepancia en Factura',
               message: `Se detectaron discrepancias graves en la factura "${doc.title}" vs su contrato asociado.`,
               link: `/audit/invoices`,
-              metadata: { 
-                actionable: true, 
-                actionType: 'invoice_discrepancy', 
-                resourceId: invoice.id 
+              metadata: {
+                actionable: true,
+                actionType: 'invoice_discrepancy',
+                resourceId: invoice.id
               }
             });
           }

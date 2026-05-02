@@ -17,6 +17,9 @@ export interface Workflow {
   is_active: boolean;
 }
 
+/** Whitelist of tables that workflow status_change actions are allowed to update. */
+const ALLOWED_STATUS_CHANGE_TABLES = ['documents', 'contracts', 'invoices', 'legajos'] as const;
+
 /**
  * Service to manage and execute document workflows.
  * SERVER ONLY: Uses admin privileges.
@@ -27,7 +30,7 @@ export const workflowService = {
    */
   async trigger(event: string, orgId: string, context: any) {
     const supabase = await createAdminClient();
-    
+
     // Fetch active workflows for the event
     const { data: workflows, error } = await supabase
       .from('workflows')
@@ -67,14 +70,17 @@ export const workflowService = {
             });
             break;
 
-          case 'status_change':
+          case 'status_change': {
             // Logic to change status of a resource (e.g., document)
             const { resource, id, status } = action.params;
-            if (resource && id && status) {
+            if (resource && id && status && ALLOWED_STATUS_CHANGE_TABLES.includes(resource)) {
               const supabase = await createAdminClient();
               await supabase.from(resource).update({ status }).eq('id', id);
+            } else if (resource && !ALLOWED_STATUS_CHANGE_TABLES.includes(resource)) {
+              console.warn(`Workflow action blocked: table "${resource}" is not in allowed list`);
             }
             break;
+          }
 
           // Add more action types here (AI validation, Approvals, etc.)
         }

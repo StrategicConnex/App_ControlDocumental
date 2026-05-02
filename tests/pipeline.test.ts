@@ -3,7 +3,7 @@ import { aiPipeline } from '@/lib/ai/pipeline';
 import { vectorizerService } from '@/lib/ai/vectorizer';
 import { contractValidator } from '@/lib/ai/contract-validator';
 import { invoiceValidator } from '@/lib/ai/invoice-validator';
-import { notificationService } from '@/lib/services/notifications';
+import { notificationService } from '@/lib/services/notifications.server';
 import { createClient } from '@/utils/supabase/server';
 
 // Mocks
@@ -25,7 +25,7 @@ vi.mock('@/lib/ai/invoice-validator', () => ({
   },
 }));
 
-vi.mock('@/lib/services/notifications', () => ({
+vi.mock('@/lib/services/notifications.server', () => ({
   notificationService: {
     send: vi.fn(),
   },

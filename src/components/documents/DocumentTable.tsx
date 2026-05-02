@@ -58,21 +58,37 @@ export default function DocumentTable({ documents: initialDocuments }: { documen
     else setSelected(new Set(filteredDocs.map(d => d.id)));
   };
 
-  // Optimistic UI Actions
-  const handleOptimisticAction = (id: string, newStatus: DocumentStatus) => {
+  // Optimistic UI Actions — updates UI immediately, then syncs with backend
+  const handleOptimisticAction = async (id: string, newStatus: DocumentStatus) => {
+    const previousDocs = documents;
     setProcessingId(id);
-    
-    // Simulate API Delay
-    setTimeout(() => {
-      setDocuments(prev => prev.map(doc => 
-        doc.id === id ? { ...doc, status: newStatus } : doc
-      ));
+
+    // Optimistic update
+    setDocuments(prev => prev.map(doc =>
+      doc.id === id ? { ...doc, status: newStatus } : doc
+    ));
+
+    try {
+      const res = await fetch(`/api/documents/${id}/status`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: newStatus }),
+      });
+
+      if (!res.ok) {
+        throw new Error(`HTTP ${res.status}`);
+      }
+    } catch (err) {
+      console.error('Error updating document status:', err);
+      // Rollback on failure
+      setDocuments(previousDocs);
+    } finally {
       setProcessingId(null);
-    }, 600);
+    }
   };
 
-  const filteredDocs = documents.filter(doc => 
-    doc.title.toLowerCase().includes(search.toLowerCase()) || 
+  const filteredDocs = documents.filter(doc =>
+    doc.title.toLowerCase().includes(search.toLowerCase()) ||
     doc.code.toLowerCase().includes(search.toLowerCase())
   );
 
@@ -82,8 +98,8 @@ export default function DocumentTable({ documents: initialDocuments }: { documen
         <div className="flex items-center gap-2">
           <div className="relative w-64">
             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-            <Input 
-              placeholder="Buscar documento o código..." 
+            <Input
+              placeholder="Buscar documento o código..."
               className="pl-9 bg-background"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
@@ -93,11 +109,11 @@ export default function DocumentTable({ documents: initialDocuments }: { documen
             <Filter size={16} /> <span className="hidden sm:inline">Filtros</span>
           </Button>
         </div>
-        
+
         <div className="flex items-center gap-2">
           <AnimatePresence>
             {selected.size > 0 && (
-              <motion.div 
+              <motion.div
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.95 }}
@@ -117,13 +133,13 @@ export default function DocumentTable({ documents: initialDocuments }: { documen
           </Can>
         </div>
       </div>
-      
+
       <div className="rounded-xl border bg-card">
         <Table>
           <TableHeader>
             <TableRow className="hover:bg-transparent">
               <TableHead className="w-12 text-center">
-                <Checkbox 
+                <Checkbox
                   checked={filteredDocs.length > 0 && selected.size === filteredDocs.length}
                   onCheckedChange={selectAll}
                 />
@@ -147,10 +163,10 @@ export default function DocumentTable({ documents: initialDocuments }: { documen
               filteredDocs.map((doc) => {
                 const config = statusConfig[doc.status];
                 const isProcessing = processingId === doc.id;
-                
+
                 return (
-                  <TableRow 
-                    key={doc.id} 
+                  <TableRow
+                    key={doc.id}
                     onClick={() => router.push(`/documents/${doc.id}`)}
                     className={cn(
                       "group cursor-pointer transition-colors hover:bg-muted/50",
@@ -159,7 +175,7 @@ export default function DocumentTable({ documents: initialDocuments }: { documen
                     )}
                   >
                     <TableCell className="text-center" onClick={(e) => e.stopPropagation()}>
-                      <Checkbox 
+                      <Checkbox
                         checked={selected.has(doc.id)}
                         onCheckedChange={() => handleSelect(doc.id)}
                       />
@@ -171,10 +187,10 @@ export default function DocumentTable({ documents: initialDocuments }: { documen
                         </div>
                         <div className="min-w-0">
                           {doc.fileUrl ? (
-                            <a 
-                              href={doc.fileUrl} 
-                              target="_blank" 
-                              rel="noopener noreferrer" 
+                            <a
+                              href={doc.fileUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
                               className="text-sm font-semibold text-foreground hover:text-primary transition-colors truncate block"
                               onClick={(e) => e.stopPropagation()}
                             >
@@ -201,7 +217,7 @@ export default function DocumentTable({ documents: initialDocuments }: { documen
                           <div className="flex items-center gap-1.5 ml-1 mt-1">
                             <div className="flex gap-0.5">
                               {[1, 2].map((step) => (
-                                <div 
+                                <div
                                   key={step}
                                   className={cn(
                                     "w-1.5 h-1.5 rounded-full",

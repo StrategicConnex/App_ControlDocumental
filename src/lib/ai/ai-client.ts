@@ -1,7 +1,8 @@
 import "server-only";
 import OpenAI from 'openai';
 import { z } from 'zod';
-import { ProviderOrchestrator, POLResponse, AIMessage } from './pol-engine';
+import { ProviderOrchestrator } from './pol-engine';
+import type { POLResponse, AIMessage } from './pol-engine';
 import { AI_MODELS, getPolConfigs } from './pol-configs';
 
 const envSchema = z.object({
@@ -109,26 +110,29 @@ export class AIClient {
   async chat(
     messages: AIMessage[],
     orgId: string,
-    options?: { 
-      strategy?: 'cost' | 'latency' | 'balanced'; 
+    options?: {
+      strategy?: 'cost' | 'latency' | 'balanced';
       useCache?: boolean;
       response_format?: 'json_object' | 'text';
     }
   ): Promise<AIResponse> {
     const startTime = Date.now();
     try {
-      const result = await this.orchestrator.chat(messages, {
+      const orchestratorOptions: Record<string, unknown> = {
         strategy: options?.strategy || 'balanced',
         useCache: options?.useCache ?? true,
-        ...(options?.response_format ? { response_format: { type: options.response_format } } : {})
-      });
+      };
+      if (options?.response_format) {
+        orchestratorOptions.response_format = { type: options.response_format };
+      }
+      const result = await this.orchestrator.chat(messages, orchestratorOptions);
 
       await this.logAICall(
-        orgId, 
-        result.providerId, 
-        result.model, 
-        true, 
-        result.latency, 
+        orgId,
+        result.providerId,
+        result.model,
+        true,
+        result.latency,
         undefined,
         result.usage
       );
@@ -145,18 +149,18 @@ export class AIClient {
   }
 
   private async logAICall(
-    orgId: string, 
-    provider: string, 
-    model: string, 
-    success: boolean, 
-    time: number, 
+    orgId: string,
+    provider: string,
+    model: string,
+    success: boolean,
+    time: number,
     error?: string,
     usage?: any
   ) {
     try {
       const { createAdminClient } = await import('@/utils/supabase/admin');
       const supabase = await createAdminClient();
-      
+
       await supabase.from('ai_call_logs').insert({
         org_id: orgId,
         endpoint: 'chat-completion',
@@ -165,10 +169,10 @@ export class AIClient {
         success,
         response_time_ms: time,
         error_message: error ?? null,
-        prompt_tokens: usage?.prompt_tokens || 0,
-        completion_tokens: usage?.completion_tokens || 0,
-        total_tokens: usage?.total_tokens || 0
-      });
+        prompt_tokens: usage?.prompt_tokens ?? null,
+        completion_tokens: usage?.completion_tokens ?? null,
+        total_tokens: usage?.total_tokens ?? null
+      } as any);
     } catch (e) {
       console.error('Error logging AI call:', e);
     }

@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic';
 import { NextRequest, NextResponse } from 'next/server';
 import { aiPipeline } from '@/lib/ai/pipeline';
 import { createClient } from '@/utils/supabase/server';

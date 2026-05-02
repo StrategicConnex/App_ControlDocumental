@@ -1,4 +1,4 @@
-import { createClient } from '@/utils/supabase/server';
+import { createAdminClient } from '@/utils/supabase/admin';
 import { notificationService } from './notifications';
 
 export interface WorkflowAction {
@@ -23,7 +23,7 @@ export const workflowService = {
    * Triggers workflows for a specific event.
    */
   async trigger(event: string, orgId: string, context: any) {
-    const supabase = await createClient();
+    const supabase = createAdminClient();
     
     // Fetch active workflows for the event
     const { data: workflows, error } = await supabase
@@ -68,7 +68,7 @@ export const workflowService = {
             // Logic to change status of a resource (e.g., document)
             const { resource, id, status } = action.params;
             if (resource && id && status) {
-              const supabase = await createClient();
+              const supabase = createAdminClient();
               await supabase.from(resource).update({ status }).eq('id', id);
             }
             break;

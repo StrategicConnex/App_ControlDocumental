@@ -134,8 +134,9 @@ export async function getComplianceMetrics(supabase: SupabaseClient) {
   const [personnel, vehicles, docs] = await Promise.all([
     supabase.from('personnel').select('status'),
     supabase.from('vehicles').select('status'),
-    supabase.from('documents').select('status').is('deleted_at', null),
+    supabase.from('documents').select('id, title, code, status, expiry_date').is('deleted_at', null),
   ]);
+
 
   const calcRate = (
     items: { status: string }[],
@@ -168,10 +169,15 @@ export async function getComplianceMetrics(supabase: SupabaseClient) {
     documents: {
       total:       docsData.length,
       compliant:   docsData.filter(d => ['aprobado', 'publicado'].includes(d.status)).length,
-      atRisk:      docsData.filter(d => d.status === 'por_vencer').length,
+      atRisk:      docsData.filter(d => d.status === 'revisar').length,
       blocked:     docsData.filter(d => ['vencido', 'obsoleto'].includes(d.status)).length,
       rate:        calcRate(docsData, ['aprobado', 'publicado']),
+      criticalFindings: docsData
+        .filter(d => ['vencido', 'obsoleto'].includes(d.status))
+        .sort((a, b) => new Date(a.expiry_date).getTime() - new Date(b.expiry_date).getTime())
+        .slice(0, 10)
     },
+
     overall: {
       rate: calcRate(
         [...personnelData, ...vehiclesData, ...docsData],

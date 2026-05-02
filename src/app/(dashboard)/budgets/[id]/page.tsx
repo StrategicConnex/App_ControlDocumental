@@ -109,7 +109,7 @@ export default function BudgetDetailPage({ params }: { params: Promise<{ id: str
               <div className="text-right">
                 <p className="text-sm text-gray-500 font-medium mb-1">Monto Total</p>
                 <p className="text-3xl font-bold text-gray-900 tracking-tight">
-                  {formatCurrency(budget.total_amount)}
+                  {formatCurrency(budget.total_amount || 0)}
                 </p>
               </div>
             </div>

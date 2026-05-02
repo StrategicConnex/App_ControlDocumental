@@ -13,14 +13,23 @@ import Link from "next/link";
 import { cn } from "@/lib/utils";
 import StatusBadge from "@/components/ui/StatusBadge";
 import { NewVersionModal } from "@/components/documents/NewVersionModal";
+import { DigitalSignatureSection } from "@/components/documents/DigitalSignatureSection";
 
 interface DocumentDetailsClientProps {
   doc: any;
   versions: any[];
   uploaderName: string;
+  currentUserId: string;
+  orgId: string;
 }
 
-export default function DocumentDetailsClient({ doc, versions, uploaderName }: DocumentDetailsClientProps) {
+export default function DocumentDetailsClient({ 
+  doc, 
+  versions, 
+  uploaderName,
+  currentUserId,
+  orgId
+}: DocumentDetailsClientProps) {
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
 
   const now = new Date();
@@ -234,6 +243,17 @@ export default function DocumentDetailsClient({ doc, versions, uploaderName }: D
               <p className="text-sm text-gray-400 text-center py-4">Sin historial de versiones.</p>
             )}
           </section>
+
+          <DigitalSignatureSection 
+            documentId={doc.id}
+            versionId={versions.find(v => v.version_number === doc.current_version)?.id}
+            currentUserId={currentUserId}
+            orgId={orgId}
+            documentTitle={doc.title}
+            documentCode={doc.code}
+            versionNumber={doc.current_version?.toString() || "1"}
+          />
+
         </div>
       </div>
 

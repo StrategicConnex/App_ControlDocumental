@@ -192,8 +192,8 @@ export default function InvoicesAuditPage() {
                   </td>
                   <td className="px-6 py-4 text-right">
                     <button 
-                      onClick={() => validateInvoice(doc.id, audit?.contract_id, orgId)}
-                      disabled={validatingId === doc.id}
+                      onClick={() => orgId && validateInvoice(doc.id, audit?.contract_id, orgId)}
+                      disabled={validatingId === doc.id || !orgId}
                       className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white text-xs font-bold rounded-xl hover:bg-indigo-700 transition-all disabled:opacity-50"
                     >
                       {validatingId === doc.id ? (

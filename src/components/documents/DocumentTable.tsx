@@ -13,6 +13,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { motion, AnimatePresence } from "framer-motion";
 
 import { useRouter } from "next/navigation";
+import { Can } from "@/components/providers/UserProvider";
 
 export type DocumentStatus = 'borrador' | 'revision' | 'aprobado' | 'vencido' | 'por_vencer';
 
@@ -109,9 +110,11 @@ export default function DocumentTable({ documents: initialDocuments }: { documen
               </motion.div>
             )}
           </AnimatePresence>
-          <Link href="/documents/new">
-            <Button>Nuevo Documento</Button>
-          </Link>
+          <Can I="edit_documents">
+            <Link href="/documents/new">
+              <Button>Nuevo Documento</Button>
+            </Link>
+          </Can>
         </div>
       </div>
       
@@ -231,21 +234,23 @@ export default function DocumentTable({ documents: initialDocuments }: { documen
                             <MoreVertical size={16} />
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end" className="w-40">
-                            {doc.status === 'revision' && (
-                              <>
-                                <DropdownMenuItem onClick={() => handleOptimisticAction(doc.id, 'aprobado')}>
-                                  <Check className="mr-2 h-4 w-4 text-emerald-500" /> Aprobar
-                                </DropdownMenuItem>
+                            <Can I="edit_documents">
+                              {doc.status === 'revision' && (
+                                <>
+                                  <DropdownMenuItem onClick={() => handleOptimisticAction(doc.id, 'aprobado')}>
+                                    <Check className="mr-2 h-4 w-4 text-emerald-500" /> Aprobar
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem onClick={() => handleOptimisticAction(doc.id, 'borrador')}>
+                                    <X className="mr-2 h-4 w-4 text-destructive" /> Rechazar
+                                  </DropdownMenuItem>
+                                </>
+                              )}
+                              {doc.status === 'aprobado' && (
                                 <DropdownMenuItem onClick={() => handleOptimisticAction(doc.id, 'borrador')}>
-                                  <X className="mr-2 h-4 w-4 text-destructive" /> Rechazar
+                                  <Archive className="mr-2 h-4 w-4" /> Mover a borrador
                                 </DropdownMenuItem>
-                              </>
-                            )}
-                            {doc.status === 'aprobado' && (
-                              <DropdownMenuItem onClick={() => handleOptimisticAction(doc.id, 'borrador')}>
-                                <Archive className="mr-2 h-4 w-4" /> Mover a borrador
-                              </DropdownMenuItem>
-                            )}
+                              )}
+                            </Can>
                             {doc.fileUrl && (
                               <DropdownMenuItem onClick={() => window.open(doc.fileUrl, '_blank')}>
                                 <Download className="mr-2 h-4 w-4" /> Descargar

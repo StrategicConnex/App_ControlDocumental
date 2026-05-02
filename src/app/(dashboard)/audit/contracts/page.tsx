@@ -170,8 +170,8 @@ export default function ContractsAuditPage() {
 
               <div className="px-6 py-4 bg-gray-50/50 border-t border-gray-100 flex gap-2">
                 <button 
-                  onClick={() => validateContract(doc.id, orgId)}
-                  disabled={validatingId === doc.id}
+                  onClick={() => orgId && validateContract(doc.id, orgId)}
+                  disabled={validatingId === doc.id || !orgId}
                   className="flex-1 bg-white border border-gray-200 text-gray-700 py-2 rounded-xl text-xs font-bold hover:bg-gray-100 transition-all flex items-center justify-center gap-2"
                 >
                   {validatingId === doc.id ? (

@@ -6,6 +6,7 @@ import { getBudgets } from "@/lib/services/budgets";
 import { getDashboardAlerts } from "@/lib/services/dashboard";
 import { getComplianceMetrics } from "@/lib/services/search";
 import { getRiskHistory } from "@/lib/services/riskScore";
+import { getVendorRequests, getVendorComplianceSummary } from "@/lib/services/vendors";
 import { 
   Users, 
   DollarSign, 
@@ -16,6 +17,7 @@ import {
 import Link from 'next/link';
 import ComplianceDashboard from "@/components/ui/ComplianceDashboard";
 import { MetricCard } from "./_components/MetricCard";
+import VendorDashboard from "./_components/VendorDashboard";
 import ActionInbox from "./_components/ActionInbox";
 import { AlertItem } from "@/lib/services/dashboard";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -27,14 +29,49 @@ export const metadata = {
 export default async function Dashboard() {
   const supabase = await createClient();
   
-  // Get User Profile for org_id
+  // Get User Profile for org_id and role
   const { data: { user } } = await supabase.auth.getUser();
   let orgId: string | undefined = undefined;
+  let userRole: string | undefined = undefined;
+  let orgName: string = 'Tu Organización';
   
   if (user) {
-    const { data: profile } = await supabase.from('profiles').select('org_id').eq('id', user.id).maybeSingle();
-    orgId = profile?.org_id || undefined;
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('org_id, role, organizations(name)')
+      .eq('id', user.id)
+      .single();
+    
+    orgId = profile?.org_id ?? undefined;
+    userRole = profile?.role ?? undefined;
+    orgName = (profile?.organizations as any)?.name ?? 'Tu Organización';
   }
+
+  // --- VENDOR DASHBOARD FLOW ---
+  if (userRole === 'PROVEEDOR' && orgId) {
+    const [requests, summary] = await Promise.all([
+      getVendorRequests(supabase, orgId),
+      getVendorComplianceSummary(supabase, orgId)
+    ]);
+
+    return (
+      <VendorDashboard 
+        orgName={orgName}
+        requests={requests}
+        summary={summary}
+      />
+    );
+  }
+
+  // --- STANDARD DASHBOARD FLOW ---
+  // Run background automation (expirations, blocking, nudges, snapshots & WEEKLY REPORTS)
+  if (userRole === 'ADMIN' || userRole === 'SUPERADMIN') {
+    await supabase.rpc('process_full_compliance_automation_v3');
+  }
+
+
+
+
 
   // Fetch all data in parallel
   const [docsData, personnelData, vehiclesData, budgetsData, initialAlerts, metrics, history] = await Promise.all([
@@ -46,6 +83,7 @@ export default async function Dashboard() {
     getComplianceMetrics(supabase),
     orgId ? getRiskHistory(supabase, orgId).catch(() => []) : Promise.resolve([])
   ]);
+
 
   // Aggregate Metrics
   const approvedDocs = docsData.filter(d => d.status === 'aprobado' || d.status === 'vigente').length;

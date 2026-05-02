@@ -27,27 +27,17 @@ export async function getDashboardAlerts(supabase: SupabaseClient, orgId?: strin
 
   // 1. Notifications
   notificationsData.forEach(n => {
-    // Cast metadata to a more specific type to avoid Json access errors
-    const metadata = n.metadata as { resourceId?: string; actionType?: string } | null;
-    let link = '#';
-    if (metadata?.resourceId) {
-      if (metadata.actionType?.includes('invoice')) link = `/billing/invoices/${metadata.resourceId}`;
-      else if (metadata.actionType?.includes('contract')) link = `/contracts/${metadata.resourceId}`;
-      else link = `/documents/${metadata.resourceId}`;
-    }
-
     alerts.push({
       id: `notif-${n.id}`,
       type: 'notification',
       title: n.title || 'Notificación',
-      status: n.severity || 'info',
-      link: link,
-      priority: n.severity === 'critical' ? 'high' : 'medium',
-      notificationId: n.id,
-      resourceId: metadata?.resourceId,
-      actionType: metadata?.actionType
+      status: n.type?.toLowerCase() || 'info',
+      link: n.link || '#',
+      priority: (n.type === 'DANGER' || n.type === 'WARNING') ? 'high' : 'medium',
+      notificationId: n.id
     });
   });
+
 
   // 2. Document Alerts
   docsData.forEach(d => { 

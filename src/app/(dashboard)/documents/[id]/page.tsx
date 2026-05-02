@@ -14,6 +14,10 @@ export default async function DocumentDetailPage({ params }: { params: Promise<{
 
   let doc: any = null;
   let versions: any[] = [];
+  let currentUser: any = null;
+
+  const { data: { user } } = await supabase.auth.getUser();
+  currentUser = user;
 
   try {
     doc = await getDocumentById(supabase, resolvedParams.id);
@@ -21,6 +25,7 @@ export default async function DocumentDetailPage({ params }: { params: Promise<{
   } catch (e) {
     console.error("Error fetching document details", e);
   }
+
 
   if (!doc) {
     return (
@@ -46,6 +51,9 @@ export default async function DocumentDetailPage({ params }: { params: Promise<{
       doc={doc} 
       versions={versions} 
       uploaderName={uploaderName} 
+      currentUserId={currentUser?.id}
+      orgId={doc.org_id}
     />
+
   );
 }

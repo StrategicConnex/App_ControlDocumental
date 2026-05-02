@@ -1,9 +1,9 @@
 ```
 # Especificación de Requerimientos de Software (SRS)
 ## SC Platform — Plataforma de Compliance Documental y Operativo para Oil & Gas
-**Versión:** 3.4  
-**Fecha:** 30 de abril de 2026  
-**Estado:** Estable con Capa de Diagnóstico IA y RAG Optimizado
+**Versión:** 3.5  
+**Fecha:** 2 de mayo de 2026  
+**Estado:** Producción Avanzada con Ecosistema de Riesgo Proactivo
 
 
 ---
@@ -1145,16 +1145,16 @@ export async function generateReport(orgId: string, filters: any, format: 'pdf' 
 
 | Tipo                                   | Cantidad                    |
 | :------------------------------------- | :-------------------------- |
-| Tablas en base de datos                | 18                          |
+| Tablas en base de datos                | 22                          |
 | Vistas                                 | 1 (`documents_with_status`) |
-| Funciones SQL                          | 8                           |
+| Funciones SQL                          | 13                          |
 | Triggers                               | 3                           |
-| Cron jobs                              | 3                           |
-| Componentes React                      | 28                          |
-| Páginas Next.js                        | 18                          |
-| Servicios/Utilidades                   | 22                          |
+| Cron jobs                              | 5                           |
+| Componentes React                      | 35                          |
+| Páginas Next.js                        | 20                          |
+| Servicios/Utilidades                   | 25                          |
 | Motores de Orquestación (POL)         | 1                           |
-| Tests (unit + integration + RLS + E2E) | ~65                         |
+| Tests (unit + integration + RLS + E2E) | ~75                         |
 | Pipelines CI/CD                        | 3 workflows                 |
 
 ------
@@ -1184,10 +1184,30 @@ El dashboard integra un panel de **Live Ranking** que expone:
 
 ------
 
-## 17. Conclusión
+## 18. Ecosistema de Compliance y Gestión de Riesgo (V3)
 
-El presente SRS incorpora todas las correcciones de optimización (rendimiento, deduplicación, vistas materializadas) y 12 nuevas features de alto valor diferencial, posicionando a SC Platform como el estándar de compliance documental para Oil & Gas en Argentina y la región. El código de cada componente está listo para ser implementado en Next.js 14 + Supabase, siguiendo las convenciones definidas.
+### 18.1 Centro de Inteligencia de Riesgo
+Se ha implementado un motor analítico que transforma los datos estáticos en indicadores de riesgo operativo.
+- **Matriz de Cumplimiento (Heatmap):** Visualización pivotada de proveedores vs requerimientos con estados de color dinámicos.
+- **Scoring Algorítmico:** Evaluación de 0 a 100 puntos basada en penalizaciones por documentos faltantes (-25), vencidos (-20), rechazados (-10) o pendientes (-5).
+- **Categorización de Riesgo:** Clasificación automática en niveles Crítico, Medio y Bajo para priorización administrativa.
 
-------
+### 18.2 Analítica de Evolución e IA
+- **Snapshots Históricos:** Captura diaria de métricas de salud en la tabla `vendor_risk_snapshots` para análisis de tendencias.
+- **Evolución Temporal:** Gráficas de área con gradientes de riesgo para monitorear la mejora o degradación del cumplimiento de la flota.
+- **Recomendaciones IA (Context-Aware):** Motor de reglas que analiza categoría e industria del proveedor para sugerir requisitos documentales preventivos (ej: Seguros de Carga, Planes de Higiene).
 
-*Documento generado para SC Platform — Versión 3.1 — 28 de abril de 2026*
+### 18.3 Automatización de Seguridad (Gatekeeper)
+- **Bloqueo Preventivo:** Sincronización en tiempo real entre el estado de cumplimiento y el acceso físico/operativo. Los proveedores en "Riesgo Crítico" son bloqueados automáticamente en el sistema de accesos.
+- **Notificaciones "Nudge":** Sistema de recordatorios recurrentes cada 48 horas para proveedores con deudas documentales activas.
+- **Reportes Ejecutivos:** Generación automática de resúmenes semanales para gerencia con KPIs de salud general y alerta de proveedores críticos.
+
+---
+
+## 19. Conclusión
+
+El presente SRS incorpora todas las correcciones de optimización y el nuevo Ecosistema de Riesgo V3, posicionando a SC Platform como el estándar de compliance documental para Oil & Gas.
+
+---
+
+*Documento actualizado para SC Platform — Versión 3.5 — 2 de mayo de 2026*

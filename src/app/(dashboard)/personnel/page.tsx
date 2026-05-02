@@ -21,12 +21,15 @@ import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 
+import { hasPermissionServer } from "@/lib/middleware/rbac";
+
 export const metadata = {
   title: "Acreditación de Personal | Strategic Connex",
 };
 
 export default async function PersonnelPage() {
   const supabase = await createClient();
+  const canEdit = await hasPermissionServer('edit_personnel');
   
   let personnel = [];
   try {
@@ -54,9 +57,11 @@ export default async function PersonnelPage() {
           <Button variant="outline" size="sm" className="gap-2">
             <Activity size={16} /> Reporte de cumplimiento
           </Button>
-          <Button size="sm" className="gap-2">
-            <Plus size={16} /> Alta de Personal
-          </Button>
+          {canEdit && (
+            <Button size="sm" className="gap-2">
+              <Plus size={16} /> Alta de Personal
+            </Button>
+          )}
         </div>
       </header>
 
@@ -158,9 +163,11 @@ export default async function PersonnelPage() {
                       </p>
                     </div>
                     <div className="flex items-center gap-2">
-                      <Button variant="ghost" size="icon" className="h-8 w-8">
-                        <MoreVertical size={14} className="text-muted-foreground" />
-                      </Button>
+                      {canEdit && (
+                        <Button variant="ghost" size="icon" className="h-8 w-8">
+                          <MoreVertical size={14} className="text-muted-foreground" />
+                        </Button>
+                      )}
                       <ChevronRight size={16} className="text-muted-foreground group-hover:text-primary transition-colors" />
                     </div>
                   </div>

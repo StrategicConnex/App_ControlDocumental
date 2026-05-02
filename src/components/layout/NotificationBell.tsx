@@ -36,13 +36,14 @@ export function NotificationBell() {
       const { data } = await supabase
         .from('notifications')
         .select('*')
-        .eq('org_id', org_id)
+        .or(`user_id.eq.${user.id},org_id.eq.${org_id}`)
         .order('created_at', { ascending: false })
         .limit(10);
 
       return data || [];
     }
   });
+
 
   const unreadCount = notifications.filter(n => !n.is_read).length;
 
@@ -136,12 +137,13 @@ export function NotificationBell() {
             className="fixed inset-0 z-40" 
             onClick={() => setIsOpen(false)}
           />
-          <div className="absolute right-0 mt-2 w-80 bg-white rounded-3xl shadow-2xl border border-gray-100 z-50 overflow-hidden animate-in fade-in zoom-in-95 duration-200">
-            <div className="p-4 bg-gray-50/50 border-b border-gray-100 flex justify-between items-center">
+          <div className="absolute right-0 mt-2 w-96 bg-white rounded-[2rem] shadow-[0_20px_50px_rgba(0,0,0,0.15)] border border-gray-100 z-50 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-300">
+            <div className="p-6 bg-gray-50/50 border-b border-gray-100 flex justify-between items-center">
               <div>
-                <h4 className="font-bold text-gray-900 text-sm">Notificaciones</h4>
-                <p className="text-[10px] text-gray-500 font-medium">{unreadCount} pendientes</p>
+                <h4 className="font-bold text-gray-900 text-base">Centro de Alertas</h4>
+                <p className="text-[11px] text-indigo-600 font-bold uppercase tracking-widest mt-0.5">{unreadCount} nuevas notificaciones</p>
               </div>
+
               {actionableCount > 0 && (
                 <button 
                   onClick={handleBulkApprove}
@@ -229,7 +231,13 @@ export function NotificationBell() {
                 </div>
               )}
             </div>
+            <div className="p-4 bg-gray-50/50 border-t border-gray-100">
+              <button className="w-full py-3 text-[11px] font-bold text-gray-400 uppercase tracking-widest hover:text-indigo-600 transition-colors">
+                Ver todo el historial
+              </button>
+            </div>
           </div>
+
         </>
       )}
     </div>

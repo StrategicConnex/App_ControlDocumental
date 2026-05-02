@@ -1,13 +1,26 @@
 import { createClient } from "@/utils/supabase/server";
 import { Settings, User, Building2, Shield, Bell, Key } from "lucide-react";
+import { NotificationSettings } from "@/components/settings/NotificationSettings";
 
 export const metadata = {
+
   title: "Configuración | Strategic Connex",
 };
 
 export default async function SettingsPage() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
+
+  let orgId = null;
+  if (user) {
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('org_id')
+      .eq('id', user.id)
+      .maybeSingle();
+    orgId = profile?.org_id;
+  }
+
 
   return (
     <div className="space-y-8 max-w-4xl mx-auto">
@@ -90,34 +103,9 @@ export default async function SettingsPage() {
           </div>
         </section>
 
-        {/* Notifications */}
-        <section className="bg-white p-6 rounded-[2rem] card-shadow border border-gray-100">
-          <div className="flex items-center gap-3 mb-6">
-            <div className="w-9 h-9 bg-amber-50 rounded-xl flex items-center justify-center">
-              <Bell size={18} className="text-amber-600" />
-            </div>
-            <h3 className="font-bold text-gray-900">Notificaciones</h3>
-          </div>
-          <div className="space-y-4">
-            {[
-              { label: "Alertas de documentos vencidos", desc: "Recibir email cuando un documento vence" },
-              { label: "Alertas de personal bloqueado", desc: "Notificación cuando un empleado pierde acreditación" },
-              { label: "Alertas de flota inhabilitada", desc: "Notificación cuando un vehículo pierde habilitación" },
-              { label: "Resumen semanal", desc: "Email con métricas del sistema cada lunes" },
-            ].map((item) => (
-              <div key={item.label} className="flex items-center justify-between py-3 border-b border-gray-50 last:border-0">
-                <div>
-                  <p className="text-sm font-semibold text-gray-900">{item.label}</p>
-                  <p className="text-xs text-gray-400 mt-0.5">{item.desc}</p>
-                </div>
-                <label className="relative inline-flex items-center cursor-pointer">
-                  <input type="checkbox" defaultChecked className="sr-only peer" />
-                  <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-indigo-500/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600" />
-                </label>
-              </div>
-            ))}
-          </div>
-        </section>
+        {/* Notifications & Compliance Schedule */}
+        <NotificationSettings orgId={orgId || ''} />
+
 
         {/* Security */}
         <section className="bg-white p-6 rounded-[2rem] card-shadow border border-gray-100">

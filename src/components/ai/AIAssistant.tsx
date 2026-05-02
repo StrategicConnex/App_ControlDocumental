@@ -1,8 +1,9 @@
 'use client';
 
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { Send, X, Bot, User, Loader2, FileText, ChevronDown } from 'lucide-react';
+import { Send, X, Bot, User, Loader2, FileText, ChevronDown, Truck, Users, ShieldCheck } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useUser } from '../providers/UserProvider';
 
 interface Message {
   id: string;
@@ -28,6 +29,16 @@ export function AIAssistant({ orgId }: { orgId: string }) {
   const [providerStatus, setProviderStatus] = useState<'openrouter' | 'deepseek' | 'unknown'>('unknown');
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
+  const commonTasks = [
+    { label: 'Resumir Contratos', icon: FileText, query: 'Resumir los contratos más recientes y sus fechas clave.' },
+    { label: 'Vencimientos Flota', icon: Truck, query: '¿Qué vehículos tienen documentos por vencer este mes?' },
+    { icon: Users, label: 'Estado Personal', query: 'Mostrar un resumen del estado de cumplimiento del personal activo.' },
+    { icon: ShieldCheck, label: 'Logs Auditoría', query: '¿Cuáles son los eventos de auditoría más importantes de las últimas 24 horas?' },
+  ];
+
+  const { hasPermission } = useUser();
+  const canUseAI = hasPermission('use_ai');
+
   useEffect(() => {
     setMounted(true);
   }, []);
@@ -43,32 +54,32 @@ export function AIAssistant({ orgId }: { orgId: string }) {
   }, []);
 
   useEffect(() => {
-    if (isOpen) {
+    if (isOpen && canUseAI) {
       const timer = setTimeout(() => {
         checkAIHealth();
       }, 0);
       return () => clearTimeout(timer);
     }
-  }, [isOpen, checkAIHealth]);
+  }, [isOpen, checkAIHealth, canUseAI]);
 
   // Auto-scroll to bottom
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, isLoading]);
 
-  const sendMessage = async () => {
-    if (!input.trim() || isLoading) return;
+  const sendMessage = async (query?: string) => {
+    const messageText = query || input;
+    if (!messageText.trim() || isLoading || !canUseAI) return;
 
     const userMessage: Message = {
       id: Date.now().toString(),
       type: 'user',
-      content: input,
+      content: messageText,
       timestamp: new Date()
     };
 
     setMessages(prev => [...prev, userMessage]);
-    const currentInput = input;
-    setInput('');
+    if (!query) setInput('');
     setIsLoading(true);
 
     try {
@@ -76,7 +87,7 @@ export function AIAssistant({ orgId }: { orgId: string }) {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
-          question: currentInput, 
+          question: messageText, 
           orgId: orgId 
         })
       });
@@ -106,7 +117,7 @@ export function AIAssistant({ orgId }: { orgId: string }) {
     }
   };
 
-  if (!mounted) return null;
+  if (!mounted || !canUseAI) return null;
 
   return (
     <>
@@ -216,6 +227,22 @@ export function AIAssistant({ orgId }: { orgId: string }) {
             <div ref={messagesEndRef} />
           </div>
 
+          {/* Common Tasks */}
+          {messages.length === 1 && !isLoading && (
+            <div className="px-4 py-2 flex gap-2 overflow-x-auto no-scrollbar bg-white">
+              {commonTasks.map((task, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => sendMessage(task.query)}
+                  className="flex items-center gap-2 px-3 py-1.5 bg-indigo-50 text-indigo-600 rounded-full text-xs font-medium hover:bg-indigo-100 transition-colors whitespace-nowrap border border-indigo-100/50 shadow-sm"
+                >
+                  <task.icon size={14} />
+                  {task.label}
+                </button>
+              ))}
+            </div>
+          )}
+
           {/* Input Area */}
           <div className="p-4 bg-white border-t border-gray-100">
             <div className="relative flex items-center">
@@ -229,7 +256,7 @@ export function AIAssistant({ orgId }: { orgId: string }) {
                 disabled={isLoading}
               />
               <button
-                onClick={sendMessage}
+                onClick={() => sendMessage()}
                 disabled={!input.trim() || isLoading}
                 className="absolute right-2 p-2 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 disabled:opacity-50 disabled:hover:bg-indigo-600 transition-colors shadow-lg shadow-indigo-600/20"
               >

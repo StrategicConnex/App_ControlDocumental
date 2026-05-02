@@ -26,6 +26,7 @@ import {
   CommandShortcut,
 } from "@/components/ui/command";
 import { Button } from "@/components/ui/button";
+import { Can } from "@/components/providers/UserProvider";
 
 export function CommandMenu() {
   const [open, setOpen] = React.useState(false);
@@ -77,11 +78,13 @@ export function CommandMenu() {
           </CommandGroup>
           <CommandSeparator />
           <CommandGroup heading="Acciones">
-            <CommandItem>
-              <Mic className="mr-2 h-4 w-4 text-blue-500" />
-              <span>Búsqueda por Voz (Beta)</span>
-              <CommandShortcut>⌘+Space</CommandShortcut>
-            </CommandItem>
+            <Can I="use_ai">
+              <CommandItem>
+                <Mic className="mr-2 h-4 w-4 text-blue-500" />
+                <span>Búsqueda por Voz (Beta)</span>
+                <CommandShortcut>⌘+Space</CommandShortcut>
+              </CommandItem>
+            </Can>
             <CommandItem>
               <Calendar className="mr-2 h-4 w-4" />
               <span>Ver Calendario</span>

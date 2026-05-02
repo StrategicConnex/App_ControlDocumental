@@ -21,12 +21,15 @@ import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
+import { hasPermissionServer } from "@/lib/middleware/rbac";
+
 export const metadata = {
   title: "Vehículos | Strategic Connex",
 };
 
 export default async function VehiclesPage() {
   const supabase = await createClient();
+  const canEdit = await hasPermissionServer('edit_vehicles');
   
   let vehicles = [];
   try {
@@ -54,9 +57,11 @@ export default async function VehiclesPage() {
           <Button variant="outline" size="sm" className="gap-2">
             <Activity size={16} /> Auditoría RTO/VTV
           </Button>
-          <Button size="sm" className="gap-2">
-            <Plus size={16} /> Alta de Vehículo
-          </Button>
+          {canEdit && (
+            <Button size="sm" className="gap-2">
+              <Plus size={16} /> Alta de Vehículo
+            </Button>
+          )}
         </div>
       </header>
 
@@ -166,15 +171,17 @@ export default async function VehiclesPage() {
                               Ver Detalles
                             </Button>
                           </Link>
-                          <DropdownMenu>
-                            <DropdownMenuTrigger className="h-8 w-8 flex items-center justify-center rounded-md hover:bg-muted transition-colors">
-                              <MoreVertical size={14} className="text-muted-foreground" />
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                              <DropdownMenuItem>Auditar Documentos</DropdownMenuItem>
-                              <DropdownMenuItem>Asignar Chofer</DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
+                          {canEdit && (
+                            <DropdownMenu>
+                              <DropdownMenuTrigger className="h-8 w-8 flex items-center justify-center rounded-md hover:bg-muted transition-colors">
+                                <MoreVertical size={14} className="text-muted-foreground" />
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="end">
+                                <DropdownMenuItem>Auditar Documentos</DropdownMenuItem>
+                                <DropdownMenuItem>Asignar Chofer</DropdownMenuItem>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
+                          )}
                         </div>
                       </TableCell>
                     </TableRow>

@@ -15,9 +15,9 @@ export default async function Page() {
     <div className="p-8">
       <h1 className="text-2xl font-bold mb-4">Documentos de Prueba</h1>
       <ul className="space-y-2">
-        {documents?.map((doc: any) => (
+        {documents?.map((doc: { id: string; status: string | null; title: string | null }) => (
           <li key={doc.id} className="p-4 bg-slate-800 rounded-lg border border-slate-700">
-            <span className="font-semibold text-blue-400">[{doc.status}]</span> {doc.title}
+            <span className="font-semibold text-blue-400">[{doc.status || 'S/E'}]</span> {doc.title || 'Sin título'}
           </li>
         ))}
         {documents?.length === 0 && <p className="text-slate-400">No hay documentos aún.</p>}

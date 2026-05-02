@@ -1,6 +1,7 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { recordAuditLog } from './audit';
 import { Database } from '@/types/supabase';
+import { workflowService } from './workflows';
 
 export interface DigitalSignature {
   document_id: string;
@@ -43,7 +44,7 @@ export async function signDocument(
     `${payload.content}|${payload.document_id}|${payload.version_id}|${payload.signer_id}`
   );
 
-  const { error } = await supabase
+  const { data: signatureData, error } = await supabase
     .from('digital_signatures')
     .insert({
       document_id: payload.document_id,
@@ -54,12 +55,17 @@ export async function signDocument(
       ip_address: payload.ip_address,
       validation_provider: 'StrategicConnex-Internal',
       validation_timestamp: new Date().toISOString()
-    });
+    })
+    .select()
+    .single();
 
   if (error) {
     console.error('Error recording digital signature:', error);
     throw new Error(`Failed to record digital signature: ${error.message}`);
   }
+
+  const signatureId = signatureData.id;
+
 
   // Audit Log Entry
   await recordAuditLog(supabase, {
@@ -94,5 +100,13 @@ export async function signDocument(
     console.warn('Signature recorded but document metadata update failed:', updateError);
   }
 
-  return signatureHash;
+  // Workflow Trigger
+  await workflowService.trigger('DOC_SIGNED', payload.org_id, {
+    documentId: payload.document_id,
+    signerId: payload.signer_id,
+    signatureHash: signatureHash
+  });
+
+  return { signatureId, signatureHash };
 }
+

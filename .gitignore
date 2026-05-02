@@ -42,5 +42,6 @@ next-env.d.ts
 
 # scratch and temp
 /scratch/
+/backups/
 /supabase/.temp/
 .mcp.json

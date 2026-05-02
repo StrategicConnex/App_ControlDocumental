@@ -10,6 +10,9 @@ const envSchema = z.object({
   DEEPSEEK_API_KEY: z.string().min(1, "DEEPSEEK_API_KEY es requerido"),
   DEEPSEEK_BASE_URL: z.string().url().default('https://api.deepseek.com/v1'),
   GEMINI_API_KEY: z.string().min(1, "GEMINI_API_KEY es requerido"),
+  XIAOMI_API_KEY: z.string().optional(),
+  XIAOMI_BASE_URL: z.string().url().optional(),
+  XIAOMI_MODEL: z.string().optional(),
   NEXT_PUBLIC_APP_URL: z.string().url().default('https://sc-platform.com')
 });
 
@@ -22,6 +25,9 @@ try {
     DEEPSEEK_API_KEY: process.env.DEEPSEEK_API_KEY,
     DEEPSEEK_BASE_URL: process.env.DEEPSEEK_BASE_URL,
     GEMINI_API_KEY: process.env.GEMINI_API_KEY,
+    XIAOMI_API_KEY: process.env.XIAOMI_API_KEY,
+    XIAOMI_BASE_URL: process.env.XIAOMI_BASE_URL,
+    XIAOMI_MODEL: process.env.XIAOMI_MODEL,
     NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL,
   });
 } catch (error: any) {
@@ -36,6 +42,9 @@ try {
       DEEPSEEK_API_KEY: process.env.DEEPSEEK_API_KEY || 'dev-key-required',
       DEEPSEEK_BASE_URL: 'https://api.deepseek.com/v1',
       GEMINI_API_KEY: process.env.GEMINI_API_KEY || 'dev-key-required',
+      XIAOMI_API_KEY: process.env.XIAOMI_API_KEY,
+      XIAOMI_BASE_URL: process.env.XIAOMI_BASE_URL,
+      XIAOMI_MODEL: process.env.XIAOMI_MODEL,
       NEXT_PUBLIC_APP_URL: 'https://sc-platform.com'
     };
   }
@@ -44,7 +53,7 @@ try {
 export { AI_MODELS };
 export const polConfigs = getPolConfigs(env);
 
-export type AIProvider = 'openrouter' | 'deepseek-direct' | 'google-gemini';
+export type AIProvider = 'openrouter' | 'deepseek-direct' | 'google-gemini' | 'xiaomi-mimo';
 
 export interface AIResponse extends POLResponse {
   provider: AIProvider;

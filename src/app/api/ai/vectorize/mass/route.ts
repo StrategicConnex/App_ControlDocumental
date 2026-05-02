@@ -8,7 +8,7 @@ import { vectorizerService } from '@/lib/ai/vectorizer';
  */
 export async function POST(req: NextRequest) {
   try {
-    const { orgId } = await req.json();
+    const { orgId, force = false } = await req.json();
     if (!orgId) return NextResponse.json({ error: 'orgId es requerido' }, { status: 400 });
 
     const supabase = await createClient();
@@ -19,31 +19,36 @@ export async function POST(req: NextRequest) {
       .select(`
         id,
         content_extracted,
-        documents (
+        documents!inner (
           id,
           org_id,
           title
         )
       `)
-      .eq('documents.org_id', orgId)
-      .order('created_at', { ascending: false });
+      .eq('documents.org_id', orgId);
 
     if (vError) throw vError;
 
-    // 2. Filter versions that don't have chunks yet
-    const processedCount = { success: 0, failed: 0 };
+    // 2. Process versions
+    const processedCount = { success: 0, failed: 0, skipped: 0 };
     
     for (const version of versions || []) {
+      const docId = Array.isArray(version.documents) ? version.documents[0]?.id : (version.documents as any)?.id;
+      if (!docId) continue;
+
       // Check if chunks already exist
       const { count } = await supabase
         .from('document_chunks')
         .select('*', { count: 'exact', head: true })
         .eq('version_id', version.id);
 
-      if (count === 0 && version.content_extracted) {
-        const docId = Array.isArray(version.documents) ? version.documents[0]?.id : (version.documents as any)?.id;
-        if (!docId) continue;
-        
+      // If force is true, we delete existing chunks first
+      if (force && count && count > 0) {
+        await supabase.from('document_chunks').delete().eq('version_id', version.id);
+      }
+
+      // Process if no chunks (or deleted) and we have content
+      if ((force || (count === 0)) && version.content_extracted) {
         // Vectorize!
         const result = await vectorizerService.vectorizeDocumentVersion(
           version.id, 
@@ -54,6 +59,8 @@ export async function POST(req: NextRequest) {
 
         if (result.success) processedCount.success++;
         else processedCount.failed++;
+      } else {
+        processedCount.skipped++;
       }
     }
 

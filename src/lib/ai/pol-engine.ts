@@ -13,6 +13,7 @@ export interface ProviderConfig {
   weightLatency: number;
   weightCost: number;
   weightHealth: number;
+  providerType?: 'openai' | 'anthropic';
 }
 
 export interface ProviderStats {
@@ -63,6 +64,12 @@ export class ProviderOrchestrator {
 
   constructor(configs: ProviderConfig[]) {
     configs.forEach(config => {
+      // Solo registrar si tiene API Key
+      if (!config.apiKey || config.apiKey === 'missing-key') {
+        console.warn(`POL: Saltando configuración para ${config.id} porque falta la API Key.`);
+        return;
+      }
+
       this.registry.set(config.id, config);
       this.stats.set(config.id, {
         status: 'healthy',
@@ -73,6 +80,7 @@ export class ProviderOrchestrator {
         consecutiveFailures: 0,
         lastChecked: new Date()
       });
+      
       this.clients.set(config.id, new OpenAI({
         apiKey: config.apiKey,
         baseURL: config.baseUrl,
@@ -192,29 +200,77 @@ export class ProviderOrchestrator {
       console.log(`POL: Intentando llamada con provider: ${provider.id} (${provider.model})...`);
       const startTime = Date.now();
       try {
-        const client = this.clients.get(provider.id)!;
-        const response = await client.chat.completions.create({
-          model: provider.model,
-          messages,
-          temperature: 0.1,
-          max_tokens: 1000,
-          ...(options.response_format ? { response_format: options.response_format } : {})
-        });
+        let content = '';
+        let usage: AIUsage = { prompt_tokens: 0, completion_tokens: 0, total_tokens: 0 };
+
+        if (provider.providerType === 'anthropic') {
+          // Anthropic Messages API format
+          const controller = new AbortController();
+          const timeoutId = setTimeout(() => controller.abort(), 60000); // 60s timeout
+
+          try {
+            const anthropicResponse = await fetch(`${provider.baseUrl}/messages`, {
+              method: 'POST',
+              headers: {
+                'x-api-key': provider.apiKey,
+                'anthropic-version': '2023-06-01',
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({
+                model: provider.model,
+                messages: messages.filter(m => m.role !== 'system'),
+                system: messages.find(m => m.role === 'system')?.content,
+                temperature: 0.1,
+                max_tokens: 1000
+              }),
+              signal: controller.signal
+            });
+
+            clearTimeout(timeoutId);
+
+            if (!anthropicResponse.ok) {
+              throw new Error(`Anthropic Error ${anthropicResponse.status}: ${await anthropicResponse.text()}`);
+            }
+
+            const data = await anthropicResponse.json();
+            content = data.content?.[0]?.text || '';
+            usage = {
+              prompt_tokens: data.usage?.input_tokens || 0,
+              completion_tokens: data.usage?.output_tokens || 0,
+              total_tokens: (data.usage?.input_tokens || 0) + (data.usage?.output_tokens || 0)
+            };
+          } catch (e: any) {
+            clearTimeout(timeoutId);
+            throw e;
+          }
+        } else {
+          // Default OpenAI-compatible format
+          const client = this.clients.get(provider.id)!;
+          const response = await client.chat.completions.create({
+            model: provider.model,
+            messages,
+            temperature: 0.1,
+            max_tokens: 1000,
+            ...(options.response_format ? { response_format: options.response_format } : {})
+          });
+          content = response.choices[0]?.message?.content || '';
+          usage = {
+            prompt_tokens: response.usage?.prompt_tokens || 0,
+            completion_tokens: response.usage?.completion_tokens || 0,
+            total_tokens: response.usage?.total_tokens || 0
+          };
+        }
 
         const latency = Date.now() - startTime;
         this.updateStats(provider.id, true, latency);
 
         const result = {
-        content: response.choices[0]?.message?.content || '',
-        providerId: provider.id,
-        model: provider.model,
-        usage: {
-          prompt_tokens: response.usage?.prompt_tokens || 0,
-          completion_tokens: response.usage?.completion_tokens || 0,
-          total_tokens: response.usage?.total_tokens || 0
-        },
-        latency
-      };
+          content,
+          providerId: provider.id,
+          model: provider.model,
+          usage,
+          latency
+        };
 
         // Update cache
         if (options.useCache) {
@@ -249,7 +305,9 @@ export class ProviderOrchestrator {
    * Actualiza las estadísticas de un proveedor basado en telemetría externa o resultados de llamadas
    */
   public updateStats(id: string, success: boolean, latency: number, error?: Error | any) {
-    const stat = this.stats.get(id)!;
+    const stat = this.stats.get(id);
+    if (!stat) return; // Ignorar si el provider no está en el registro actual
+
     stat.totalCalls++;
     stat.lastChecked = new Date();
 

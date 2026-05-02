@@ -24,16 +24,16 @@ export default function InvoicesAuditPage() {
     queryKey: ['invoices-audit'],
     queryFn: async () => {
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return { invoices: [], contracts: [] };
+      if (!user) return { invoices: [], contracts: [], orgId: '' };
 
       const { data: profile } = await supabase
         .from('profiles')
         .select('org_id')
         .eq('id', user.id)
-        .single();
+        .maybeSingle();
 
       const org_id = profile?.org_id;
-      if (!org_id) return { invoices: [], contracts: [] };
+      if (!org_id) return { invoices: [], contracts: [], orgId: '' };
 
       const { data: invData } = await supabase
         .from('documents')
@@ -63,13 +63,15 @@ export default function InvoicesAuditPage() {
 
       return {
         invoices: invData || [],
-        contracts: conData || []
+        contracts: conData || [],
+        orgId: org_id
       };
     }
   });
 
   const invoices = data?.invoices || [];
   const contracts = data?.contracts || [];
+  const orgId = data?.orgId || '';
 
   const validateMutation = useMutation({
     mutationFn: async ({ invoiceId, contractId, orgId }: { invoiceId: string; contractId: string; orgId: string }) => {
@@ -90,7 +92,7 @@ export default function InvoicesAuditPage() {
     }
   });
 
-  const validateInvoice = (invoiceId: string, contractId: string, orgId: string) => {
+  const validateInvoice = (invoiceId: string, contractId: string | null | undefined, orgId: string) => {
     if (!contractId) {
       alert('Debes asociar esta factura a un contrato primero.');
       return;
@@ -139,7 +141,7 @@ export default function InvoicesAuditPage() {
             {invoices.map((doc: any) => {
               const audit = doc.invoices?.[0];
               const status = audit?.validation_status || 'pending';
-              const discrepancies = audit?.discrepancies || [];
+              const discrepancies = (audit?.discrepancies as any[]) || [];
 
               return (
                 <tr key={doc.id} className="hover:bg-gray-50/30 transition-colors group">
@@ -160,7 +162,7 @@ export default function InvoicesAuditPage() {
                       defaultValue={audit?.contract_id || ""}
                     >
                       <option value="">Seleccionar Contrato...</option>
-                      {contracts.map(c => (
+                      {contracts.map((c: any) => (
                         <option key={c.id} value={c.id}>{c.title}</option>
                       ))}
                     </select>
@@ -169,7 +171,7 @@ export default function InvoicesAuditPage() {
                     <div className="flex items-center gap-2">
                       <Wallet size={14} className="text-gray-400" />
                       <span className="text-sm font-bold text-gray-700">
-                        {audit ? `${audit.total_amount} ${audit.currency}` : '---'}
+                        {audit ? `${audit.amount || 0} ${audit.currency || 'USD'}` : '---'}
                       </span>
                     </div>
                   </td>
@@ -190,7 +192,7 @@ export default function InvoicesAuditPage() {
                   </td>
                   <td className="px-6 py-4 text-right">
                     <button 
-                      onClick={() => validateInvoice(doc.id, audit?.contract_id, 'org_id')}
+                      onClick={() => validateInvoice(doc.id, audit?.contract_id, orgId)}
                       disabled={validatingId === doc.id}
                       className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white text-xs font-bold rounded-xl hover:bg-indigo-700 transition-all disabled:opacity-50"
                     >

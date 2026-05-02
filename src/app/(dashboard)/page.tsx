@@ -29,8 +29,12 @@ export default async function Dashboard() {
   
   // Get User Profile for org_id
   const { data: { user } } = await supabase.auth.getUser();
-  const { data: profile } = user ? await supabase.from('profiles').select('org_id').eq('id', user.id).single() : { data: null };
-  const orgId = profile?.org_id;
+  let orgId: string | undefined = undefined;
+  
+  if (user) {
+    const { data: profile } = await supabase.from('profiles').select('org_id').eq('id', user.id).maybeSingle();
+    orgId = profile?.org_id || undefined;
+  }
 
   // Fetch all data in parallel
   const [docsData, personnelData, vehiclesData, budgetsData, initialAlerts, metrics, history] = await Promise.all([

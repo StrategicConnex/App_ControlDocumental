@@ -14,16 +14,14 @@ export default async function DashboardLayout({
   children: React.ReactNode;
 }>) {
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
   
-  let orgId = '';
+  // Get User Profile for org_id
+  const { data: { user } } = await supabase.auth.getUser();
+  let orgId: string | undefined = undefined;
+  
   if (user) {
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('org_id')
-      .eq('id', user.id)
-      .single();
-    orgId = profile?.org_id || '';
+    const { data: profile } = await supabase.from('profiles').select('org_id').eq('id', user.id).maybeSingle();
+    orgId = profile?.org_id || undefined;
   }
 
   return (
@@ -45,9 +43,9 @@ export default async function DashboardLayout({
             </div>
             <div className="flex items-center gap-4">
               <NotificationBell />
-              <Avatar className="h-8 w-8 cursor-pointer">
+            <Avatar className="h-8 w-8 cursor-pointer">
                 <AvatarFallback className="bg-primary/10 text-primary border border-primary/20 text-xs font-bold">
-                  {user?.email?.[0]?.toUpperCase() || 'U'}
+                  {user?.email?.charAt(0).toUpperCase() || 'U'}
                 </AvatarFallback>
               </Avatar>
             </div>

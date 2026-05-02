@@ -1,6 +1,6 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { getQueue, removeFromQueue, OfflineAction } from '../offline/queue';
-import { createDocumentVersion } from './versions';
+import { createDocumentVersion } from './documents';
 import { recordApprovalDecision } from './approvals';
 
 export type SyncStatus = 'idle' | 'syncing' | 'error' | 'success';

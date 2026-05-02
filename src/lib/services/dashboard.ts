@@ -9,10 +9,10 @@ export type AlertItem = {
   title: string;
   status: string;
   link: string;
-  priority?: 'high' | 'medium' | 'low';
-  notificationId?: string;
-  resourceId?: string;
-  actionType?: string;
+  priority?: 'high' | 'medium' | 'low' | undefined;
+  notificationId?: string | undefined;
+  resourceId?: string | undefined;
+  actionType?: string | undefined;
 };
 
 export async function getDashboardAlerts(supabase: SupabaseClient, orgId?: string): Promise<AlertItem[]> {
@@ -27,7 +27,8 @@ export async function getDashboardAlerts(supabase: SupabaseClient, orgId?: strin
 
   // 1. Notifications
   notificationsData.forEach(n => {
-    const metadata = n.metadata as any;
+    // Cast metadata to a more specific type to avoid Json access errors
+    const metadata = n.metadata as { resourceId?: string; actionType?: string } | null;
     let link = '#';
     if (metadata?.resourceId) {
       if (metadata.actionType?.includes('invoice')) link = `/billing/invoices/${metadata.resourceId}`;
@@ -38,7 +39,7 @@ export async function getDashboardAlerts(supabase: SupabaseClient, orgId?: strin
     alerts.push({
       id: `notif-${n.id}`,
       type: 'notification',
-      title: n.title,
+      title: n.title || 'Notificación',
       status: n.severity || 'info',
       link: link,
       priority: n.severity === 'critical' ? 'high' : 'medium',

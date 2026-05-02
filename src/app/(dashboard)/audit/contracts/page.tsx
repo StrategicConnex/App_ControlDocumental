@@ -19,20 +19,20 @@ export default function ContractsAuditPage() {
   const queryClient = useQueryClient();
   const supabase = createClient();
 
-  const { data: contracts = [], isLoading, refetch: fetchContracts } = useQuery({
+  const { data, isLoading, refetch: fetchContracts } = useQuery({
     queryKey: ['contracts-audit'],
     queryFn: async () => {
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return [];
+      if (!user) return { items: [], orgId: '' };
 
       const { data: profile } = await supabase
         .from('profiles')
         .select('org_id')
         .eq('id', user.id)
-        .single();
+        .maybeSingle();
 
       const org_id = profile?.org_id;
-      if (!org_id) return [];
+      if (!org_id) return { items: [], orgId: '' };
 
       const { data } = await supabase
         .from('documents')
@@ -50,9 +50,12 @@ export default function ContractsAuditPage() {
         .eq('category', 'Contratos')
         .is('deleted_at', null);
 
-      return data || [];
+      return { items: data || [], orgId: org_id };
     }
   });
+
+  const contracts = data?.items || [];
+  const orgId = data?.orgId || '';
 
   const validateMutation = useMutation({
     mutationFn: async ({ contractId, orgId }: { contractId: string; orgId: string }) => {
@@ -101,7 +104,7 @@ export default function ContractsAuditPage() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {contracts.map((doc) => {
+        {contracts.map((doc: any) => {
           const audit = doc.contracts?.[0];
           const score = audit?.compliance_score || 0;
           const status = audit?.status || 'pending';
@@ -167,7 +170,7 @@ export default function ContractsAuditPage() {
 
               <div className="px-6 py-4 bg-gray-50/50 border-t border-gray-100 flex gap-2">
                 <button 
-                  onClick={() => validateContract(doc.id, 'org_id_placeholder')} // Real orgId fetched in fetchContracts
+                  onClick={() => validateContract(doc.id, orgId)}
                   disabled={validatingId === doc.id}
                   className="flex-1 bg-white border border-gray-200 text-gray-700 py-2 rounded-xl text-xs font-bold hover:bg-gray-100 transition-all flex items-center justify-center gap-2"
                 >

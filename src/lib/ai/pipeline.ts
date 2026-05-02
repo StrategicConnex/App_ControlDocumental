@@ -2,7 +2,7 @@ import { vectorizerService } from './vectorizer';
 import { contractValidator } from './contract-validator';
 import { invoiceValidator } from './invoice-validator';
 import { createClient } from '@/utils/supabase/server';
-import { notificationService } from '@/lib/services/notifications';
+import { notificationService } from '@/lib/services/notifications.server';
 
 export interface AuditResult {
   score?: number;

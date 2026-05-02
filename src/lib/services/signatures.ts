@@ -1,7 +1,6 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { recordAuditLog } from './audit';
 import { Database } from '@/types/supabase';
-import { workflowService } from './workflows';
 
 export interface DigitalSignature {
   document_id: string;
@@ -100,15 +99,14 @@ export async function signDocument(
     console.warn('Signature recorded but document metadata update failed:', updateError);
   }
 
-  // Workflow Trigger (Server Only ideally, but we wrap it to prevent client crashes)
+  // Workflow Trigger
+  // NOTE: This should be handled by a Server Action or a dedicated API route
+  // to avoid leaking server-only utilities to the client bundle.
   try {
-    await workflowService.trigger('DOC_SIGNED', payload.org_id, {
-      documentId: payload.document_id,
-      signerId: payload.signer_id,
-      signatureHash: signatureHash
-    });
+    // await fetch('/api/workflows/trigger', { ... })
+    console.log('Workflow trigger placeholder for DOC_SIGNED');
   } catch (wfError) {
-    console.warn('Workflow trigger failed but signature was recorded:', wfError);
+    console.warn('Workflow trigger failed:', wfError);
   }
 
   return { signatureId, signatureHash };

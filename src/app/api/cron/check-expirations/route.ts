@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { notificationService } from '@/lib/services/notifications';
+import { notificationService } from '@/lib/services/notifications.server';
 
 export const dynamic = 'force-dynamic';
 

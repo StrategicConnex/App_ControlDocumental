@@ -1,4 +1,4 @@
-// Build trigger: 2026-04-30 02:56
+import "server-only";
 import OpenAI from 'openai';
 import { z } from 'zod';
 import { ProviderOrchestrator, POLResponse, AIMessage } from './pol-engine';
@@ -155,7 +155,7 @@ export class AIClient {
   ) {
     try {
       const { createAdminClient } = await import('@/utils/supabase/admin');
-      const supabase = createAdminClient();
+      const supabase = await createAdminClient();
       
       await supabase.from('ai_call_logs').insert({
         org_id: orgId,

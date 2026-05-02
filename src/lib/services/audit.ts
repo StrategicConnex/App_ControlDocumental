@@ -44,12 +44,12 @@ export async function recordAuditLog(
         user_id: payload.user_id,
         event_type: payload.event_type,
         resource_type: payload.resource_type,
-        resource_id: payload.resource_id,
-        old_value: payload.old_value,
-        new_value: payload.new_value,
-        metadata: payload.metadata || {},
-        ip_address: payload.ip_address,
-        user_agent: payload.user_agent,
+        resource_id: payload.resource_id ?? null,
+        old_value: payload.old_value ?? null,
+        new_value: payload.new_value ?? null,
+        metadata: payload.metadata ?? {},
+        ip_address: payload.ip_address ?? null,
+        user_agent: payload.user_agent ?? null,
       });
 
     if (error) {

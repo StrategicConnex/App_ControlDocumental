@@ -1,4 +1,6 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
+import { recordAuditLog } from './audit';
+import { Database } from '@/types/supabase';
 
 export interface DigitalSignature {
   document_id: string;
@@ -26,8 +28,9 @@ export async function computeHash(content: string | ArrayBuffer): Promise<string
  * Records the deterministic hash, IP, and timestamp in the database.
  */
 export async function signDocument(
-  supabase: SupabaseClient,
+  supabase: SupabaseClient<Database>,
   payload: {
+    org_id: string;
     document_id: string;
     version_id: string;
     signer_id: string;
@@ -57,6 +60,23 @@ export async function signDocument(
     console.error('Error recording digital signature:', error);
     throw new Error(`Failed to record digital signature: ${error.message}`);
   }
+
+  // Audit Log Entry
+  await recordAuditLog(supabase, {
+    org_id: payload.org_id,
+    user_id: payload.signer_id,
+    event_type: 'DOC_SIGNED',
+    resource_type: 'DOCUMENT',
+    resource_id: payload.document_id,
+    new_value: {
+      version_id: payload.version_id,
+      signature_hash: signatureHash
+    },
+    ip_address: payload.ip_address,
+    metadata: {
+      action: 'digital_signature'
+    }
+  });
 
   // Update document metadata
   const { error: updateError } = await supabase

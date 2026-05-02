@@ -21,12 +21,12 @@ export interface AuditLogPayload {
   user_id: string;
   event_type: AuditEventType;
   resource_type: ResourceType;
-  resource_id?: string;
+  resource_id?: string | null;
   old_value?: any;
   new_value?: any;
   metadata?: any;
-  ip_address?: string;
-  user_agent?: string;
+  ip_address?: string | null;
+  user_agent?: string | null;
 }
 
 /**
@@ -72,7 +72,7 @@ export async function recordDocumentAudit(
     event: 'DOC_CREATED' | 'DOC_UPDATED' | 'DOC_SIGNED' | 'DOC_APPROVED' | 'DOC_REJECTED';
     oldData?: any;
     newData?: any;
-    ip?: string;
+    ip?: string | null;
   }
 ) {
   return recordAuditLog(supabase, {
@@ -81,8 +81,8 @@ export async function recordDocumentAudit(
     event_type: params.event,
     resource_type: 'DOCUMENT',
     resource_id: params.document_id,
-    old_value: params.oldData,
-    new_value: params.newData,
-    ip_address: params.ip,
+    old_value: params.oldData ?? null,
+    new_value: params.newData ?? null,
+    ip_address: params.ip ?? null,
   });
 }

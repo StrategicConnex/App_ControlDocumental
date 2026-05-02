@@ -84,18 +84,18 @@ export default async function VerifyPage({ params }: { params: { id: string } })
                 <div className="space-y-1">
                   <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Fecha de Firma</label>
                   <h3 className="text-base font-bold text-slate-900">
-                    {new Date(signature.validation_timestamp).toLocaleDateString('es-AR', {
+                    {signature.validation_timestamp ? new Date(signature.validation_timestamp).toLocaleDateString('es-AR', {
                       day: '2-digit',
                       month: 'long',
                       year: 'numeric'
-                    })}
+                    }) : 'Fecha no disponible'}
                   </h3>
                   <p className="text-xs text-slate-500">
-                    {new Date(signature.validation_timestamp).toLocaleTimeString('es-AR', {
+                    {signature.validation_timestamp ? new Date(signature.validation_timestamp).toLocaleTimeString('es-AR', {
                       hour: '2-digit',
                       minute: '2-digit',
                       second: '2-digit'
-                    })}
+                    }) : '--:--'}
                   </p>
                 </div>
               </div>

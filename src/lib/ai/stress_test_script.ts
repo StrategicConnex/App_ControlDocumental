@@ -3,7 +3,7 @@ import { aiClient } from './ai-client';
 import { createAdminClient } from '@/utils/supabase/admin';
 
 async function runStressTest() {
-  const supabase = createAdminClient();
+  const supabase = await createAdminClient();
   
   console.log('--- INICIO PRUEBA DE FUEGO ---');
   

@@ -7,7 +7,7 @@ export const dynamic = 'force-dynamic';
 
 export async function GET() {
   try {
-    const supabase = createAdminClient();
+    const supabase = await createAdminClient();
 
     // 1. Global Stats
     const { data: globalData, error: globalError } = await supabase

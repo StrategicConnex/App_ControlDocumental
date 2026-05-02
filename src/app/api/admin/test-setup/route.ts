@@ -10,7 +10,7 @@ export const dynamic = 'force-dynamic';
  */
 export async function POST(req: NextRequest) {
   try {
-    const supabase = createAdminClient();
+    const supabase = await createAdminClient();
     const serverSupabase = await createClient(); // For getting current user
     const { data: { user } } = await serverSupabase.auth.getUser();
     if (!user) return NextResponse.json({ error: 'No autorizado' }, { status: 401 });

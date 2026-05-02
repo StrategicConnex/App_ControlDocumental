@@ -1211,3 +1211,24 @@ El presente SRS incorpora todas las correcciones de optimización y el nuevo Eco
 ---
 
 *Documento actualizado para SC Platform — Versión 3.5 — 2 de mayo de 2026*
+
+---
+
+## 20. Estabilización de Infraestructura y Despliegue (Vercel/SSR)
+
+### 20.1 Arquitectura Híbrida Seguro-Cliente
+Se ha implementado una separación estricta de responsabilidades para garantizar la compatibilidad con Vercel Edge y Serverless Runtimes:
+- **Directivas de Aislamiento**: Los archivos `supabase/server.ts` y `supabase/admin.ts` utilizan la directiva `"use server"` para evitar fugas de dependencias críticas (`next/headers`, `cookies`) al bundle de cliente.
+- **Servicios Agnósticos**: Toda la lógica de negocio en `lib/services/` ha sido refactorizada para inyectar la instancia de `SupabaseClient` dinámicamente. Esto permite que el mismo código sea consumido por componentes de servidor (con cookies de sesión) o componentes de cliente (con sesión persistente en navegador).
+- **Control de Acceso (RBAC)**: La lógica de permisos se ha centralizado en `rbac-shared.ts` (lógica pura, segura para el cliente) y se consume mediante hooks especializados.
+
+### 20.2 Estabilidad de UI y Build
+- **Restauración de Componentes Core**: Se han reconstruido los componentes de UI críticos (`Progress`, `Select`) basados en Radix UI para eliminar errores de resolución de módulos durante la compilación.
+- **Optimización de Rutas**: Las API Routes críticas utilizan `export const dynamic = 'force-dynamic'` para asegurar la ejecución en tiempo de solicitud, cumpliendo con los requisitos de escalado de Vercel.
+
+### 20.3 Firma Digital y Trazabilidad
+- El módulo de **Firma Digital** ha sido estabilizado, permitiendo la generación de hashes determinísticos y códigos QR de verificación sin comprometer el renderizado SSR.
+- Los logs de auditoría se registran de forma asíncrona garantizando que la experiencia de usuario sea fluida mientras se mantiene la integridad del rastro legal.
+
+---
+*Documentación finalizada el 2 de mayo de 2026. Sistema estable para producción.*

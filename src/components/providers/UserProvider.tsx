@@ -1,7 +1,7 @@
 "use client";
 
 import React, { createContext, useContext } from 'react';
-import { UserRole, hasPermission } from '@/lib/middleware/rbac';
+import { UserRole, hasPermission } from '@/lib/middleware/rbac-shared';
 
 interface UserContextType {
   role: UserRole;

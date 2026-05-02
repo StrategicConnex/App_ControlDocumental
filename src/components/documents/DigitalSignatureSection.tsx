@@ -15,7 +15,7 @@ import {
 import { cn } from "@/lib/utils";
 import { createClient } from "@/utils/supabase/client";
 import { signDocument } from "@/lib/services/signatures";
-import { generateVerificationQR } from "@/lib/services/qr";
+import { qrService } from "@/lib/services/qr";
 import { generateCertificatePDF } from "@/lib/utils/pdf-generator";
 import { toast } from "sonner";
 
@@ -80,7 +80,7 @@ export function DigitalSignatureSection({
       // Generate QRs for existing signatures
       const qrs: Record<string, string> = {};
       for (const sig of data || []) {
-        qrs[sig.id] = await generateVerificationQR(sig.id);
+        qrs[sig.id] = await qrService.generateVerificationQR(sig.id);
       }
       setQrCodes(qrs);
     } catch (error) {
@@ -97,7 +97,7 @@ export function DigitalSignatureSection({
       // For this demo, we'll use a combined string of metadata as "content".
       const contentToHash = `${documentTitle}|${versionId}|${new Date().toISOString()}`;
       
-      const { signatureId } = await signDocument({
+      const { signatureId } = await signDocument(supabase, {
         document_id: documentId,
         version_id: versionId,
         signer_id: currentUserId,

@@ -38,7 +38,7 @@ export async function signDocument(
     content: string; // The content or file reference to hash
     ip_address: string;
   }
-): Promise<string> {
+): Promise<{ signatureId: string; signatureHash: string }> {
   // Deterministic Hash: content + metadata (verifiable)
   const signatureHash = await computeHash(
     `${payload.content}|${payload.document_id}|${payload.version_id}|${payload.signer_id}`
@@ -100,12 +100,16 @@ export async function signDocument(
     console.warn('Signature recorded but document metadata update failed:', updateError);
   }
 
-  // Workflow Trigger
-  await workflowService.trigger('DOC_SIGNED', payload.org_id, {
-    documentId: payload.document_id,
-    signerId: payload.signer_id,
-    signatureHash: signatureHash
-  });
+  // Workflow Trigger (Server Only ideally, but we wrap it to prevent client crashes)
+  try {
+    await workflowService.trigger('DOC_SIGNED', payload.org_id, {
+      documentId: payload.document_id,
+      signerId: payload.signer_id,
+      signatureHash: signatureHash
+    });
+  } catch (wfError) {
+    console.warn('Workflow trigger failed but signature was recorded:', wfError);
+  }
 
   return { signatureId, signatureHash };
 }

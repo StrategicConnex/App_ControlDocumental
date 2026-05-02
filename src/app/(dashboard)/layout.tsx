@@ -8,6 +8,7 @@ import { UserProvider } from "@/components/providers/UserProvider";
 
 import { CommandMenu } from "@/components/layout/CommandMenu";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { UserRole } from "@/lib/middleware/rbac-shared";
 
 export default async function DashboardLayout({
   children,
@@ -19,7 +20,7 @@ export default async function DashboardLayout({
   // Get User Profile for role and org_id
   const { data: { user } } = await supabase.auth.getUser();
   let orgId: string | undefined = undefined;
-  let userRole: any = 'viewer';
+  let userRole: UserRole = 'USER'; // Default to USER instead of any
   
   if (user) {
     const { data: profile } = await supabase
@@ -28,7 +29,7 @@ export default async function DashboardLayout({
       .eq('id', user.id)
       .maybeSingle();
     orgId = profile?.org_id || undefined;
-    userRole = profile?.role || 'viewer';
+    userRole = (profile?.role as UserRole) || 'USER';
   }
 
   return (

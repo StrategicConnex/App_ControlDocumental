@@ -5,8 +5,8 @@ import { UserRole, hasPermission } from '@/lib/middleware/rbac-shared';
 
 interface UserContextType {
   role: UserRole;
-  orgId?: string;
-  userId?: string;
+  orgId?: string | undefined;
+  userId?: string | undefined;
   hasPermission: (action: string) => boolean;
 }
 
@@ -20,8 +20,8 @@ export function UserProvider({
 }: { 
   children: React.ReactNode; 
   role: UserRole; 
-  orgId?: string;
-  userId?: string;
+  orgId?: string | undefined;
+  userId?: string | undefined;
 }) {
   const value: UserContextType = {
     role,

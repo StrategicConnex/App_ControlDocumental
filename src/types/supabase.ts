@@ -785,6 +785,10 @@ export type Database = {
           settings: Json | null
           slug: string | null
           updated_at: string | null
+          is_vendor: boolean | null
+          parent_org_id: string | null
+          contact_email: string | null
+          tax_id: string | null
         }
         Insert: {
           created_at?: string | null
@@ -794,6 +798,10 @@ export type Database = {
           settings?: Json | null
           slug?: string | null
           updated_at?: string | null
+          is_vendor?: boolean | null
+          parent_org_id?: string | null
+          contact_email?: string | null
+          tax_id?: string | null
         }
         Update: {
           created_at?: string | null
@@ -803,6 +811,10 @@ export type Database = {
           settings?: Json | null
           slug?: string | null
           updated_at?: string | null
+          is_vendor?: boolean | null
+          parent_org_id?: string | null
+          contact_email?: string | null
+          tax_id?: string | null
         }
         Relationships: []
       }
@@ -1239,6 +1251,88 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      vendor_document_requests: {
+        Row: {
+          client_org_id: string | null
+          created_at: string | null
+          doc_type_id: string | null
+          frequency: string | null
+          id: string
+          is_active: boolean | null
+          is_required: boolean | null
+          updated_at: string | null
+          vendor_org_id: string | null
+        }
+        Insert: {
+          client_org_id?: string | null
+          created_at?: string | null
+          doc_type_id?: string | null
+          frequency?: string | null
+          id?: string
+          is_active?: boolean | null
+          is_required?: boolean | null
+          updated_at?: string | null
+          vendor_org_id?: string | null
+        }
+        Update: {
+          client_org_id?: string | null
+          created_at?: string | null
+          doc_type_id?: string | null
+          frequency?: string | null
+          id?: string
+          is_active?: boolean | null
+          is_required?: boolean | null
+          updated_at?: string | null
+          vendor_org_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "vendor_document_requests_client_org_id_fkey"
+            columns: ["client_org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "vendor_document_requests_doc_type_id_fkey"
+            columns: ["doc_type_id"]
+            isOneToOne: false
+            referencedRelation: "document_types"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "vendor_document_requests_vendor_org_id_fkey"
+            columns: ["vendor_org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      vendor_risk_snapshots: {
+        Row: {
+          captured_at: string | null
+          id: string
+          org_id: string
+          risk_level: string
+          score: number
+        }
+        Insert: {
+          captured_at?: string | null
+          id?: string
+          org_id: string
+          risk_level: string
+          score: number
+        }
+        Update: {
+          captured_at?: string | null
+          id?: string
+          org_id?: string
+          risk_level?: string
+          score?: number
+        }
+        Relationships: []
       }
     }
     Views: {

@@ -25,10 +25,10 @@ interface Signature {
   signature_hash: string;
   validation_timestamp: string | null;
   signer_id: string;
-  profiles?: {
+  profiles: {
     first_name: string | null;
     last_name: string | null;
-  };
+  } | null;
 }
 
 interface DigitalSignatureSectionProps {
@@ -75,7 +75,7 @@ export function DigitalSignatureSection({
         .order('validation_timestamp', { ascending: false });
 
       if (error) throw error;
-      setSignatures(data || []);
+      setSignatures((data as unknown as Signature[]) || []);
 
       // Generate QRs for existing signatures
       const qrs: Record<string, string> = {};
@@ -125,7 +125,7 @@ export function DigitalSignatureSection({
         documentCode: documentCode,
         version: `${versionNumber}.0`,
         hash: sig.signature_hash,
-        signerName: `${sig.profiles?.first_name} ${sig.profiles?.last_name}`,
+        signerName: `${sig.profiles?.first_name ?? ''} ${sig.profiles?.last_name ?? ''}`,
         signerRole: 'Responsable de Control', // Default or fetch
         signDate: sig.validation_timestamp ? new Date(sig.validation_timestamp).toLocaleDateString('es-AR') : 'N/A',
         qrCodeDataUrl: qrDataUrl,
@@ -192,7 +192,7 @@ export function DigitalSignatureSection({
               <div className="flex-1 min-w-0 space-y-1">
                 <div className="flex items-center justify-between">
                   <p className="text-sm font-bold text-slate-900 truncate">
-                    {sig.profiles?.first_name} {sig.profiles?.last_name}
+                    {sig.profiles?.first_name ?? ''} {sig.profiles?.last_name ?? ''}
                   </p>
                   <a 
                     href={`/verify/${sig.id}`}
@@ -212,7 +212,8 @@ export function DigitalSignatureSection({
 
                 <p className="text-[11px] text-slate-500 flex items-center gap-1.5">
                   <CheckCircle2 size={12} className="text-emerald-500" />
-                  Firmado el {sig.validation_timestamp ? new Date(sig.validation_timestamp).toLocaleDateString('es-AR') : 'Fecha no disponible'} a las {sig.validation_timestamp ? new Date(sig.validation_timestamp).toLocaleTimeString('es-AR') : ''}
+                  Firmado el {sig.validation_timestamp ? new Date(sig.validation_timestamp).toLocaleDateString('es-AR') : 'Fecha no disponible'} 
+                  {sig.validation_timestamp ? ` a las ${new Date(sig.validation_timestamp).toLocaleTimeString('es-AR')}` : ''}
                 </p>
                 <div className="pt-2">
                   <p className="text-[10px] font-mono text-slate-400 truncate bg-white/50 px-2 py-1 rounded border border-slate-100">

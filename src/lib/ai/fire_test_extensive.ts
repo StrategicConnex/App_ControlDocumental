@@ -44,7 +44,7 @@ async function fireTestExtensive() {
 
     console.log('\n✅ RESULTADO EXITOSO');
     console.log('---------------------------------------------------');
-    console.log(`Provider: ${response.provider}`);
+    console.log(`Provider: ${response.providerId}`);
     console.log(`Modelo:   ${response.model}`);
     console.log(`Tiempo:   ${duration}ms (Latencia reportada: ${response.latency}ms)`);
     console.log(`Tokens:   P:${response.usage.prompt_tokens} | C:${response.usage.completion_tokens} | T:${response.usage.total_tokens}`);

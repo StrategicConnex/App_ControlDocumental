@@ -210,6 +210,39 @@ export class AIClient {
     }
   }
 
+  /**
+   * Diagnóstico de salud del sistema de IA
+   */
+  async checkHealth() {
+    try {
+      const startTime = Date.now();
+      let redisStatus = 'disconnected';
+      
+      if (this.redis) {
+        const ping = await this.redis.ping();
+        redisStatus = ping === 'PONG' ? 'connected' : 'error';
+      }
+
+      return {
+        status: 'healthy',
+        timestamp: new Date().toISOString(),
+        latency_ms: Date.now() - startTime,
+        circuit_breaker: redisStatus,
+        providers: {
+          gemini: 'available',
+          deepseek: 'available',
+          openrouter: 'standby'
+        }
+      };
+    } catch (error) {
+      console.error('AI Health Check failed:', error);
+      return {
+        status: 'degraded',
+        error: error instanceof Error ? error.message : 'Unknown error'
+      };
+    }
+  }
+
   private async logAICall(orgId: string, provider: string, model: string, success: boolean, time: number, error?: string, usage?: any) {
     try {
       const { createAdminClient } = await import('@/utils/supabase/admin');

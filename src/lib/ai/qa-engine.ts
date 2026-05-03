@@ -1,4 +1,4 @@
-import { aiClient, AIResponse } from './ai-client';
+import { aiClient, POLResponse } from './ai-client';
 import { createClient } from '@/utils/supabase/server';
 import { vectorizerService, HybridSearchResult } from './vectorizer';
 
@@ -99,13 +99,13 @@ REGLAS CRÍTICAS:
     answer: aiResponse.content,
     tokens_used: aiResponse.usage.total_tokens,
     documents_used: docs.map(d => d.id),
-    provider_used: aiResponse.provider
+    provider_used: aiResponse.providerId
   });
 
   return {
     answer: aiResponse.content,
     sources: docs.map(d => ({ id: d.id, title: d.title })),
-    provider: aiResponse.provider,
+    provider: aiResponse.providerId,
     model: aiResponse.model,
     tokensUsed: aiResponse.usage.total_tokens
   };

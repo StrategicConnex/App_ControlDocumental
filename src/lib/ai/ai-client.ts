@@ -105,7 +105,7 @@ export class AIClient {
     try {
       const result = await this.orchestrator.chat(messages, {
         strategy: options.strategy || 'balanced',
-        response_format: options.json ? { type: 'json_object' } : undefined
+        response_format: options.json ? { type: 'json_object' } : { type: 'text' }
       });
 
       // 2. Log exitoso y reset de fallos en Redis si aplica

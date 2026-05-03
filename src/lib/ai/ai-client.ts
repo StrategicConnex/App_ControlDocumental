@@ -139,7 +139,7 @@ export class AIClient {
       const supabase = await createAdminClient();
 
       const { data, error } = await supabase.rpc('match_document_chunks_hybrid', {
-        query_embedding: embedding,
+        query_embedding: embedding as any,
         query_text: query,
         match_threshold: options.threshold || 0.5,
         match_count: options.limit || 5,

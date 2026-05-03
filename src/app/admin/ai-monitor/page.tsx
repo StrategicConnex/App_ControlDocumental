@@ -13,7 +13,7 @@ export default async function AIMonitorPage() {
   const stats = {
     total: logs?.length || 0,
     success: logs?.filter(l => l.success).length || 0,
-    avgLatency: logs?.length ? Math.round(logs.reduce((acc, curr) => acc + curr.latency_ms, 0) / logs.length) : 0,
+    avgLatency: logs?.length ? Math.round(logs.reduce((acc: number, curr: any) => acc + (curr.response_time_ms || 0), 0) / logs.length) : 0,
     errorRate: logs?.length ? ((logs.filter(l => !l.success).length / logs.length) * 100).toFixed(1) : 0
   };
 
@@ -52,13 +52,13 @@ export default async function AIMonitorPage() {
           </h3>
           <div className="space-y-4">
             {Object.entries(
-              logs?.reduce((acc: any, log) => {
+              logs?.reduce((acc: any, log: any) => {
                 const org = log.org_id?.substring(0, 8) || 'Global';
-                acc[org] = (acc[org] || 0) + (log.usage_tokens || 0);
+                acc[org] = (acc[org] || 0) + (log.total_tokens || 0);
                 return acc;
               }, {}) || {}
             ).map(([org, tokens]: any) => {
-              const maxTokens = Math.max(...(logs?.map(l => l.usage_tokens) || [1000]));
+              const maxTokens = Math.max(...(logs?.map((l: any) => l.total_tokens || 0) || [1000]));
               const percentage = Math.min((tokens / (maxTokens * 5)) * 100, 100);
               return (
                 <div key={org} className="space-y-2">
@@ -86,8 +86,8 @@ export default async function AIMonitorPage() {
           </h3>
           <div className="flex items-end justify-around h-48 gap-4 pt-4">
             {['Gemini', 'DeepSeek', 'OpenRouter'].map((provider) => {
-              const providerLogs = logs?.filter(l => l.provider.includes(provider)) || [];
-              const avg = providerLogs.length ? Math.round(providerLogs.reduce((acc, curr) => acc + curr.latency_ms, 0) / providerLogs.length) : 0;
+              const providerLogs = logs?.filter((l: any) => l.provider.includes(provider)) || [];
+              const avg = providerLogs.length ? Math.round(providerLogs.reduce((acc: number, curr: any) => acc + (curr.response_time_ms || 0), 0) / providerLogs.length) : 0;
               const height = Math.min((avg / 3000) * 100, 100);
               return (
                 <div key={provider} className="flex flex-col items-center gap-4 flex-1">
@@ -128,7 +128,7 @@ export default async function AIMonitorPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-white/5">
-                {logs?.map((log) => (
+                {logs?.map((log: any) => (
                   <tr key={log.id} className="hover:bg-white/[0.02] transition-colors group">
                     <td className="p-4">
                       <div className="font-medium group-hover:text-blue-400 transition-colors">{log.provider}</div>
@@ -147,10 +147,10 @@ export default async function AIMonitorPage() {
                         </div>
                       )}
                     </td>
-                    <td className="p-4 font-mono text-sm">{log.latency_ms}ms</td>
-                    <td className="p-4 font-mono text-sm">{log.usage_tokens || '--'}</td>
+                    <td className="p-4 font-mono text-sm">{log.response_time_ms}ms</td>
+                    <td className="p-4 font-mono text-sm">{log.total_tokens || '--'}</td>
                     <td className="p-4 text-xs text-gray-500">
-                      {new Date(log.created_at).toLocaleTimeString()}
+                      {log.created_at ? new Date(log.created_at).toLocaleTimeString() : '--'}
                     </td>
                   </tr>
                 ))}

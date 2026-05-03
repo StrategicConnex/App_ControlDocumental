@@ -6,11 +6,11 @@ export async function GET() {
   try {
     const supabase = await createAdminClient();
     const orgName = "TechOps Solutions";
-    const testOrgId = '00000000-0000-0000-0000-000000000001'; // ID temporal para tipado
+    const testOrgId = '00000000-0000-0000-0000-000000000001'; 
     
     // 1. Crear Organización
-    const { data: org, error: orgErr } = await supabase
-      .from('organizations')
+    const { data: org, error: orgErr } = await (supabase
+      .from('organizations') as any)
       .upsert({ 
         id: testOrgId,
         name: orgName, 
@@ -23,8 +23,8 @@ export async function GET() {
     const orgId = org.id;
 
     // 2. Crear un Documento Base (Contrato)
-    const { data: doc, error: docErr } = await supabase
-      .from('documents')
+    const { data: doc, error: docErr } = await (supabase
+      .from('documents') as any)
       .insert({
         id: '00000000-0000-0000-0000-000000000002',
         title: "Master Service Agreement MSA-2026-001",
@@ -37,9 +37,9 @@ export async function GET() {
 
     if (docErr) throw docErr;
 
-    // 3. Crear Orden de Compra (PO)
-    const { data: po, error: poErr } = await supabase
-      .from('purchase_orders')
+    // 3. Crear Orden de Compra (PO) - Usando 'as any' para tablas nuevas
+    const { data: po, error: poErr } = await (supabase
+      .from('purchase_orders' as any) as any)
       .insert({
         id: '00000000-0000-0000-0000-000000000003',
         po_number: "PO-001",
@@ -55,9 +55,9 @@ export async function GET() {
 
     if (poErr) throw poErr;
 
-    // 4. Crear Factura con DISCREPANCIA ($55,000 vs $50,000)
-    const { data: invoice, error: invErr } = await supabase
-      .from('invoices')
+    // 4. Crear Factura con DISCREPANCIA - Usando 'as any' para tablas nuevas
+    const { data: invoice, error: invErr } = await (supabase
+      .from('invoices' as any) as any)
       .insert({
         id: '00000000-0000-0000-0000-000000000004',
         invoice_number: "INV-999",

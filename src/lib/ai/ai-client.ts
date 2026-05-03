@@ -178,8 +178,8 @@ export class AIClient {
 
       // 1. Recuperar datos de factura y PO
       const [{ data: invoice }, { data: po }] = await Promise.all([
-        supabase.from('invoices').select('*, documents(title)').eq('id', invoiceId).single(),
-        supabase.from('purchase_orders').select('*').eq('id', poId).single()
+        (supabase.from('invoices' as any) as any).select('*, documents(title)').eq('id', invoiceId).single(),
+        (supabase.from('purchase_orders' as any) as any).select('*').eq('id', poId).single()
       ]);
 
       if (!invoice || !po) throw new Error("Datos de factura o PO no encontrados");
@@ -196,7 +196,7 @@ export class AIClient {
       const auditResult = JSON.parse(response.content);
 
       // 3. Persistir resultado en la base de datos
-      await supabase.from('invoices').update({
+      await (supabase.from('invoices' as any) as any).update({
         ai_validation_score: auditResult.score,
         ai_discrepancy_notes: auditResult.notes,
         status: auditResult.isValid ? 'validated' : 'flagged',

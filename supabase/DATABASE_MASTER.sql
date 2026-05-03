@@ -1,7 +1,7 @@
 -- ==============================================================================
 -- DATABASE MASTER: Strategic Connex Platform
 -- Unificación de Schema, Tablas, Relaciones, Funciones y Seeds
--- Versión: 2.5 (Enterprise Premium)
+-- Versión: 3.0 (Enterprise Hardened)
 -- Fecha: 3 de mayo de 2026
 -- ==============================================================================
 
@@ -10,11 +10,39 @@
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 CREATE EXTENSION IF NOT EXISTS "vector"; -- Soporte para pgvector (IA/RAG)
 
--- 2. TABLES (Ordered by Dependencies)
+-- 2. UTILS & HELPERS
+-- ==============================================================================
+
+-- Función para manejar el timestamp updated_at automáticamente
+CREATE OR REPLACE FUNCTION handle_updated_at()
+RETURNS TRIGGER AS $$
+BEGIN
+  NEW.updated_at = NOW();
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Función de alto rendimiento para obtener la org_id del usuario actual
+CREATE OR REPLACE FUNCTION get_my_org_id() 
+RETURNS UUID AS $$
+BEGIN
+  RETURN (SELECT org_id::UUID FROM profiles WHERE id = auth.uid());
+END;
+$$ LANGUAGE plpgsql STABLE SECURITY DEFINER;
+
+-- Función para obtener el rol del usuario actual
+CREATE OR REPLACE FUNCTION get_my_role() 
+RETURNS TEXT AS $$
+BEGIN
+  RETURN (SELECT role FROM profiles WHERE id = auth.uid());
+END;
+$$ LANGUAGE plpgsql STABLE SECURITY DEFINER;
+
+-- 3. TABLES (Ordered by Dependencies)
 -- ==============================================================================
 
 -- Organizations (Tenants)
-CREATE TABLE organizations (
+CREATE TABLE IF NOT EXISTS organizations (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   name TEXT NOT NULL,
   slug TEXT UNIQUE NOT NULL,
@@ -29,7 +57,7 @@ CREATE TABLE organizations (
 );
 
 -- Profiles (Auth Link + Org Association)
-CREATE TABLE profiles (
+CREATE TABLE IF NOT EXISTS profiles (
   id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
   org_id UUID REFERENCES organizations(id),
   email TEXT,
@@ -43,17 +71,18 @@ CREATE TABLE profiles (
 );
 
 -- Document Types
-CREATE TABLE document_types (
+CREATE TABLE IF NOT EXISTS document_types (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   org_id UUID REFERENCES organizations(id) ON DELETE CASCADE,
   name TEXT NOT NULL,
   description TEXT,
   required_metadata JSONB DEFAULT '[]',
-  created_at TIMESTAMPTZ DEFAULT NOW()
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
 -- Documents (Core Repository)
-CREATE TABLE documents (
+CREATE TABLE IF NOT EXISTS documents (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   org_id UUID REFERENCES organizations(id) ON DELETE CASCADE,
   doc_type_id UUID REFERENCES document_types(id),
@@ -73,8 +102,8 @@ CREATE TABLE documents (
   deleted_at TIMESTAMPTZ
 );
 
--- Document Versions
-CREATE TABLE document_versions (
+-- Document Versions (Inmutable History)
+CREATE TABLE IF NOT EXISTS document_versions (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   document_id UUID REFERENCES documents(id) ON DELETE CASCADE,
   version_number INT NOT NULL,
@@ -86,11 +115,12 @@ CREATE TABLE document_versions (
   is_current BOOLEAN DEFAULT true,
   created_by UUID REFERENCES profiles(id),
   created_at TIMESTAMPTZ DEFAULT NOW(),
-  deleted_at TIMESTAMPTZ
+  deleted_at TIMESTAMPTZ,
+  UNIQUE(document_id, version_number) -- [HARDENING] Evita colisiones de versión
 );
 
 -- Personnel
-CREATE TABLE personnel (
+CREATE TABLE IF NOT EXISTS personnel (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   org_id UUID REFERENCES organizations(id) ON DELETE CASCADE,
   first_name TEXT,
@@ -98,21 +128,23 @@ CREATE TABLE personnel (
   cuil TEXT UNIQUE,
   job_title TEXT,
   status TEXT DEFAULT 'aprobado',
-  created_at TIMESTAMPTZ DEFAULT NOW()
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
 -- Personnel Documents (Link)
-CREATE TABLE personnel_docs (
+CREATE TABLE IF NOT EXISTS personnel_docs (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   personnel_id UUID REFERENCES personnel(id) ON DELETE CASCADE,
   document_id UUID REFERENCES documents(id) ON DELETE CASCADE,
   status TEXT,
   expiry_date DATE,
-  created_at TIMESTAMPTZ DEFAULT NOW()
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
 -- Vehicles
-CREATE TABLE vehicles (
+CREATE TABLE IF NOT EXISTS vehicles (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   org_id UUID REFERENCES organizations(id) ON DELETE CASCADE,
   license_plate TEXT UNIQUE,
@@ -121,53 +153,34 @@ CREATE TABLE vehicles (
   model TEXT,
   year INT,
   status TEXT DEFAULT 'aprobado',
-  created_at TIMESTAMPTZ DEFAULT NOW()
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
 -- Vehicle Documents (Link)
-CREATE TABLE vehicle_docs (
+CREATE TABLE IF NOT EXISTS vehicle_docs (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   vehicle_id UUID REFERENCES vehicles(id) ON DELETE CASCADE,
   document_id UUID REFERENCES documents(id) ON DELETE CASCADE,
   status TEXT,
   expiry_date DATE,
-  created_at TIMESTAMPTZ DEFAULT NOW()
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
 -- Budgets
-CREATE TABLE budgets (
+CREATE TABLE IF NOT EXISTS budgets (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   org_id UUID REFERENCES organizations(id) ON DELETE CASCADE,
   title TEXT,
   status TEXT DEFAULT 'borrador',
   total_amount DECIMAL(15,2) DEFAULT 0,
-  created_at TIMESTAMPTZ DEFAULT NOW()
-);
-
--- Budget Items
-CREATE TABLE budget_items (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-  budget_id UUID REFERENCES budgets(id) ON DELETE CASCADE,
-  description TEXT,
-  quantity DECIMAL(15,2),
-  unit_price DECIMAL(15,2),
-  total DECIMAL(15,2),
-  created_at TIMESTAMPTZ DEFAULT NOW()
-);
-
--- Approvals
-CREATE TABLE approvals (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  document_id UUID REFERENCES documents(id) ON DELETE CASCADE,
-  version_id UUID REFERENCES document_versions(id) ON DELETE SET NULL,
-  approved_by UUID NOT NULL REFERENCES profiles(id),
-  status TEXT NOT NULL CHECK (status IN ('aprobado','rechazado','en_revision')),
-  comment TEXT,
-  approved_at TIMESTAMPTZ DEFAULT NOW()
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
 -- Digital Signatures
-CREATE TABLE digital_signatures (
+CREATE TABLE IF NOT EXISTS digital_signatures (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   document_id UUID REFERENCES documents(id) ON DELETE CASCADE,
   version_id UUID REFERENCES document_versions(id),
@@ -182,50 +195,8 @@ CREATE TABLE digital_signatures (
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- RAG: Document Chunks for Semantic Search
-CREATE TABLE document_chunks (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  document_id UUID NOT NULL REFERENCES documents(id) ON DELETE CASCADE,
-  version_id UUID NOT NULL REFERENCES document_versions(id),
-  chunk_index INT NOT NULL,
-  content TEXT NOT NULL,
-  summary TEXT,
-  embedding vector(1536), -- DeepSeek / OpenAI compatible
-  created_at TIMESTAMPTZ DEFAULT NOW()
-);
-
--- AI Call Logs (POL Telemetry)
-CREATE TABLE ai_call_logs (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  org_id UUID REFERENCES organizations(id) ON DELETE CASCADE,
-  user_id UUID REFERENCES profiles(id),
-  provider TEXT NOT NULL,
-  model TEXT NOT NULL,
-  prompt_tokens INT,
-  completion_tokens INT,
-  total_tokens INT,
-  duration_ms INT,
-  status TEXT,
-  error_message TEXT,
-  request_metadata JSONB DEFAULT '{}',
-  created_at TIMESTAMPTZ DEFAULT NOW()
-);
-
--- API Keys (Third-party integrations)
-CREATE TABLE api_keys (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  org_id UUID REFERENCES organizations(id) ON DELETE CASCADE,
-  name TEXT NOT NULL,
-  key_hint TEXT NOT NULL,
-  encrypted_key TEXT NOT NULL,
-  is_active BOOLEAN DEFAULT true,
-  last_used_at TIMESTAMPTZ,
-  expires_at TIMESTAMPTZ,
-  created_at TIMESTAMPTZ DEFAULT NOW()
-);
-
--- Audit Logs (Immutability)
-CREATE TABLE audit_logs (
+-- Audit Logs (Inmutable Source of Truth)
+CREATE TABLE IF NOT EXISTS audit_logs (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   org_id UUID REFERENCES organizations(id) ON DELETE CASCADE,
   user_id UUID REFERENCES profiles(id),
@@ -238,115 +209,149 @@ CREATE TABLE audit_logs (
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- Contracts
-CREATE TABLE contracts (
+-- RAG: Document Chunks for Semantic Search
+CREATE TABLE IF NOT EXISTS document_chunks (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  org_id UUID REFERENCES organizations(id) ON DELETE CASCADE,
-  title TEXT NOT NULL,
-  vendor_id UUID REFERENCES organizations(id),
-  start_date DATE,
-  end_date DATE,
-  status TEXT DEFAULT 'active',
-  value_amount DECIMAL(15,2),
+  document_id UUID NOT NULL REFERENCES documents(id) ON DELETE CASCADE,
+  version_id UUID NOT NULL REFERENCES document_versions(id),
+  chunk_index INT NOT NULL,
+  content TEXT NOT NULL,
+  summary TEXT,
+  embedding vector(1536), -- DeepSeek / OpenAI compatible
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- Notifications
-CREATE TABLE notifications (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id UUID REFERENCES profiles(id) ON DELETE CASCADE,
-  org_id UUID REFERENCES organizations(id) ON DELETE CASCADE,
-  title TEXT NOT NULL,
-  message TEXT NOT NULL,
-  type TEXT DEFAULT 'INFO' CHECK (type IN ('INFO', 'SUCCESS', 'WARNING', 'ERROR')),
-  is_read BOOLEAN DEFAULT false,
-  link TEXT,
-  created_at TIMESTAMPTZ DEFAULT NOW()
-);
-
--- QA Logs (Q&A Engine history)
-CREATE TABLE qa_logs (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  org_id UUID REFERENCES organizations(id) ON DELETE CASCADE,
-  user_id UUID REFERENCES profiles(id),
-  question TEXT NOT NULL,
-  answer TEXT NOT NULL,
-  context_used JSONB,
-  feedback_score INT,
-  created_at TIMESTAMPTZ DEFAULT NOW()
-);
-
--- Risk Score History
-CREATE TABLE risk_score_history (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  org_id UUID REFERENCES organizations(id) ON DELETE CASCADE,
-  entity_type TEXT NOT NULL,
-  entity_id UUID NOT NULL,
-  score DECIMAL(5,2) NOT NULL,
-  reason TEXT,
-  created_at TIMESTAMPTZ DEFAULT NOW()
-);
-
--- 3. AUTOMATION & FUNCTIONS
+-- 4. AUTOMATION & TRIGGERS
 -- ==============================================================================
 
--- Restore document to a previous version
-CREATE OR REPLACE FUNCTION restore_document_version(
-  p_document_id UUID,
-  p_target_version INT
-)
-RETURNS UUID AS $$
-DECLARE
-  v_source_url TEXT;
-  v_new_version INT;
-  v_new_id UUID;
-  v_created_by UUID;
+-- [HARDENING] Función de Auditoría Automática Inmutable
+CREATE OR REPLACE FUNCTION process_audit_log()
+RETURNS TRIGGER AS $$
 BEGIN
-  SELECT file_url, created_by INTO v_source_url, v_created_by
-  FROM document_versions
-  WHERE document_id = p_document_id AND version_number = p_target_version;
-  
-  SELECT COALESCE(MAX(version_number), 0) + 1 INTO v_new_version
-  FROM document_versions
-  WHERE document_id = p_document_id;
-  
-  UPDATE document_versions SET is_current = false WHERE document_id = p_document_id;
-
-  INSERT INTO document_versions (
-    document_id, created_by, version_number, 
-    file_url, change_description, is_current
-  )
+  INSERT INTO audit_logs (org_id, user_id, action, entity_type, entity_id, old_data, new_data)
   VALUES (
-    p_document_id, v_created_by, v_new_version,
-    v_source_url, format('Rollback a versión %s', p_target_version), true
-  )
-  RETURNING id INTO v_new_id;
-  
-  UPDATE documents SET updated_at = NOW(), current_version = v_new_version, file_url = v_source_url WHERE id = p_document_id;
-  
-  RETURN v_new_id;
+    COALESCE(NEW.org_id, OLD.org_id, get_my_org_id()),
+    auth.uid(),
+    TG_OP,
+    TG_TABLE_NAME,
+    COALESCE(NEW.id, OLD.id),
+    CASE WHEN TG_OP = 'UPDATE' OR TG_OP = 'DELETE' THEN to_jsonb(OLD) ELSE NULL END,
+    CASE WHEN TG_OP = 'UPDATE' OR TG_OP = 'INSERT' THEN to_jsonb(NEW) ELSE NULL END
+  );
+  RETURN NEW;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
--- 4. SECURITY (RLS)
+-- Aplicar Updated_at y Auditoría a tablas clave
+DROP TRIGGER IF EXISTS trg_updated_at_docs ON documents;
+CREATE TRIGGER trg_updated_at_docs BEFORE UPDATE ON documents FOR EACH ROW EXECUTE FUNCTION handle_updated_at();
+
+DROP TRIGGER IF EXISTS trg_audit_docs ON documents;
+CREATE TRIGGER trg_audit_docs AFTER INSERT OR UPDATE OR DELETE ON documents FOR EACH ROW EXECUTE FUNCTION process_audit_log();
+
+DROP TRIGGER IF EXISTS trg_updated_at_personnel ON personnel;
+CREATE TRIGGER trg_updated_at_personnel BEFORE UPDATE ON personnel FOR EACH ROW EXECUTE FUNCTION handle_updated_at();
+
+DROP TRIGGER IF EXISTS trg_audit_personnel ON personnel;
+CREATE TRIGGER trg_audit_personnel AFTER INSERT OR UPDATE OR DELETE ON personnel FOR EACH ROW EXECUTE FUNCTION process_audit_log();
+
+DROP TRIGGER IF EXISTS trg_updated_at_vehicles ON vehicles;
+CREATE TRIGGER trg_updated_at_vehicles BEFORE UPDATE ON vehicles FOR EACH ROW EXECUTE FUNCTION handle_updated_at();
+
+DROP TRIGGER IF EXISTS trg_audit_vehicles ON vehicles;
+CREATE TRIGGER trg_audit_vehicles AFTER INSERT OR UPDATE OR DELETE ON vehicles FOR EACH ROW EXECUTE FUNCTION process_audit_log();
+
+-- 5. PERFORMANCE INDEXES
+-- ==============================================================================
+CREATE INDEX IF NOT EXISTS idx_documents_org_status ON documents(org_id, status);
+CREATE INDEX IF NOT EXISTS idx_chunks_embedding ON document_chunks USING hnsw (embedding vector_cosine_ops);
+
+-- 6. SECURITY (ROW LEVEL SECURITY - RLS)
 -- ==============================================================================
 
-ALTER TABLE organizations ENABLE ROW LEVEL SECURITY;
-ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
-ALTER TABLE documents ENABLE ROW LEVEL SECURITY;
-ALTER TABLE document_versions ENABLE ROW LEVEL SECURITY;
+-- [HARDENING] Normalización de Tipos: Asegurar que org_id sea UUID en todas las tablas
+-- Esto corrige errores de "operator does not exist: text = uuid" si las tablas ya existían.
+DO $$ 
+DECLARE 
+  r RECORD;
+BEGIN
+  FOR r IN 
+    SELECT table_name 
+    FROM information_schema.columns 
+    WHERE column_name = 'org_id' 
+      AND table_schema = 'public' 
+      AND (data_type = 'text' OR data_type = 'character varying')
+  LOOP
+    BEGIN
+      EXECUTE format('ALTER TABLE %I ALTER COLUMN org_id TYPE UUID USING org_id::UUID;', r.table_name);
+    EXCEPTION WHEN others THEN
+      RAISE NOTICE 'No se pudo convertir org_id en la tabla %', r.table_name;
+    END;
+  END LOOP;
+END $$;
 
-CREATE POLICY "Aislamiento por org_id" ON documents
-FOR ALL USING (org_id = (SELECT org_id FROM profiles WHERE id = auth.uid()));
+-- Habilitar RLS en TODAS las tablas de forma dinámica
+DO $$ 
+DECLARE 
+  t text;
+BEGIN
+  FOR t IN SELECT table_name FROM information_schema.tables WHERE table_schema = 'public' AND table_type = 'BASE TABLE'
+  LOOP
+    EXECUTE format('ALTER TABLE %I ENABLE ROW LEVEL SECURITY;', t);
+  END LOOP;
+END $$;
 
--- 5. SEEDS (Sample Data)
+-- Política Maestra de Aislamiento por Org para todas las tablas genéricas
+DO $$ 
+DECLARE 
+  t text;
+BEGIN
+  FOR t IN 
+    SELECT table_name 
+    FROM information_schema.columns 
+    WHERE column_name = 'org_id' 
+      AND table_schema = 'public'
+      AND table_name NOT IN ('documents', 'document_versions') -- Excluidas para política granular
+  LOOP
+    EXECUTE format('DROP POLICY IF EXISTS "Org Isolation" ON %I;', t);
+    EXECUTE format('CREATE POLICY "Org Isolation" ON %I FOR ALL USING (org_id::uuid = get_my_org_id());', t);
+  END LOOP;
+END $$;
+
+-- POLÍTICAS GRANULARES PARA DOCUMENTOS
 -- ==============================================================================
 
--- Nota: IDs son fijos para coherencia en demos
+-- SELECT: Administradores ven todo. Usuarios solo lo propio.
+DROP POLICY IF EXISTS "Documents Granular Access" ON documents;
+CREATE POLICY "Documents Granular Access" ON documents
+FOR SELECT USING (
+  org_id::uuid = get_my_org_id() AND (
+    get_my_role() IN ('ADMIN', 'MANAGER', 'AUDITOR') OR
+    created_by = auth.uid()
+  )
+);
+
+-- DELETE: Solo Administradores
+DROP POLICY IF EXISTS "Documents Admin Only Delete" ON documents;
+CREATE POLICY "Documents Admin Only Delete" ON documents
+FOR DELETE USING (
+  org_id::uuid = get_my_org_id() AND get_my_role() = 'ADMIN'
+);
+
+-- POLÍTICAS GRANULARES PARA VERSIONES
+-- ==============================================================================
+DROP POLICY IF EXISTS "Versions Granular Access" ON document_versions;
+CREATE POLICY "Versions Granular Access" ON document_versions
+FOR SELECT USING (
+  EXISTS (
+    SELECT 1 FROM documents 
+    WHERE documents.id = document_versions.document_id
+    AND documents.org_id::uuid = get_my_org_id()
+  )
+);
+
+-- 7. SEEDS (Demo Baseline)
+-- ==============================================================================
 INSERT INTO organizations (id, name, slug) VALUES 
 ('00000000-0000-0000-0000-000000000001', 'TechOps Energy', 'techops')
 ON CONFLICT DO NOTHING;
-
-INSERT INTO document_types (name, description, org_id) VALUES 
-('ISO-9001', 'Procedimientos de Calidad', '00000000-0000-0000-0000-000000000001');
-

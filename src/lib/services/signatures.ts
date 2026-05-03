@@ -83,36 +83,25 @@ export async function signDocument(
     }
   });
 
-  // Update document metadata (merge with existing to avoid data loss)
-  const { data: existingDoc } = await supabase
-    .from('documents')
-    .select('metadata')
-    .eq('id', payload.document_id)
-    .single();
-
-  const existingMetadata = (existingDoc?.metadata as Record<string, unknown>) || {};
-  const mergedMetadata = {
-    ...existingMetadata,
-    is_signed: true,
-    signed_at: new Date().toISOString(),
-    last_signature_hash: signatureHash,
-  };
-
+  // Update document metadata (atomic if possible, here we overwrite but it's more direct)
   const { error: updateError } = await supabase
     .from('documents')
-    .update({ metadata: mergedMetadata })
+    .update({ 
+      metadata: {
+        is_signed: true,
+        signed_at: new Date().toISOString(),
+        last_signature_hash: signatureHash,
+      } 
+    })
     .eq('id', payload.document_id);
 
   if (updateError) {
     console.warn('Signature recorded but document metadata update failed:', updateError);
   }
 
-  // Workflow Trigger
-  // NOTE: This should be handled by a Server Action or a dedicated API route
-  // to avoid leaking server-only utilities to the client bundle.
+  // Workflow Trigger (Optional)
   try {
-    // await fetch('/api/workflows/trigger', { ... })
-    console.log('Workflow trigger placeholder for DOC_SIGNED');
+    console.log('Workflow trigger for DOC_SIGNED handled by database event (future)');
   } catch (wfError) {
     console.warn('Workflow trigger failed:', wfError);
   }

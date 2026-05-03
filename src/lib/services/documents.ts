@@ -108,9 +108,8 @@ export async function uploadNewVersion(
 
   if (uploadError) throw uploadError;
 
-  const { data: { publicUrl } } = supabase.storage
-    .from('documents')
-    .getPublicUrl(filePath);
+  // No obtenemos PublicUrl, el frontend deberá solicitar una Signed URL para visualizar.
+  const publicUrl = filePath; // Usamos el path relativo como referencia interna
 
   // 2. Mark all existing versions as non-current
   const { error: deactivateError } = await supabase
@@ -121,15 +120,17 @@ export async function uploadNewVersion(
 
   if (deactivateError) throw deactivateError;
 
-  // 3. Create new version record
-  const nextVersion = currentVersion + 1;
+  // 3. Create new version record con esquema major.minor
+  const nextVersion = currentVersion + 1; // Simplificado a major
+  const versionNumber = nextVersion * 100; // v(N).0
+  
   const { error: versionError } = await supabase
     .from('document_versions')
     .insert({
       document_id: documentId,
-      version_number: nextVersion,
+      version_number: versionNumber,
       version_label: `v${nextVersion}.0`,
-      file_url: publicUrl,
+      file_url: filePath, // Almacenamos el path, no la URL pública
       created_by: userId,
       change_description: `Actualización a v${nextVersion}.0`,
       is_current: true
@@ -141,7 +142,7 @@ export async function uploadNewVersion(
   const { error: updateError } = await supabase
     .from('documents')
     .update({
-      file_url: publicUrl,
+      file_url: filePath,
       current_version: nextVersion,
       status: 'revision',
       updated_at: new Date().toISOString()
@@ -233,6 +234,72 @@ export async function createDocumentVersion(
   }
 
   return data;
+}
+
+/**
+ * Restores a document to a previous version using RPC.
+ */
+
+/**
+ * Generates a temporary signed URL for secure file access.
+ */
+export async function getDocumentFileUrl(
+  supabase: SupabaseClient,
+  path: string
+): Promise<string> {
+  if (!path) return '';
+  
+  // Si ya es una URL completa (legacy), devolverla
+  if (path.startsWith('http')) return path;
+
+  const { data, error } = await supabase.storage
+    .from('documents')
+    .createSignedUrl(path, 3600); // 1 hour expiry
+
+  if (error) {
+    console.error('Error creating signed URL:', error);
+    return '';
+  }
+  
+  return data.signedUrl;
+}
+
+/**
+ * Descarga un documento de forma segura mediante Blob
+ * Evita la exposición de URLs directas y permite sanitizar el nombre del archivo
+ */
+export async function downloadSecureDocument(supabase: SupabaseClient, path: string, fileName: string) {
+  try {
+    const { data, error } = await supabase.storage
+      .from('documents')
+      .download(path);
+
+    if (error) throw error;
+
+    // Crear un blob seguro y forzar la descarga con nombre sanitizado
+    const blob = new Blob([data]);
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    
+    // Sanitización básica del nombre de archivo para evitar caracteres problemáticos
+    const safeName = fileName.replace(/[^a-z0-9.]/gi, '_');
+    link.setAttribute('download', safeName);
+    
+    document.body.appendChild(link);
+    link.click();
+    
+    // Limpieza de recursos
+    setTimeout(() => {
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    }, 100);
+
+    return { success: true };
+  } catch (err) {
+    console.error('Error en descarga segura:', err);
+    throw err;
+  }
 }
 
 /**

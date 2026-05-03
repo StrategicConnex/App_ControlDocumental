@@ -113,10 +113,15 @@ export class AIClient {
   ): Promise<POLResponse> {
     const startTime = Date.now();
     
-    // 1. Check Circuit Breaker global si Redis está activo
+    // 1. Check Circuit Breaker (Global y por Organización)
     if (this.redis) {
-      const isBlocked = await this.redis.get('ai_global_block');
-      if (isBlocked) throw new Error("AI Service is temporarily suspended due to high failure rate.");
+      const [globalBlock, orgBlock] = await Promise.all([
+        this.redis.get('ai_global_block'),
+        this.redis.get(`ai_org_block:${orgId}`)
+      ]);
+      
+      if (globalBlock) throw new Error("AI Service is temporarily suspended globally.");
+      if (orgBlock) throw new Error("AI Service is temporarily suspended for your organization due to high error rate.");
     }
 
     try {
@@ -125,20 +130,30 @@ export class AIClient {
         response_format: options.json ? { type: 'json_object' } : { type: 'text' }
       });
 
-      // 2. Log exitoso y reset de fallos en Redis si aplica
+      // 2. Log exitoso y reset de fallos locales si aplica
       await this.logAICall(orgId, result.providerId, result.model, true, result.latency, undefined, result.usage);
       
+      if (this.redis) {
+        await this.redis.del(`ai_org_consecutive_failures:${orgId}`);
+      }
+
       return result;
     } catch (error: any) {
       const duration = Date.now() - startTime;
       await this.logAICall(orgId, 'orchestrator', 'n/a', false, duration, error.message);
       
-      // 3. Update Circuit Breaker en caso de error crítico
+      // 3. Update Circuit Breaker Granular
       if (this.redis) {
-        const failures = await this.redis.incr('ai_consecutive_failures');
-        if (failures > 10) {
+        // Fallos por Org (Breaker local)
+        const orgFailures = await this.redis.incr(`ai_org_consecutive_failures:${orgId}`);
+        if (orgFailures > 5) {
+          await this.redis.setex(`ai_org_block:${orgId}`, 60, 'true'); // Bloqueo de 1 min
+        }
+
+        // Fallos Globales (Breaker maestro)
+        const globalFailures = await this.redis.incr('ai_global_consecutive_failures');
+        if (globalFailures > 20) {
           await this.redis.setex('ai_global_block', 300, 'true'); // Bloqueo de 5 min
-          console.error("🚨 CIRCUIT BREAKER ACTIVADO: Servicio de IA suspendido globalmente.");
         }
       }
       

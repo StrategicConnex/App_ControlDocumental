@@ -166,14 +166,30 @@ CREATE TABLE IF NOT EXISTS document_versions (
   version_number INT NOT NULL,
   version_label TEXT,
   file_url TEXT,
+  checksum_sha256 TEXT, -- [HARDENING] Integridad de archivo
+  is_locked BOOLEAN DEFAULT false, -- [HARDENING] Inmutabilidad
   change_description TEXT,
   change_type TEXT CHECK (change_type IN ('major', 'minor', 'patch')),
   content_extracted TEXT, -- RAG Source
   is_current BOOLEAN DEFAULT true,
+  metadata JSONB DEFAULT '{}',
   created_by UUID REFERENCES profiles(id),
   created_at TIMESTAMPTZ DEFAULT NOW(),
   deleted_at TIMESTAMPTZ,
-  UNIQUE(document_id, version_number) -- [HARDENING] Evita colisiones de versión
+  UNIQUE(document_id, version_number)
+);
+
+-- Document Access Logs (Forensic Traceability)
+CREATE TABLE IF NOT EXISTS document_access_logs (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  org_id UUID REFERENCES organizations(id) ON DELETE CASCADE,
+  document_id UUID REFERENCES documents(id) ON DELETE CASCADE,
+  version_id UUID REFERENCES document_versions(id),
+  user_id UUID REFERENCES profiles(id),
+  action TEXT NOT NULL DEFAULT 'VIEW',
+  ip_address INET,
+  user_agent TEXT,
+  created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
 -- Personnel
@@ -505,3 +521,56 @@ FOR SELECT USING (
 INSERT INTO organizations (id, name, slug) VALUES 
 ('00000000-0000-0000-0000-000000000001', 'TechOps Energy', 'techops')
 ON CONFLICT DO NOTHING;
+
+-- 8. ADVANCED AI FUNCTIONS (HARDENED)
+-- ==============================================================================
+
+CREATE OR REPLACE FUNCTION match_document_chunks_hybrid (
+  query_embedding vector(1536),
+  query_text text,
+  match_threshold float,
+  match_count int,
+  p_org_id text
+)
+RETURNS TABLE (
+  id uuid,
+  document_id uuid,
+  version_id uuid,
+  content text,
+  metadata jsonb,
+  similarity float,
+  text_rank float
+)
+LANGUAGE plpgsql
+SECURITY DEFINER
+AS $$
+BEGIN
+  -- VALIDACIÓN DE SEGURIDAD ENTERPRISE
+  IF NOT EXISTS (
+    SELECT 1 FROM profiles 
+    WHERE profiles.id = auth.uid() AND profiles.org_id::text = p_org_id
+  ) AND auth.role() != 'service_role' THEN
+    RAISE EXCEPTION 'Acceso denegado: El usuario no pertenece a la organización %', p_org_id;
+  END IF;
+
+  RETURN QUERY
+  SELECT
+    dc.id,
+    dc.document_id::uuid,
+    dc.version_id,
+    dc.content,
+    dc.metadata,
+    (1 - (dc.embedding <=> query_embedding))::FLOAT AS similarity,
+    ts_rank_cd(to_tsvector('spanish', dc.content), plainto_tsquery('spanish', query_text)) AS text_rank
+  FROM document_chunks dc
+  WHERE dc.org_id = p_org_id
+    AND (
+      1 - (dc.embedding <=> query_embedding) > match_threshold
+      OR to_tsvector('spanish', dc.content) @@ plainto_tsquery('spanish', query_text)
+    )
+  ORDER BY 
+    (1 - (dc.embedding <=> query_embedding)) DESC, 
+    ts_rank_cd(to_tsvector('spanish', dc.content), plainto_tsquery('spanish', query_text)) DESC
+  LIMIT match_count;
+END;
+$$;

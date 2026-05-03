@@ -2,7 +2,8 @@ import "server-only";
 import OpenAI from 'openai';
 import { z } from 'zod';
 import { ProviderOrchestrator } from './pol-engine';
-export type { POLResponse, AIMessage } from './pol-engine';
+import { POLResponse, AIMessage } from './pol-engine';
+export type { POLResponse, AIMessage };
 import { AI_MODELS, getPolConfigs } from './pol-configs';
 import { Redis } from '@upstash/redis';
 

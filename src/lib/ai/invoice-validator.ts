@@ -77,7 +77,7 @@ export class InvoiceValidator {
     const response = await aiClient.chat([
       { role: 'system', content: 'Eres un auditor financiero experto en conciliación de cuentas.' },
       { role: 'user', content: prompt }
-    ], orgId, { response_format: 'json_object' });
+    ], orgId, { json: true });
 
     const result = InvoiceValidationResultSchema.parse(JSON.parse(response.content));
 

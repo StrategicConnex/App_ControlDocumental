@@ -6,11 +6,16 @@ export async function GET() {
   try {
     const supabase = await createAdminClient();
     const orgName = "TechOps Solutions";
+    const testOrgId = '00000000-0000-0000-0000-000000000001'; // ID temporal para tipado
     
-    // 1. Crear Organización (El trigger la convertirá a UUID)
+    // 1. Crear Organización
     const { data: org, error: orgErr } = await supabase
       .from('organizations')
-      .upsert({ name: orgName, slug: 'techops' }, { onConflict: 'name' })
+      .upsert({ 
+        id: testOrgId,
+        name: orgName, 
+        slug: 'techops' 
+      }, { onConflict: 'name' })
       .select()
       .single();
 
@@ -21,6 +26,7 @@ export async function GET() {
     const { data: doc, error: docErr } = await supabase
       .from('documents')
       .insert({
+        id: '00000000-0000-0000-0000-000000000002',
         title: "Master Service Agreement MSA-2026-001",
         org_id: orgId,
         status: 'active',
@@ -35,6 +41,7 @@ export async function GET() {
     const { data: po, error: poErr } = await supabase
       .from('purchase_orders')
       .insert({
+        id: '00000000-0000-0000-0000-000000000003',
         po_number: "PO-001",
         org_id: orgId,
         contract_id: doc.id,
@@ -52,6 +59,7 @@ export async function GET() {
     const { data: invoice, error: invErr } = await supabase
       .from('invoices')
       .insert({
+        id: '00000000-0000-0000-0000-000000000004',
         invoice_number: "INV-999",
         org_id: orgId,
         document_id: doc.id,

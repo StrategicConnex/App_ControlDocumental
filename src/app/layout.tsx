@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter, Geist } from "next/font/google";
 import "./globals.css";
 import QueryProvider from "@/components/providers/QueryProvider";
+import { ApolloWrapper } from "@/components/providers/ApolloWrapper";
 import OfflineProvider from "@/components/providers/OfflineProvider";
 import { cn } from "@/lib/utils";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -27,12 +28,14 @@ export default function RootLayout({
         <meta name="theme-color" content="#7c3aed" />
       </head>
       <body className={inter.className}>
-        <QueryProvider>
-          <OfflineProvider />
-          <TooltipProvider>
-            {children}
-          </TooltipProvider>
-        </QueryProvider>
+        <ApolloWrapper>
+          <QueryProvider>
+            <OfflineProvider />
+            <TooltipProvider>
+              {children}
+            </TooltipProvider>
+          </QueryProvider>
+        </ApolloWrapper>
       </body>
     </html>
   );

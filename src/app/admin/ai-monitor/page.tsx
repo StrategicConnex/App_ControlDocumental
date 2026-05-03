@@ -1,5 +1,4 @@
 import { createAdminClient } from '@/utils/supabase/admin';
-import { Card, Title, Text, Metric, Grid, Badge, Table, TableHead, TableRow, TableHeaderCell, TableBody, TableCell } from '@tremor/react'; // Usaremos tremor si está disponible, o CSS puro premium
 
 export default async function AIMonitorPage() {
   const supabase = await createAdminClient();
@@ -33,6 +32,14 @@ export default async function AIMonitorPage() {
             <span className="text-xs font-mono text-emerald-400">CIRCUIT BREAKER: CLOSED</span>
           </div>
         </div>
+      </div>
+
+      {/* KPI Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+        <StatCard title="Total Calls (24h)" value={stats.total} sub="Solicitudes POL" color="blue" />
+        <StatCard title="Success Rate" value={`${stats.total ? (stats.success / stats.total * 100).toFixed(1) : 0}%`} sub="Operación Nominal" color="emerald" />
+        <StatCard title="Avg Latency" value={`${stats.avgLatency}ms`} sub="Tiempo de Respuesta" color="amber" />
+        <StatCard title="Error Rate" value={`${stats.errorRate}%`} sub="Fallas Detectadas" color="rose" />
       </div>
 
       {/* Analytics Grid */}
@@ -87,7 +94,7 @@ export default async function AIMonitorPage() {
                   <div className="relative w-full flex justify-center items-end h-full">
                     <div 
                       className="w-12 bg-gradient-to-t from-emerald-600/40 to-emerald-400 rounded-t-lg transition-all duration-1000 relative group"
-                      style={{ height: `${height}%` }}
+                      style={{ height: `${height || 5}%` }}
                     >
                       <div className="absolute -top-8 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity bg-black px-2 py-1 rounded text-[10px] whitespace-nowrap">
                         {avg}ms
@@ -102,9 +109,8 @@ export default async function AIMonitorPage() {
         </div>
       </div>
 
-      {/* Main Content */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Call Logs Table */}
+        {/* Table Content */}
         <div className="lg:col-span-2 bg-white/5 border border-white/10 rounded-2xl overflow-hidden backdrop-blur-xl">
           <div className="p-6 border-b border-white/10 flex justify-between items-center">
             <h2 className="text-xl font-semibold">Telemetría de Llamadas</h2>
@@ -114,11 +120,11 @@ export default async function AIMonitorPage() {
             <table className="w-full text-left">
               <thead>
                 <tr className="bg-white/5 text-gray-400 text-xs uppercase tracking-wider">
-                  <th className="p-4">Provider / Model</th>
-                  <th className="p-4">Status</th>
-                  <th className="p-4">Latency</th>
-                  <th className="p-4">Tokens</th>
-                  <th className="p-4">Time</th>
+                  <th className="p-4 text-xs font-semibold">Provider / Model</th>
+                  <th className="p-4 text-xs font-semibold">Status</th>
+                  <th className="p-4 text-xs font-semibold">Latency</th>
+                  <th className="p-4 text-xs font-semibold">Tokens</th>
+                  <th className="p-4 text-xs font-semibold">Time</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-white/5">
@@ -156,9 +162,9 @@ export default async function AIMonitorPage() {
         {/* Stats & Insights */}
         <div className="space-y-6">
           <div className="p-6 bg-gradient-to-br from-indigo-600/20 to-blue-600/20 border border-blue-500/20 rounded-2xl">
-            <Title className="text-white text-sm">Costo Estimado (Mes)</Title>
-            <Metric className="text-white mt-1">$124.50</Metric>
-            <Text className="text-gray-400 text-xs mt-2">Proyectado basado en volumen actual</Text>
+            <p className="text-white text-xs font-medium uppercase tracking-widest text-gray-400">Costo Estimado (Mes)</p>
+            <div className="text-3xl font-bold text-white mt-1">$124.50</div>
+            <p className="text-gray-400 text-xs mt-2">Proyectado basado en volumen actual</p>
           </div>
 
           <HealthCard name="Gemini Pro" status="healthy" load="12%" />
@@ -199,8 +205,8 @@ function HealthCard({ name, status, load }: any) {
   return (
     <div className="p-4 bg-white/5 border border-white/10 rounded-2xl flex items-center justify-between">
       <div>
-        <p className="font-medium">{name}</p>
-        <p className="text-xs text-gray-500">Current Load: {load}</p>
+        <p className="font-medium text-sm">{name}</p>
+        <p className="text-[10px] text-gray-500">Current Load: {load}</p>
       </div>
       <Badge color={status === 'healthy' ? 'emerald' : 'amber'} className="capitalize">
         {status}

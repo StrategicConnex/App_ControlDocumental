@@ -5,8 +5,8 @@ import {
   ApolloLink,
   HttpLink,
   InMemoryCache,
-  ApolloProvider,
 } from '@apollo/client';
+import { ApolloProvider } from '@apollo/client/react';
 import { ReactNode } from 'react';
 
 const httpLink = new HttpLink({

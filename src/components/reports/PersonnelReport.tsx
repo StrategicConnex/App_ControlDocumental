@@ -1,7 +1,8 @@
 'use client';
 
 import React from 'react';
-import { useQuery, gql } from '@apollo/client';
+import { gql } from '@apollo/client';
+import { useQuery } from '@apollo/client/react';
 import { Users, FileCheck, AlertCircle } from 'lucide-react';
 import { ReportContainer } from './ReportContainer';
 import { ReportFilters } from './ReportFilters';
@@ -28,7 +29,7 @@ export function PersonnelReport() {
   const { filters, updateFilters, resetFilters } = useFilters();
   const { exportToExcel, exportToCSV } = useExport();
   
-  const { data, loading, error } = useQuery(GET_PERSONNEL, {
+  const { data, loading, error } = useQuery<{ personnel: any[] }>(GET_PERSONNEL, {
     variables: {
       status: filters.status,
       search: filters.search

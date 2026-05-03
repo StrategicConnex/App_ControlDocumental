@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, Suspense } from 'react';
 import { ReportContainer } from '@/components/reports/ReportContainer';
 import { ComplianceReport } from '@/components/reports/ComplianceReport';
 import { FinancialReport } from '@/components/reports/FinancialReport';
@@ -11,29 +11,19 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ShieldCheck, TrendingUp, Users, Truck, History } from 'lucide-react';
 
 export default function ReportsPage() {
+  return (
+    <Suspense fallback={
+      <div className="container mx-auto py-8 px-4 flex items-center justify-center min-h-[400px]">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
+      </div>
+    }>
+      <ReportsContent />
+    </Suspense>
+  );
+}
+
+function ReportsContent() {
   const [activeTab, setActiveTab] = useState('compliance');
-
-  const getReportTitle = () => {
-    switch (activeTab) {
-      case 'compliance': return 'Reporte de Compliance Documental';
-      case 'financial': return 'Reporte de Auditoría Financiera';
-      case 'personnel': return 'Reporte de Legajos de Personal';
-      case 'vehicles': return 'Reporte de Flota y Vehículos';
-      case 'audit': return 'Reporte de Auditoría de Sistema';
-      default: return 'Reportes de Sistema';
-    }
-  };
-
-  const getReportDescription = () => {
-    switch (activeTab) {
-      case 'compliance': return 'Análisis detallado de vigencia, vencimientos y risk scoring por organización.';
-      case 'financial': return 'Validación de facturas vs órdenes de compra mediante inteligencia artificial.';
-      case 'personnel': return 'Estado de acreditación y cumplimiento documental del personal activo.';
-      case 'vehicles': return 'Seguimiento de documentación obligatoria para la flota de vehículos.';
-      case 'audit': return 'Trazabilidad completa de acciones y cambios realizados en la plataforma.';
-      default: return 'Seleccione un reporte para visualizar los datos.';
-    }
-  };
 
   return (
     <div className="container mx-auto py-8 px-4 max-w-7xl">

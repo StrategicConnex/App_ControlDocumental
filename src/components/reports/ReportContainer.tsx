@@ -3,8 +3,10 @@
 import React, { useRef } from 'react';
 import { useReactToPrint } from 'react-to-print';
 import { Button } from '@/components/ui/button';
-import { Printer, Download, FileText } from 'lucide-react';
+import { Printer, Download, FileText, ChevronDown } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { buttonVariants } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 
 interface ReportContainerProps {
   title: string;
@@ -55,12 +57,10 @@ export const ReportContainer: React.FC<ReportContainerProps> = ({
           </Button>
 
           <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="default" size="sm" className="bg-indigo-600 hover:bg-indigo-700">
-                <Download className="mr-2 h-4 w-4" />
-                Exportar
-                <ChevronDown className="ml-2 h-4 w-4" />
-              </Button>
+            <DropdownMenuTrigger className={cn(buttonVariants({ variant: 'default', size: 'sm' }), "bg-indigo-600 hover:bg-indigo-700 cursor-pointer")}>
+              <Download className="mr-2 h-4 w-4" />
+              Exportar
+              <ChevronDown className="ml-2 h-4 w-4" />
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-56">
               <DropdownMenuLabel>Formato Excel (.xlsx)</DropdownMenuLabel>

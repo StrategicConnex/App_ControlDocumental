@@ -1,7 +1,8 @@
 'use client';
 
 import React from 'react';
-import { useQuery, gql } from '@apollo/client';
+import { gql } from '@apollo/client';
+import { useQuery } from '@apollo/client/react';
 import { Truck, ShieldCheck, AlertTriangle } from 'lucide-react';
 import { ReportContainer } from './ReportContainer';
 import { ReportFilters } from './ReportFilters';
@@ -28,7 +29,7 @@ export function VehicleReport() {
   const { filters, updateFilters, resetFilters } = useFilters();
   const { exportToExcel, exportToCSV } = useExport();
   
-  const { data, loading, error } = useQuery(GET_VEHICLES, {
+  const { data, loading, error } = useQuery<{ vehicles: any[] }>(GET_VEHICLES, {
     variables: {
       status: filters.status,
       search: filters.search

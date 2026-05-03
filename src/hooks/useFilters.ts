@@ -4,11 +4,11 @@ import { useState, useEffect, useCallback } from 'react';
 import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 
 export interface FilterState {
-  startDate?: string;
-  endDate?: string;
-  status?: string;
-  category?: string;
-  search?: string;
+  startDate?: string | undefined;
+  endDate?: string | undefined;
+  status?: string | undefined;
+  category?: string | undefined;
+  search?: string | undefined;
   [key: string]: string | undefined;
 }
 

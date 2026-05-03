@@ -1,7 +1,8 @@
 'use client';
 
 import React from 'react';
-import { useQuery, gql } from '@apollo/client';
+import { gql } from '@apollo/client';
+import { useQuery } from '@apollo/client/react';
 import { History, Activity, Shield, AlertCircle } from 'lucide-react';
 import { ReportContainer } from './ReportContainer';
 import { ReportFilters } from './ReportFilters';
@@ -28,7 +29,7 @@ export function AuditReport() {
   const { filters, updateFilters, resetFilters } = useFilters();
   const { exportToExcel, exportToCSV } = useExport();
   
-  const { data, loading, error } = useQuery(GET_AUDIT_LOGS, {
+  const { data, loading, error } = useQuery<{ auditLogs: any[] }>(GET_AUDIT_LOGS, {
     variables: {
       startDate: filters.startDate,
       endDate: filters.endDate,

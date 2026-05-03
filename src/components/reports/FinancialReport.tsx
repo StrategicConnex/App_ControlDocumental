@@ -1,7 +1,8 @@
 'use client';
 
 import React from 'react';
-import { useQuery, gql } from '@apollo/client';
+import { gql } from '@apollo/client';
+import { useQuery } from '@apollo/client/react';
 import { DollarSign, FileCheck, AlertCircle, TrendingUp, Briefcase } from 'lucide-react';
 import { ReportContainer } from './ReportContainer';
 import { ReportFilters } from './ReportFilters';
@@ -28,7 +29,7 @@ export function FinancialReport() {
   const { filters, updateFilters, resetFilters } = useFilters();
   const { exportToExcel, exportToCSV } = useExport();
   
-  const { data, loading, error } = useQuery(GET_FINANCIAL_DATA, {
+  const { data, loading, error } = useQuery<{ invoices: any[] }>(GET_FINANCIAL_DATA, {
     variables: {
       startDate: filters.startDate,
       endDate: filters.endDate,

@@ -32,20 +32,24 @@ try {
     NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL,
   });
 } catch (error: any) {
-  if (process.env.NODE_ENV === 'production') {
+  const isBuildPhase = process.env.NEXT_PHASE === 'phase-production-build' || process.env.VERCEL || process.env.CI;
+  
+  if (process.env.NODE_ENV === 'production' && !isBuildPhase) {
     console.error("❌ ERROR FATAL: Faltan variables de entorno críticas.");
     throw new Error("Missing AI Environment Variables");
   }
-  // Fallback para dev
+  
+  // Fallback para dev o build sin keys
+  console.warn("⚠️ Advertencia: Usando placeholders para variables de entorno de AI.");
   env = {
-    OPENROUTER_API_KEY: 'placeholder',
-    OPENROUTER_BASE_URL: 'https://openrouter.ai/api/v1',
-    DEEPSEEK_API_KEY: 'placeholder',
-    DEEPSEEK_BASE_URL: 'https://api.deepseek.com/v1',
-    GEMINI_API_KEY: 'placeholder',
+    OPENROUTER_API_KEY: process.env.OPENROUTER_API_KEY || 'placeholder',
+    OPENROUTER_BASE_URL: process.env.OPENROUTER_BASE_URL || 'https://openrouter.ai/api/v1',
+    DEEPSEEK_API_KEY: process.env.DEEPSEEK_API_KEY || 'placeholder',
+    DEEPSEEK_BASE_URL: process.env.DEEPSEEK_BASE_URL || 'https://api.deepseek.com/v1',
+    GEMINI_API_KEY: process.env.GEMINI_API_KEY || 'placeholder',
     UPSTASH_REDIS_REST_URL: process.env.UPSTASH_REDIS_REST_URL,
     UPSTASH_REDIS_REST_TOKEN: process.env.UPSTASH_REDIS_REST_TOKEN,
-    NEXT_PUBLIC_APP_URL: 'https://sc-platform.com'
+    NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL || 'https://sc-platform.com'
   };
 }
 

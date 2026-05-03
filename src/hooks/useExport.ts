@@ -1,7 +1,8 @@
 'use client';
 
 import * as XLSX from 'xlsx';
-import { useMutation, gql } from '@apollo/client';
+import { gql } from '@apollo/client';
+import { useMutation } from '@apollo/client/react';
 import { toast } from 'sonner';
 
 const LOG_EXPORT = gql`

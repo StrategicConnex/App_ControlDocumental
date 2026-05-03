@@ -1,7 +1,8 @@
 'use client';
 
 import React from 'react';
-import { useQuery, gql } from '@apollo/client';
+import { gql } from '@apollo/client';
+import { useQuery } from '@apollo/client/react';
 import { ShieldCheck, AlertTriangle, CheckCircle2, Clock, Activity } from 'lucide-react';
 import { ReportContainer } from './ReportContainer';
 import { ReportFilters } from './ReportFilters';
@@ -34,7 +35,7 @@ export function ComplianceReport() {
   const { filters, updateFilters, resetFilters } = useFilters();
   const { exportToExcel, exportToCSV } = useExport();
   
-  const { data, loading, error } = useQuery(GET_COMPLIANCE_DATA, {
+  const { data, loading, error } = useQuery<{ documents: any[], complianceMetrics: any }>(GET_COMPLIANCE_DATA, {
     variables: {
       startDate: filters.startDate,
       endDate: filters.endDate,

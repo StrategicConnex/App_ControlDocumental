@@ -61,12 +61,18 @@ erDiagram
 | `vehicles` | Flota vehicular vinculada. | `license_plate`, `status` |
 | `personnel_docs` | Relación Personal ↔ Documento. | `expiry_date`, `status` |
 
-### 4.4. Inteligencia y Auditoría
+### 4.4. Inteligencia, Auditoría y Telemetría
 | Tabla | Descripción | Campos Clave |
 | :--- | :--- | :--- |
 | `document_chunks` | Fragmentos para búsqueda vectorial. | `embedding (vector)`, `content` |
 | `digital_signatures` | Evidencia legal de aprobaciones. | `signature_hash`, `validation_provider` |
-| `audit_logs` | Registro inmutable de eventos. | `action`, `entity`, `old_data`, `new_data` |
+| `audit_logs` | Registro inmutable de eventos. | `action`, `entity_type`, `old_data`, `new_data` |
+| `ai_call_logs` | Telemetría de la capa POL. | `provider`, `model`, `tokens`, `duration_ms` |
+| `api_keys` | Gestión de llaves externas. | `key_hint`, `encrypted_key`, `expires_at` |
+| `contracts` | Seguimiento de contratos comerciales. | `vendor_id`, `start_date`, `value_amount` |
+| `notifications` | Sistema de alertas para usuarios. | `type`, `is_read`, `link` |
+| `qa_logs` | Historial del motor de Q&A. | `question`, `answer`, `feedback_score` |
+| `risk_score_history` | Evolución de riesgo por activo. | `entity_type`, `score`, `reason` |
 
 ---
 

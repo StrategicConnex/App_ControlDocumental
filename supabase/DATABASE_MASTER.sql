@@ -194,6 +194,99 @@ CREATE TABLE document_chunks (
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
+-- AI Call Logs (POL Telemetry)
+CREATE TABLE ai_call_logs (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  org_id UUID REFERENCES organizations(id) ON DELETE CASCADE,
+  user_id UUID REFERENCES profiles(id),
+  provider TEXT NOT NULL,
+  model TEXT NOT NULL,
+  prompt_tokens INT,
+  completion_tokens INT,
+  total_tokens INT,
+  duration_ms INT,
+  status TEXT,
+  error_message TEXT,
+  request_metadata JSONB DEFAULT '{}',
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- API Keys (Third-party integrations)
+CREATE TABLE api_keys (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  org_id UUID REFERENCES organizations(id) ON DELETE CASCADE,
+  name TEXT NOT NULL,
+  key_hint TEXT NOT NULL,
+  encrypted_key TEXT NOT NULL,
+  is_active BOOLEAN DEFAULT true,
+  last_used_at TIMESTAMPTZ,
+  expires_at TIMESTAMPTZ,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Audit Logs (Immutability)
+CREATE TABLE audit_logs (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  org_id UUID REFERENCES organizations(id) ON DELETE CASCADE,
+  user_id UUID REFERENCES profiles(id),
+  action TEXT NOT NULL,
+  entity_type TEXT NOT NULL,
+  entity_id UUID NOT NULL,
+  old_data JSONB,
+  new_data JSONB,
+  ip_address INET,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Contracts
+CREATE TABLE contracts (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  org_id UUID REFERENCES organizations(id) ON DELETE CASCADE,
+  title TEXT NOT NULL,
+  vendor_id UUID REFERENCES organizations(id),
+  start_date DATE,
+  end_date DATE,
+  status TEXT DEFAULT 'active',
+  value_amount DECIMAL(15,2),
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Notifications
+CREATE TABLE notifications (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID REFERENCES profiles(id) ON DELETE CASCADE,
+  org_id UUID REFERENCES organizations(id) ON DELETE CASCADE,
+  title TEXT NOT NULL,
+  message TEXT NOT NULL,
+  type TEXT DEFAULT 'INFO' CHECK (type IN ('INFO', 'SUCCESS', 'WARNING', 'ERROR')),
+  is_read BOOLEAN DEFAULT false,
+  link TEXT,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- QA Logs (Q&A Engine history)
+CREATE TABLE qa_logs (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  org_id UUID REFERENCES organizations(id) ON DELETE CASCADE,
+  user_id UUID REFERENCES profiles(id),
+  question TEXT NOT NULL,
+  answer TEXT NOT NULL,
+  context_used JSONB,
+  feedback_score INT,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Risk Score History
+CREATE TABLE risk_score_history (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  org_id UUID REFERENCES organizations(id) ON DELETE CASCADE,
+  entity_type TEXT NOT NULL,
+  entity_id UUID NOT NULL,
+  score DECIMAL(5,2) NOT NULL,
+  reason TEXT,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
 -- 3. AUTOMATION & FUNCTIONS
 -- ==============================================================================
 

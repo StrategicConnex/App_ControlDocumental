@@ -88,6 +88,22 @@ export class AIClient {
   }
 
   /**
+   * Genera múltiples embeddings en una sola llamada (optimizado para batch)
+   */
+  async generateEmbeddingsBatch(texts: string[]): Promise<number[][]> {
+    try {
+      const response = await this.embeddingClient.embeddings.create({
+        model: 'openai/text-embedding-3-small',
+        input: texts.map(t => t.replace(/\n/g, ' ')),
+      });
+      return response.data.map(d => d.embedding);
+    } catch (error) {
+      console.error('Error generando batch de embeddings:', error);
+      throw error;
+    }
+  }
+
+  /**
    * Chat unificado con Orquestación POL y Circuit Breaker Global
    */
   async chat(

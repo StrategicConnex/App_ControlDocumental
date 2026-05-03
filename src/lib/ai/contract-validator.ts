@@ -66,7 +66,7 @@ export class ContractValidator {
     const response = await aiClient.chat([
       { role: 'system', content: 'Eres un auditor legal senior especializado en el sector energético.' },
       { role: 'user', content: prompt }
-    ], orgId, { response_format: 'json_object' });
+    ], orgId, { json: true });
 
     const result = ContractValidationResultSchema.parse(JSON.parse(response.content));
 

@@ -3,6 +3,9 @@
 -- Objetivo: Prevenir fugas de datos entre organizaciones validando auth.uid() en RPCs críticos.
 
 -- 1. Endurecer match_document_chunks_hybrid
+DROP FUNCTION IF EXISTS match_document_chunks_hybrid(vector, text, float, int, text);
+DROP FUNCTION IF EXISTS match_document_chunks_hybrid(vector, text, double precision, integer, text);
+
 CREATE OR REPLACE FUNCTION match_document_chunks_hybrid (
   query_embedding vector(1536),
   query_text text,
@@ -56,6 +59,9 @@ END;
 $$;
 
 -- 2. Endurecer match_document_chunks (Búsqueda semántica simple)
+DROP FUNCTION IF EXISTS match_document_chunks(vector, float, int, text);
+DROP FUNCTION IF EXISTS match_document_chunks(vector, double precision, integer, text);
+
 CREATE OR REPLACE FUNCTION match_document_chunks (
   query_embedding vector(1536),
   match_threshold float,

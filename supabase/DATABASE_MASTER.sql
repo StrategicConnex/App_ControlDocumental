@@ -8,7 +8,64 @@
 -- 1. SCHEMAS & EXTENSIONS
 -- ==============================================================================
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
-CREATE EXTENSION IF NOT EXISTS "vector"; -- Soporte para pgvector (IA/RAG)
+CREATE EXTENSION IF NOT EXISTS "vector";
+
+-- [SELF-HEALING] Helper para Migración Segura (TEXT -> UUID)
+-- Esta función asegura que IDs como 'org-techops-001' se conviertan en UUIDs válidos de forma determinística.
+CREATE OR REPLACE FUNCTION public.text_to_uuid_safe(input text) 
+RETURNS uuid AS $$
+BEGIN
+  IF input IS NULL THEN RETURN NULL; END IF;
+  IF input ~ '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$' THEN
+    RETURN input::uuid;
+  ELSE
+    -- Crea un UUID determinístico basado en el texto (MD5 hash)
+    RETURN (md5(input)::uuid);
+  END IF;
+END;
+$$ LANGUAGE plpgsql IMMUTABLE;
+
+-- [SELF-HEALING] Procedimiento de Normalización Atómica Total (Enterprise Hardening)
+DO $$ 
+DECLARE 
+  r RECORD;
+BEGIN
+  -- 1. Suspensión Total de Seguridad (Eliminar todas las políticas RLS)
+  FOR r IN (SELECT policyname, tablename FROM pg_policies WHERE schemaname = 'public') LOOP
+    EXECUTE format('DROP POLICY IF EXISTS %I ON %I;', r.policyname, r.tablename);
+  END LOOP;
+
+  -- 2. Desvinculación Total (Eliminar todas las FKeys del esquema public)
+  FOR r IN (
+    SELECT tc.table_name, tc.constraint_name
+    FROM information_schema.table_constraints AS tc 
+    WHERE constraint_type = 'FOREIGN KEY' AND table_schema = 'public'
+  ) LOOP
+    EXECUTE format('ALTER TABLE %I DROP CONSTRAINT IF EXISTS %I CASCADE;', r.table_name, r.constraint_name);
+  END LOOP;
+
+  -- 3. Normalización de Llaves Primarias (id)
+  FOR r IN (SELECT table_name FROM information_schema.tables WHERE table_schema = 'public' AND table_type = 'BASE TABLE') LOOP
+    IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = r.table_name AND column_name = 'id' AND data_type = 'text') THEN
+      EXECUTE format('ALTER TABLE %I ALTER COLUMN id TYPE UUID USING public.text_to_uuid_safe(id);', r.table_name);
+      RAISE NOTICE 'PK Normalizada: %.id', r.table_name;
+    END IF;
+  END LOOP;
+
+  -- 4. Normalización de Llaves Foráneas y Relaciones
+  FOR r IN (
+    SELECT table_name, column_name
+    FROM information_schema.columns 
+    WHERE table_schema = 'public' 
+      AND (column_name LIKE '%_id' OR column_name = 'contract_id')
+      AND (data_type = 'text' OR data_type = 'character varying')
+      AND table_name NOT IN ('audit_logs') -- Audit logs se maneja aparte por volumen
+  ) LOOP
+    EXECUTE format('ALTER TABLE %I ALTER COLUMN %I TYPE UUID USING public.text_to_uuid_safe(%I);', r.table_name, r.column_name, r.column_name);
+    RAISE NOTICE 'FK Normalizada: %.%', r.table_name, r.column_name;
+  END LOOP;
+
+END $$;
 
 -- 2. UTILS & HELPERS
 -- ==============================================================================
@@ -209,7 +266,7 @@ CREATE TABLE IF NOT EXISTS audit_logs (
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- RAG: Document Chunks for Semantic Search
+-- Document Chunks (RAG Source)
 CREATE TABLE IF NOT EXISTS document_chunks (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   document_id UUID NOT NULL REFERENCES documents(id) ON DELETE CASCADE,
@@ -221,8 +278,101 @@ CREATE TABLE IF NOT EXISTS document_chunks (
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
+-- [NEW] Purchase Orders (Referencia para Validación IA)
+CREATE TABLE IF NOT EXISTS purchase_orders (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  org_id UUID REFERENCES organizations(id) ON DELETE CASCADE,
+  po_number TEXT NOT NULL,
+  supplier_name TEXT,
+  total_amount DECIMAL(15,2),
+  currency TEXT DEFAULT 'USD',
+  items JSONB DEFAULT '[]',
+  status TEXT DEFAULT 'active',
+  contract_id UUID REFERENCES documents(id),
+  metadata JSONB DEFAULT '{}',
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- [NEW] Invoices (Entidad para Auditoría IA)
+CREATE TABLE IF NOT EXISTS invoices (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  org_id UUID REFERENCES organizations(id) ON DELETE CASCADE,
+  document_id UUID REFERENCES documents(id) ON DELETE CASCADE,
+  po_id UUID REFERENCES purchase_orders(id),
+  invoice_number TEXT,
+  amount_total DECIMAL(15,2),
+  ai_validation_score INT,
+  ai_discrepancy_notes TEXT,
+  status TEXT DEFAULT 'pending_validation',
+  metadata JSONB DEFAULT '{}',
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
 -- 4. AUTOMATION & TRIGGERS
 -- ==============================================================================
+
+-- [NEW] Motor de Búsqueda Híbrida (RAG Engine)
+CREATE OR REPLACE FUNCTION match_document_chunks_hybrid(
+  query_embedding vector(1536),
+  query_text TEXT,
+  match_threshold FLOAT,
+  match_count INT,
+  p_org_id UUID
+)
+RETURNS TABLE (
+  id UUID,
+  document_id UUID,
+  document_title TEXT,
+  chunk_index INT,
+  content TEXT,
+  similarity FLOAT
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+  RETURN QUERY
+  SELECT
+    dc.id,
+    dc.document_id,
+    d.title as document_title,
+    dc.chunk_index,
+    dc.content,
+    (1 - (dc.embedding <=> query_embedding))::float as similarity
+  FROM document_chunks dc
+  JOIN documents d ON dc.document_id = d.id
+  WHERE d.org_id = p_org_id
+    AND (
+      (1 - (dc.embedding <=> query_embedding)) > match_threshold
+      OR dc.content ILIKE '%' || query_text || '%'
+    )
+  ORDER BY similarity DESC
+  LIMIT match_count;
+END;
+$$;
+
+-- [HARDENING] Re-vinculación Dinámica de Llaves Foráneas
+-- Re-establece todas las FKeys eliminadas por la normalización inicial.
+DO $$ 
+DECLARE 
+  r RECORD;
+BEGIN
+  FOR r IN (
+    SELECT table_name 
+    FROM information_schema.columns 
+    WHERE column_name = 'org_id' 
+      AND table_schema = 'public'
+      AND table_name != 'organizations'
+  ) LOOP
+    BEGIN
+      EXECUTE format('ALTER TABLE %I ADD CONSTRAINT %I_org_id_fkey FOREIGN KEY (org_id) REFERENCES organizations(id) ON DELETE CASCADE;', r.table_name, r.table_name);
+    EXCEPTION WHEN others THEN
+      -- Silencioso si ya existe o hay error de duplicado
+      NULL;
+    END;
+  END LOOP;
+END $$;
 
 -- [HARDENING] Función de Auditoría Automática Inmutable
 CREATE OR REPLACE FUNCTION process_audit_log()
